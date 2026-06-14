@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../shared/theme/app_theme.dart';
-import '../../../../shared/widgets/brand_header.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
 import '../viewmodels/cedula_viewmodel.dart';
+import '../widgets/catalog_select.dart';
 import '../widgets/form_helpers.dart';
-import '../widgets/form_section_card.dart';
 
 class CedulaFormPage extends StatefulWidget {
   const CedulaFormPage({super.key});
@@ -16,6 +15,7 @@ class CedulaFormPage extends StatefulWidget {
 }
 
 class _CedulaFormPageState extends State<CedulaFormPage> {
+  int _currentStep = 0;
   final _controllers = <TextEditingController>[];
 
   late final _cedulaForm = GlobalKey<FormState>();
@@ -161,95 +161,121 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Formularios de cedula'),
+        title: const Text('Captura de Cédula'),
         actions: [
           IconButton(
-            tooltip: 'Recargar catalogos',
+            tooltip: 'Recargar catálogos',
             onPressed: viewModel.isLoading ? null : viewModel.loadCatalogs,
             icon: const Icon(Icons.sync_outlined),
           ),
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(18),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 980),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const BrandHeader(
-                    title: 'Captura de cedula',
-                    subtitle:
-                        'Campos conectados a la API y al modelo DBML corregido.',
-                    compact: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _StatusBanner(viewModel: viewModel),
+            Expanded(
+              child: Stepper(
+                type: StepperType.vertical,
+                currentStep: _currentStep,
+                onStepTapped: (step) => setState(() => _currentStep = step),
+                onStepContinue: () {
+                  if (_currentStep < 4) {
+                    setState(() => _currentStep++);
+                  }
+                },
+                onStepCancel: () {
+                  if (_currentStep > 0) {
+                    setState(() => _currentStep--);
+                  }
+                },
+                controlsBuilder: (context, details) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Row(
+                      children: [
+                        if (_currentStep < 4)
+                          FilledButton(
+                            onPressed: details.onStepContinue,
+                            child: const Text('Siguiente'),
+                          ),
+                        if (_currentStep > 0)
+                          TextButton(
+                            onPressed: details.onStepCancel,
+                            child: const Text('Anterior'),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+                steps: [
+                  Step(
+                    isActive: _currentStep >= 0,
+                    state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+                    title: const Text('Cédula Maestra'),
+                    content: _cedulaSection(viewModel),
                   ),
-                  const SizedBox(height: 16),
-                  _StatusBanner(viewModel: viewModel),
-                  FormSectionCard(
-                    title: 'Cedula maestra',
-                    subtitle: 'Unidad, entrevistador, nucleo y estado.',
-                    icon: Icons.assignment_outlined,
-                    children: [_cedulaSection(viewModel)],
+                  Step(
+                    isActive: _currentStep >= 1,
+                    state: _currentStep > 1 ? StepState.complete : StepState.indexed,
+                    title: const Text('Composición Familiar'),
+                    content: Column(
+                      children: [
+                        _nucleoSection(viewModel),
+                        const Divider(height: 32),
+                        _personaSection(viewModel),
+                        const Divider(height: 32),
+                        _integranteSection(viewModel),
+                      ],
+                    ),
                   ),
-                  FormSectionCard(
-                    title: 'Nucleo familiar y persona',
-                    subtitle:
-                        'Crea nucleo, persona y relacion por nucleo_persona.',
-                    icon: Icons.groups_outlined,
-                    children: [
-                      _nucleoSection(viewModel),
-                      const Divider(height: 32),
-                      _personaSection(viewModel),
-                      const Divider(height: 32),
-                      _integranteSection(viewModel),
-                    ],
+                  Step(
+                    isActive: _currentStep >= 2,
+                    state: _currentStep > 2 ? StepState.complete : StepState.indexed,
+                    title: const Text('Vivienda'),
+                    content: Column(
+                      children: [
+                        _viviendaSection(viewModel),
+                        const Divider(height: 32),
+                        _materialSection(viewModel),
+                        const Divider(height: 32),
+                        _servicioViviendaSection(viewModel),
+                        const Divider(height: 32),
+                        _animalSection(viewModel),
+                      ],
+                    ),
                   ),
-                  FormSectionCard(
-                    title: 'Vivienda',
-                    subtitle:
-                        'Datos de vivienda, materiales, servicios y animales.',
-                    icon: Icons.home_outlined,
-                    children: [
-                      _viviendaSection(viewModel),
-                      const Divider(height: 32),
-                      _materialSection(viewModel),
-                      const Divider(height: 32),
-                      _servicioViviendaSection(viewModel),
-                      const Divider(height: 32),
-                      _animalSection(viewModel),
-                    ],
+                  Step(
+                    isActive: _currentStep >= 3,
+                    state: _currentStep > 3 ? StepState.complete : StepState.indexed,
+                    title: const Text('Salud y Estilo de Vida'),
+                    content: Column(
+                      children: [
+                        _alimentacionSection(viewModel),
+                        const Divider(height: 32),
+                        _higieneSection(viewModel),
+                        const Divider(height: 32),
+                        _preventivaSection(viewModel),
+                        const Divider(height: 32),
+                        _servicioSaludSection(viewModel),
+                        const Divider(height: 32),
+                        _toxicomaniaSection(viewModel),
+                        const Divider(height: 32),
+                        _cronicaSection(viewModel),
+                      ],
+                    ),
                   ),
-                  FormSectionCard(
-                    title: 'Salud preventiva y estilo de vida',
-                    subtitle:
-                        'Alimentacion, higiene, tamizajes, toxicomanias y cronicas.',
-                    icon: Icons.health_and_safety_outlined,
-                    children: [
-                      _alimentacionSection(viewModel),
-                      const Divider(height: 32),
-                      _higieneSection(viewModel),
-                      const Divider(height: 32),
-                      _preventivaSection(viewModel),
-                      const Divider(height: 32),
-                      _servicioSaludSection(viewModel),
-                      const Divider(height: 32),
-                      _toxicomaniaSection(viewModel),
-                      const Divider(height: 32),
-                      _cronicaSection(viewModel),
-                    ],
-                  ),
-                  FormSectionCard(
-                    title: 'Vacunacion',
-                    subtitle: 'Inmunizacion con vacuna y cat_dosis.',
-                    icon: Icons.vaccines_outlined,
-                    children: [_vacunacionSection(viewModel)],
+                  Step(
+                    isActive: _currentStep >= 4,
+                    state: _currentStep == 4 ? StepState.editing : StepState.indexed,
+                    title: const Text('Inmunización'),
+                    content: _vacunacionSection(viewModel),
                   ),
                 ],
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -264,11 +290,14 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
             _numberField(_cedulaUnidad, 'Unidad salud ID', Icons.local_hospital_outlined),
             _numberField(_cedulaEntrevistador, 'Entrevistador ID', Icons.badge_outlined),
             _numberField(_cedulaLevantamiento, 'Levantamiento ID', Icons.map_outlined, required: false),
-            _numberField(_cedulaNucleo, 'Nucleo familiar ID', Icons.groups_outlined),
+            _numberField(_cedulaNucleo, 'Núcleo familiar ID', Icons.groups_outlined),
             SumsTextField(controller: _cedulaFecha, label: 'Fecha registro', icon: Icons.event_outlined, validator: requiredText),
             DropdownButtonFormField<String>(
               initialValue: _cedulaEstado,
-              decoration: const InputDecoration(labelText: 'Estado'),
+              decoration: const InputDecoration(
+                labelText: 'Estado',
+                prefixIcon: Icon(Icons.info_outline),
+              ),
               items: const ['borrador', 'sincronizada', 'validada', 'cerrada']
                   .map((value) => DropdownMenuItem(value: value, child: Text(value)))
                   .toList(),
@@ -286,12 +315,12 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
           const SizedBox(height: 14),
           _saveButton(
             viewModel,
-            label: 'Guardar cedula',
+            label: 'Guardar cédula',
             onPressed: () => _submit(
               form: _cedulaForm,
               path: '/cedulas',
               captureIdAs: 'cedula',
-              successMessage: 'Cedula guardada.',
+              successMessage: 'Cédula guardada.',
               bodyBuilder: () => {
                 'unidad_salud_id': requiredInt(_cedulaUnidad.text),
                 'entrevistador_id': requiredInt(_cedulaEntrevistador.text),
@@ -314,7 +343,7 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Crear nucleo familiar', style: _sectionTitleStyle()),
+          Text('Crear núcleo familiar', style: _sectionTitleStyle()),
           const SizedBox(height: 12),
           _grid([
             _numberField(_nucleoJefe, 'Jefe persona ID', Icons.person_outline, required: false),
@@ -323,12 +352,12 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
           const SizedBox(height: 14),
           _saveButton(
             viewModel,
-            label: 'Crear nucleo',
+            label: 'Crear núcleo',
             onPressed: () => _submit(
               form: _nucleoForm,
               path: '/nucleos-familiares',
               captureIdAs: 'nucleo',
-              successMessage: 'Nucleo creado.',
+              successMessage: 'Núcleo creado.',
               bodyBuilder: () => {
                 'jefe_persona_id': optionalInt(_nucleoJefe.text),
                 'comentarios': _nucleoComentarios.text,
@@ -356,24 +385,61 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
             SumsTextField(controller: _personaFechaNacimiento, label: 'Fecha nacimiento', icon: Icons.event_outlined, validator: requiredText),
             DropdownButtonFormField<String>(
               initialValue: _personaSexo,
-              decoration: const InputDecoration(labelText: 'Sexo'),
+              decoration: const InputDecoration(
+                labelText: 'Sexo',
+                prefixIcon: Icon(Icons.wc_outlined),
+              ),
               items: const ['masculino', 'femenino']
                   .map((value) => DropdownMenuItem(value: value, child: Text(value)))
                   .toList(),
               onChanged: (value) => setState(() => _personaSexo = value ?? 'masculino'),
             ),
-            _numberField(_personaEstadoCivil, 'Estado civil ID', Icons.favorite_border, required: false),
-            _numberField(_personaLengua, 'Lengua ID', Icons.record_voice_over_outlined, required: false),
-            _numberField(_personaEscolaridad, 'Escolaridad ID', Icons.school_outlined, required: false),
-            _numberField(_personaOcupacion, 'Ocupacion ID', Icons.work_outline, required: false),
-            _numberField(_personaIngreso, 'Ingreso salarial ID', Icons.payments_outlined, required: false),
+            CatalogSelect(
+              label: 'Estado civil',
+              catalogKey: 'estado-civil',
+              icon: Icons.favorite_border,
+              value: optionalInt(_personaEstadoCivil.text),
+              catalogs: viewModel.catalogs,
+              onChanged: (val) => setState(() => _personaEstadoCivil.text = val?.toString() ?? ''),
+            ),
+            CatalogSelect(
+              label: 'Lengua',
+              catalogKey: 'lengua',
+              icon: Icons.record_voice_over_outlined,
+              value: optionalInt(_personaLengua.text),
+              catalogs: viewModel.catalogs,
+              onChanged: (val) => setState(() => _personaLengua.text = val?.toString() ?? ''),
+            ),
+            CatalogSelect(
+              label: 'Escolaridad',
+              catalogKey: 'escolaridad',
+              icon: Icons.school_outlined,
+              value: optionalInt(_personaEscolaridad.text),
+              catalogs: viewModel.catalogs,
+              onChanged: (val) => setState(() => _personaEscolaridad.text = val?.toString() ?? ''),
+            ),
+            CatalogSelect(
+              label: 'Ocupación',
+              catalogKey: 'ocupacion',
+              icon: Icons.work_outline,
+              value: optionalInt(_personaOcupacion.text),
+              catalogs: viewModel.catalogs,
+              onChanged: (val) => setState(() => _personaOcupacion.text = val?.toString() ?? ''),
+            ),
+            CatalogSelect(
+              label: 'Ingreso salarial',
+              catalogKey: 'ingreso-salarial',
+              icon: Icons.payments_outlined,
+              value: optionalInt(_personaIngreso.text),
+              catalogs: viewModel.catalogs,
+              onChanged: (val) => setState(() => _personaIngreso.text = val?.toString() ?? ''),
+            ),
           ]),
           BooleanSwitch(
-            label: 'Alfabetizacion',
+            label: 'Alfabetización',
             value: _personaAlfabetizacion,
             onChanged: (value) => setState(() => _personaAlfabetizacion = value),
           ),
-          _catalogHint('estado-civil, lengua, escolaridad, ocupacion, ingreso-salarial'),
           const SizedBox(height: 14),
           _saveButton(
             viewModel,
@@ -410,16 +476,22 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Relacionar persona con nucleo', style: _sectionTitleStyle()),
+          Text('Relacionar persona con núcleo', style: _sectionTitleStyle()),
           const SizedBox(height: 12),
           _grid([
-            _numberField(_integranteNucleo, 'Nucleo familiar ID', Icons.groups_outlined),
+            _numberField(_integranteNucleo, 'Núcleo familiar ID', Icons.groups_outlined),
             _numberField(_integrantePersona, 'Persona ID', Icons.person_outline),
-            _numberField(_integranteParentesco, 'Parentesco ID', Icons.diversity_3_outlined, required: false),
+            CatalogSelect(
+              label: 'Parentesco',
+              catalogKey: 'parentesco',
+              icon: Icons.diversity_3_outlined,
+              value: optionalInt(_integranteParentesco.text),
+              catalogs: viewModel.catalogs,
+              onChanged: (val) => setState(() => _integranteParentesco.text = val?.toString() ?? ''),
+            ),
             SumsTextField(controller: _integranteFechaSalida, label: 'Fecha salida', icon: Icons.event_busy_outlined),
           ]),
           SumsTextField(controller: _integranteComentarios, label: 'Comentarios', icon: Icons.notes_outlined),
-          _catalogHint('parentesco'),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -478,25 +550,34 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
           Text('Vivienda', style: _sectionTitleStyle()),
           const SizedBox(height: 12),
           _grid([
-            _numberField(_viviendaNucleo, 'Nucleo familiar ID', Icons.groups_outlined),
-            _numberField(_viviendaDireccion, 'Direccion ID', Icons.location_on_outlined, required: false),
-            _numberField(_viviendaCuartos, 'Numero cuartos', Icons.meeting_room_outlined, required: false, nonNegative: true),
-            _numberField(_viviendaHabitantes, 'Numero habitantes', Icons.people_outline, required: false, nonNegative: true),
+            _numberField(_viviendaNucleo, 'Núcleo familiar ID', Icons.groups_outlined),
+            _numberField(_viviendaDireccion, 'Dirección ID', Icons.location_on_outlined, required: false),
+            _numberField(_viviendaCuartos, 'Número cuartos', Icons.meeting_room_outlined, required: false, nonNegative: true),
+            _numberField(_viviendaHabitantes, 'Número habitantes', Icons.people_outline, required: false, nonNegative: true),
             DropdownButtonFormField<String>(
               initialValue: _cocinaUbicacion,
-              decoration: const InputDecoration(labelText: 'Ubicacion cocina'),
+              decoration: const InputDecoration(
+                labelText: 'Ubicación cocina',
+                prefixIcon: Icon(Icons.restaurant_outlined),
+              ),
               items: const ['fuera_del_dormitorio', 'dentro_del_dormitorio']
                   .map((value) => DropdownMenuItem(value: value, child: Text(value)))
                   .toList(),
               onChanged: (value) => setState(() => _cocinaUbicacion = value ?? 'fuera_del_dormitorio'),
             ),
-            _numberField(_viviendaManejoExcretas, 'Manejo excretas ID', Icons.wc_outlined, required: false),
+            CatalogSelect(
+              label: 'Manejo excretas',
+              catalogKey: 'manejo-excretas',
+              icon: Icons.wc_outlined,
+              value: optionalInt(_viviendaManejoExcretas.text),
+              catalogs: viewModel.catalogs,
+              onChanged: (val) => setState(() => _viviendaManejoExcretas.text = val?.toString() ?? ''),
+            ),
           ]),
-          BooleanSwitch(label: 'Cocina con lena', value: _cocinaConLena, onChanged: (value) => setState(() => _cocinaConLena = value)),
+          BooleanSwitch(label: 'Cocina con leña', value: _cocinaConLena, onChanged: (value) => setState(() => _cocinaConLena = value)),
           BooleanSwitch(label: 'Red alcantarillado', value: _redAlcantarillado, onChanged: (value) => setState(() => _redAlcantarillado = value)),
-          BooleanSwitch(label: 'Fosa septica', value: _fosaSeptica, onChanged: (value) => setState(() => _fosaSeptica = value)),
+          BooleanSwitch(label: 'Fosa séptica', value: _fosaSeptica, onChanged: (value) => setState(() => _fosaSeptica = value)),
           SumsTextField(controller: _viviendaComentarios, label: 'Comentarios', icon: Icons.notes_outlined),
-          _catalogHint('manejo-excretas'),
           const SizedBox(height: 14),
           _saveButton(
             viewModel,
@@ -534,11 +615,24 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
             const SizedBox(height: 12),
             _grid([
               _numberField(_materialVivienda, 'Vivienda ID', Icons.home_outlined),
-              _numberField(_materialTipo, 'Tipo material vivienda ID', Icons.roofing_outlined),
-              _numberField(_materialId, 'Material ID', Icons.construction_outlined, required: false),
+              CatalogSelect(
+                label: 'Tipo material vivienda',
+                catalogKey: 'tipo-material-vivienda',
+                icon: Icons.roofing_outlined,
+                value: optionalInt(_materialTipo.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _materialTipo.text = val?.toString() ?? ''),
+              ),
+              CatalogSelect(
+                label: 'Material',
+                catalogKey: 'material',
+                icon: Icons.construction_outlined,
+                value: optionalInt(_materialId.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _materialId.text = val?.toString() ?? ''),
+              ),
               SumsTextField(controller: _materialOtro, label: 'Otro especificar', icon: Icons.edit_outlined),
             ]),
-            _catalogHint('tipo-material-vivienda, material'),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
@@ -568,10 +662,16 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
             const SizedBox(height: 12),
             _grid([
               _numberField(_servicioVivienda, 'Vivienda ID', Icons.home_outlined),
-              _numberField(_servicioId, 'Servicio vivienda ID', Icons.water_drop_outlined),
+              CatalogSelect(
+                label: 'Servicio vivienda',
+                catalogKey: 'servicio-vivienda',
+                icon: Icons.water_drop_outlined,
+                value: optionalInt(_servicioId.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _servicioId.text = val?.toString() ?? ''),
+              ),
             ]),
             BooleanSwitch(label: 'Disponible', value: _servicioDisponible, onChanged: (value) => setState(() => _servicioDisponible = value)),
-            _catalogHint('servicio-vivienda'),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
@@ -599,15 +699,21 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
             Text('Animales de la familia', style: _sectionTitleStyle()),
             const SizedBox(height: 12),
             _grid([
-              _numberField(_animalNucleo, 'Nucleo familiar ID', Icons.groups_outlined),
-              _numberField(_animalId, 'Animal ID', Icons.pets_outlined),
+              _numberField(_animalNucleo, 'Núcleo familiar ID', Icons.groups_outlined),
+              CatalogSelect(
+                label: 'Animal',
+                catalogKey: 'animal',
+                icon: Icons.pets_outlined,
+                value: optionalInt(_animalId.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _animalId.text = val?.toString() ?? ''),
+              ),
               _numberField(_animalCantidad, 'Cantidad', Icons.numbers_outlined, required: false, nonNegative: true),
               SumsTextField(controller: _animalComentarios, label: 'Comentarios', icon: Icons.notes_outlined),
             ]),
             BooleanSwitch(label: 'Vive dentro de vivienda', value: _animalDentro, onChanged: (value) => setState(() => _animalDentro = value)),
             BooleanSwitch(label: 'Esquema vacunas corriente', value: _animalVacunas, onChanged: (value) => setState(() => _animalVacunas = value)),
             BooleanSwitch(label: 'Esterilizado', value: _animalEsterilizado, onChanged: (value) => setState(() => _animalEsterilizado = value)),
-            _catalogHint('animal'),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
@@ -636,23 +742,29 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Alimentacion', style: _sectionTitleStyle()),
+            Text('Alimentación', style: _sectionTitleStyle()),
             const SizedBox(height: 12),
             _grid([
               _numberField(_alimentacionPersona, 'Persona ID', Icons.person_outline),
-              _numberField(_alimentacionId, 'Alimentacion ID', Icons.restaurant_outlined),
-              _numberField(_alimentacionFrecuencia, 'Frecuencia dias 0-7', Icons.calendar_view_week_outlined),
+              CatalogSelect(
+                label: 'Alimentación',
+                catalogKey: 'alimentacion',
+                icon: Icons.restaurant_outlined,
+                value: optionalInt(_alimentacionId.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _alimentacionId.text = val?.toString() ?? ''),
+              ),
+              _numberField(_alimentacionFrecuencia, 'Frecuencia días 0-7', Icons.calendar_view_week_outlined),
               SumsTextField(controller: _alimentacionFecha, label: 'Fecha registro', icon: Icons.event_outlined),
             ]),
-            _catalogHint('alimentacion'),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
-              label: 'Guardar alimentacion',
+              label: 'Guardar alimentación',
               onPressed: () => _submit(
                 form: _alimentacionForm,
                 path: '/personas-alimentacion',
-                successMessage: 'Alimentacion guardada.',
+                successMessage: 'Alimentación guardada.',
                 bodyBuilder: () => {
                   'persona_id': requiredInt(_alimentacionPersona.text),
                   'alimentacion_id': requiredInt(_alimentacionId.text),
@@ -676,7 +788,7 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
               _numberField(_higienePersona, 'Persona ID', Icons.person_outline),
               SumsTextField(controller: _higieneFecha, label: 'Fecha registro', icon: Icons.event_outlined),
             ]),
-            BooleanSwitch(label: 'Bano y bucodental diaria', value: _higieneDiaria, onChanged: (value) => setState(() => _higieneDiaria = value)),
+            BooleanSwitch(label: 'Baño y bucodental diaria', value: _higieneDiaria, onChanged: (value) => setState(() => _higieneDiaria = value)),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
@@ -705,14 +817,20 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
             const SizedBox(height: 12),
             _grid([
               _numberField(_preventivaPersona, 'Persona ID', Icons.person_outline),
-              _numberField(_preventivaAtencionEmbarazo, 'Atencion embarazo ID', Icons.pregnant_woman_outlined, required: false),
+              CatalogSelect(
+                label: 'Atención embarazo',
+                catalogKey: 'atencion-embarazo',
+                icon: Icons.pregnant_woman_outlined,
+                value: optionalInt(_preventivaAtencionEmbarazo.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _preventivaAtencionEmbarazo.text = val?.toString() ?? ''),
+              ),
               SumsTextField(controller: _preventivaFechaCervico, label: 'Fecha tamizaje cervico uterino', icon: Icons.event_outlined),
-              SumsTextField(controller: _preventivaFechaMama, label: 'Fecha tamizaje cancer mama', icon: Icons.event_outlined),
+              SumsTextField(controller: _preventivaFechaMama, label: 'Fecha tamizaje cáncer mama', icon: Icons.event_outlined),
               SumsTextField(controller: _preventivaFechaRegistro, label: 'Fecha registro', icon: Icons.event_outlined),
             ]),
-            BooleanSwitch(label: 'Tamizaje cervico uterino', value: _tamizajeCervico, onChanged: (value) => setState(() => _tamizajeCervico = value)),
-            BooleanSwitch(label: 'Tamizaje cancer mama', value: _tamizajeMama, onChanged: (value) => setState(() => _tamizajeMama = value)),
-            _catalogHint('atencion-embarazo'),
+            BooleanSwitch(label: 'Tamizaje cérvico uterino', value: _tamizajeCervico, onChanged: (value) => setState(() => _tamizajeCervico = value)),
+            BooleanSwitch(label: 'Tamizaje cáncer mama', value: _tamizajeMama, onChanged: (value) => setState(() => _tamizajeMama = value)),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
@@ -745,11 +863,17 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
             const SizedBox(height: 12),
             _grid([
               _numberField(_servicioSaludPersona, 'Persona ID', Icons.person_outline),
-              _numberField(_servicioSaludFrecuencia, 'Frecuencia servicio salud ID', Icons.schedule_outlined, required: false),
+              CatalogSelect(
+                label: 'Frecuencia servicio salud',
+                catalogKey: 'frecuencia-servicio-salud',
+                icon: Icons.schedule_outlined,
+                value: optionalInt(_servicioSaludFrecuencia.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _servicioSaludFrecuencia.text = val?.toString() ?? ''),
+              ),
               SumsTextField(controller: _servicioSaludMotivo, label: 'Motivo uso', icon: Icons.notes_outlined),
               SumsTextField(controller: _servicioSaludFecha, label: 'Fecha registro', icon: Icons.event_outlined),
             ]),
-            _catalogHint('frecuencia-servicio-salud'),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
@@ -775,24 +899,30 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Toxicomania', style: _sectionTitleStyle()),
+            Text('Toxicomanía', style: _sectionTitleStyle()),
             const SizedBox(height: 12),
             _grid([
               _numberField(_toxicomaniaPersona, 'Persona ID', Icons.person_outline),
-              _numberField(_toxicomaniaId, 'Toxicomania ID', Icons.smoking_rooms_outlined),
+              CatalogSelect(
+                label: 'Toxicomanía',
+                catalogKey: 'toxicomania',
+                icon: Icons.smoking_rooms_outlined,
+                value: optionalInt(_toxicomaniaId.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _toxicomaniaId.text = val?.toString() ?? ''),
+              ),
               SumsTextField(controller: _toxicomaniaOtra, label: 'Otra sustancia', icon: Icons.edit_outlined),
               SumsTextField(controller: _toxicomaniaInicio, label: 'Fecha inicio', icon: Icons.event_outlined),
               SumsTextField(controller: _toxicomaniaFin, label: 'Fecha fin', icon: Icons.event_outlined),
             ]),
-            _catalogHint('toxicomania'),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
-              label: 'Guardar toxicomania',
+              label: 'Guardar toxicomanía',
               onPressed: () => _submit(
                 form: _toxicomaniaForm,
                 path: '/personas-toxicomanias',
-                successMessage: 'Toxicomania guardada.',
+                successMessage: 'Toxicomanía guardada.',
                 bodyBuilder: () => {
                   'persona_id': requiredInt(_toxicomaniaPersona.text),
                   'toxicomania_id': requiredInt(_toxicomaniaId.text),
@@ -811,15 +941,21 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Enfermedad cronica', style: _sectionTitleStyle()),
+            Text('Enfermedad crónica', style: _sectionTitleStyle()),
             const SizedBox(height: 12),
             _grid([
               _numberField(_cronicaPersona, 'Persona ID', Icons.person_outline),
-              _numberField(_cronicaId, 'Enfermedad cronica ID', Icons.monitor_heart_outlined),
-              SumsTextField(controller: _cronicaFecha, label: 'Fecha diagnostico', icon: Icons.event_outlined),
+              CatalogSelect(
+                label: 'Enfermedad crónica',
+                catalogKey: 'enfermedad-cronica',
+                icon: Icons.monitor_heart_outlined,
+                value: optionalInt(_cronicaId.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _cronicaId.text = val?.toString() ?? ''),
+              ),
+              SumsTextField(controller: _cronicaFecha, label: 'Fecha diagnóstico', icon: Icons.event_outlined),
               SumsTextField(controller: _cronicaObservaciones, label: 'Observaciones', icon: Icons.notes_outlined),
             ]),
-            _catalogHint('enfermedad-cronica'),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
@@ -827,7 +963,7 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
               onPressed: () => _submit(
                 form: _cronicaForm,
                 path: '/personas-enfermedades-cronicas',
-                successMessage: 'Enfermedad cronica guardada.',
+                successMessage: 'Enfermedad crónica guardada.',
                 bodyBuilder: () => {
                   'persona_id': requiredInt(_cronicaPersona.text),
                   'enfermedad_cronica_id': requiredInt(_cronicaId.text),
@@ -847,22 +983,35 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
           children: [
             _grid([
               _numberField(_vacunacionPersona, 'Persona ID', Icons.person_outline, required: false),
-              _numberField(_vacunacionEsquema, 'Esquema vacunacion ID', Icons.assignment_outlined, required: false),
+              _numberField(_vacunacionEsquema, 'Esquema vacunación ID', Icons.assignment_outlined, required: false),
               _numberField(_vacunacionUnidad, 'Unidad salud ID', Icons.local_hospital_outlined, required: false),
-              _numberField(_vacunacionCedula, 'Cedula ID', Icons.assignment_outlined, required: false),
-              _numberField(_vacunacionVacuna, 'Vacuna ID', Icons.vaccines_outlined),
-              _numberField(_vacunacionDosis, 'Dosis ID', Icons.medication_liquid_outlined, required: false),
-              SumsTextField(controller: _vacunacionFecha, label: 'Fecha aplicacion', icon: Icons.event_outlined),
+              _numberField(_vacunacionCedula, 'Cédula ID', Icons.assignment_outlined, required: false),
+              CatalogSelect(
+                label: 'Vacuna',
+                catalogKey: 'vacuna',
+                icon: Icons.vaccines_outlined,
+                value: optionalInt(_vacunacionVacuna.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _vacunacionVacuna.text = val?.toString() ?? ''),
+              ),
+              CatalogSelect(
+                label: 'Dosis',
+                catalogKey: 'dosis',
+                icon: Icons.medication_liquid_outlined,
+                value: optionalInt(_vacunacionDosis.text),
+                catalogs: viewModel.catalogs,
+                onChanged: (val) => setState(() => _vacunacionDosis.text = val?.toString() ?? ''),
+              ),
+              SumsTextField(controller: _vacunacionFecha, label: 'Fecha aplicación', icon: Icons.event_outlined),
             ]),
-            _catalogHint('vacuna, dosis'),
             const SizedBox(height: 14),
             _saveButton(
               viewModel,
-              label: 'Guardar inmunizacion',
+              label: 'Guardar inmunización',
               onPressed: () => _submit(
                 form: _vacunacionForm,
                 path: '/vacunaciones',
-                successMessage: 'Inmunizacion guardada.',
+                successMessage: 'Inmunización guardada.',
                 bodyBuilder: () => {
                   'persona_id': optionalInt(_vacunacionPersona.text),
                   'esquema_vacunacion_id': optionalInt(_vacunacionEsquema.text),
@@ -925,10 +1074,13 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
   }) {
     return FilledButton.icon(
       onPressed: viewModel.isLoading ? null : onPressed,
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(48),
+      ),
       icon: viewModel.isLoading
           ? const SizedBox.square(
               dimension: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
             )
           : const Icon(Icons.save_outlined),
       label: Text(label),
@@ -991,18 +1143,6 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
     });
   }
 
-  Widget _catalogHint(String keys) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Text(
-        'Catalogos relacionados: $keys',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.muted,
-            ),
-      ),
-    );
-  }
-
   TextStyle? _sectionTitleStyle() {
     return Theme.of(context).textTheme.titleMedium?.copyWith(
           color: AppColors.burgundy,
@@ -1019,24 +1159,11 @@ class _StatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final message = viewModel.errorMessage ?? viewModel.successMessage;
-    if (message == null) {
-      final catalogs = viewModel.catalogs.length;
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Text(
-          catalogs == 0
-              ? 'Catalogos pendientes de cargar. Puedes capturar IDs manualmente.'
-              : 'Catalogos cargados: $catalogs. Puedes usar esos IDs en los formularios.',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.muted,
-              ),
-        ),
-      );
-    }
+    if (message == null) return const SizedBox.shrink();
 
     final isError = viewModel.errorMessage != null;
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isError ? const Color(0xffffdad6) : AppColors.soft,
@@ -1045,12 +1172,27 @@ class _StatusBanner extends StatelessWidget {
           color: isError ? const Color(0xffba1a1a) : AppColors.gold,
         ),
       ),
-      child: Text(
-        message,
-        style: TextStyle(
-          color: isError ? const Color(0xff93000a) : AppColors.greenDark,
-          fontWeight: FontWeight.w700,
-        ),
+      child: Row(
+        children: [
+          Icon(
+            isError ? Icons.error_outline : Icons.check_circle_outline,
+            color: isError ? const Color(0xffba1a1a) : AppColors.greenDark,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: isError ? const Color(0xff93000a) : AppColors.greenDark,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: viewModel.clearMessages,
+          ),
+        ],
       ),
     );
   }
