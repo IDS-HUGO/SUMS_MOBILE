@@ -31,14 +31,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-<<<<<<< HEAD
-  provider: ^6.1.2
-  http: ^1.2.2
-  google_fonts: ^8.1.0
-=======
-  http: ^1.5.0
+  http: ^1.6.0
   provider: ^6.1.5
->>>>>>> d705f4100094d6e1f3fc80d74c7a554ea0ea25dc
 
 dev_dependencies:
   flutter_test:
