@@ -5,9 +5,7 @@ import 'package:http/http.dart' as http;
 
 class ApiException implements Exception {
   final String message;
-
   const ApiException(this.message);
-
   @override
   String toString() => message;
 }
@@ -38,11 +36,7 @@ class ApiClient {
     String? token,
   }) async {
     final response = await _sendRequest(
-      () => client.post(
-        _uri(path),
-        headers: _headers(token),
-        body: jsonEncode(body),
-      ),
+      () => client.post(_uri(path), headers: _headers(token), body: jsonEncode(body)),
     );
     return _decodeMap(response);
   }
@@ -53,11 +47,7 @@ class ApiClient {
     String? token,
   }) async {
     final response = await _sendRequest(
-      () => client.put(
-        _uri(path),
-        headers: _headers(token),
-        body: jsonEncode(body),
-      ),
+      () => client.put(_uri(path), headers: _headers(token), body: jsonEncode(body)),
     );
     return _decodeMap(response);
   }
@@ -68,11 +58,7 @@ class ApiClient {
     String? token,
   }) async {
     final response = await _sendRequest(
-      () => client.patch(
-        _uri(path),
-        headers: _headers(token),
-        body: jsonEncode(body),
-      ),
+      () => client.patch(_uri(path), headers: _headers(token), body: jsonEncode(body)),
     );
     return _decodeMap(response);
   }
@@ -85,12 +71,9 @@ class ApiClient {
 
   Uri _uri(String path) {
     final clean = baseUrl.trim();
-    if (clean.isEmpty) {
-      throw const ApiException('Configura API_BASE_URL.');
-    }
-    final normalized = clean.endsWith('/')
-        ? clean.substring(0, clean.length - 1)
-        : clean;
+    if (clean.isEmpty) throw const ApiException('Configura API_BASE_URL.');
+    final normalized =
+        clean.endsWith('/') ? clean.substring(0, clean.length - 1) : clean;
     return Uri.parse('$normalized$path');
   }
 

@@ -17,27 +17,32 @@ import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
 import '../storage/token_storage.dart';
 
+/// Contenedor de dependencias manual para toda la app.
+/// Se crea una única vez en [_AppState.initState] y se destruye en [dispose].
 class AppDependencies {
   AppDependencies() {
-    httpClient = http.Client();
+    // ── infraestructura compartida ────────────────────────────────────────
+    httpClient   = http.Client();
     tokenStorage = InMemoryTokenStorage();
-    apiClient = ApiClient(client: httpClient, baseUrl: ApiEndpoints.baseUrl);
+    apiClient    = ApiClient(client: httpClient, baseUrl: ApiEndpoints.baseUrl);
 
+    // ── feature: auth ─────────────────────────────────────────────────────
     authRemoteDataSource = AuthRemoteDataSource(apiClient: apiClient);
     authRepository = AuthRepositoryImpl(
       remoteDataSource: authRemoteDataSource,
-      tokenStorage: tokenStorage,
+      tokenStorage:     tokenStorage,
     );
     authViewModel = AuthViewModel(
-      loginUseCase: LoginUseCase(authRepository),
+      loginUseCase:    LoginUseCase(authRepository),
       registerUseCase: RegisterUseCase(authRepository),
-      logoutUseCase: LogoutUseCase(authRepository),
+      logoutUseCase:   LogoutUseCase(authRepository),
     );
 
+    // ── feature: cedula ───────────────────────────────────────────────────
     cedulaRemoteDataSource = CedulaRemoteDataSource(apiClient: apiClient);
     cedulaRepository = CedulaRepositoryImpl(
       remoteDataSource: cedulaRemoteDataSource,
-      tokenStorage: tokenStorage,
+      tokenStorage:     tokenStorage,
     );
     cedulaViewModel = CedulaViewModel(
       loadCatalogsUseCase: LoadCatalogsUseCase(cedulaRepository),
@@ -45,16 +50,22 @@ class AppDependencies {
     );
   }
 
-  late final http.Client httpClient;
-  late final TokenStorage tokenStorage;
-  late final ApiClient apiClient;
-  late final AuthRemoteDataSource authRemoteDataSource;
-  late final AuthRepository authRepository;
-  late final AuthViewModel authViewModel;
-  late final CedulaRemoteDataSource cedulaRemoteDataSource;
-  late final CedulaRepository cedulaRepository;
-  late final CedulaViewModel cedulaViewModel;
+  // ── infraestructura ───────────────────────────────────────────────────────
+  late final http.Client          httpClient;
+  late final TokenStorage         tokenStorage;
+  late final ApiClient            apiClient;
 
+  // ── auth ──────────────────────────────────────────────────────────────────
+  late final AuthRemoteDataSource authRemoteDataSource;
+  late final AuthRepository       authRepository;
+  late final AuthViewModel        authViewModel;
+
+  // ── cedula ────────────────────────────────────────────────────────────────
+  late final CedulaRemoteDataSource cedulaRemoteDataSource;
+  late final CedulaRepository       cedulaRepository;
+  late final CedulaViewModel        cedulaViewModel;
+
+  /// Libera ViewModels y cierra el cliente HTTP.
   void dispose() {
     authViewModel.dispose();
     cedulaViewModel.dispose();

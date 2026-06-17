@@ -47,7 +47,8 @@ class AppTheme {
           backgroundColor: AppColors.green,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          minimumSize: const Size.fromHeight(48),
+          // Keep the fix for infinite width by avoiding Size.fromHeight(48)
+          minimumSize: const Size(64, 48),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -55,7 +56,7 @@ class AppTheme {
           foregroundColor: AppColors.burgundy,
           side: const BorderSide(color: AppColors.gold),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          minimumSize: const Size.fromHeight(48),
+          minimumSize: const Size(64, 48),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
