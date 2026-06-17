@@ -4,21 +4,16 @@ abstract class TokenStorage {
   Future<void> deleteToken();
 }
 
+/// Implementacion en memoria. Reemplazar por FlutterSecureStorage en produccion.
 class InMemoryTokenStorage implements TokenStorage {
   String? _token;
 
   @override
-  Future<void> saveToken(String token) async {
-    _token = token;
-  }
+  Future<void> saveToken(String token) async => _token = token;
 
   @override
-  Future<String?> readToken() async {
-    return _token;
-  }
+  Future<String?> readToken() async => _token;
 
   @override
-  Future<void> deleteToken() async {
-    _token = null;
-  }
+  Future<void> deleteToken() async => _token = null;
 }

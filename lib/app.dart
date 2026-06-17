@@ -48,12 +48,12 @@ class _AppState extends State<App> {
         debugShowCheckedModeBanner: false,
         title: 'SUMS IMSS Bienestar',
         theme: AppTheme.light(),
-        initialRoute: AppRoutes.home,
+        initialRoute: AppRoutes.login,
         routes: {
-          AppRoutes.login: (_) => const LoginPage(),
+          AppRoutes.login:    (_) => const LoginPage(),
           AppRoutes.register: (_) => const RegisterPage(),
-          AppRoutes.home: (_) => const HomePage(),
-          AppRoutes.cedula: (_) => const CedulaFormPage(),
+          AppRoutes.home:     (_) => const HomePage(),
+          AppRoutes.cedula:   (_) => const CedulaFormPage(),
         },
       ),
     );
