@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 
 import 'core/di/app_dependencies.dart';
 import 'core/routes/app_routes.dart';
-import 'features/auth/presentation/pages/home_page.dart';
+import 'features/auth/presentation/pages/home_admin_page.dart';
+import 'features/auth/presentation/pages/home_analista_page.dart';
+import 'features/auth/presentation/pages/home_encuestador_page.dart';
+import 'features/auth/presentation/pages/home_medico_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
-import 'features/auth/presentation/pages/register_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/cedula/presentation/pages/cedula_form_page.dart';
 import 'features/cedula/presentation/viewmodels/cedula_viewmodel.dart';
@@ -46,14 +48,25 @@ class _AppState extends State<App> {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'SUMS IMSS Bienestar',
-        theme: AppTheme.light(),
+        title:        'SUMS IMSS Bienestar',
+        theme:        AppTheme.light(),
         initialRoute: AppRoutes.login,
         routes: {
-          AppRoutes.login:    (_) => const LoginPage(),
-          AppRoutes.register: (_) => const RegisterPage(),
-          AppRoutes.home:     (_) => const HomePage(),
-          AppRoutes.cedula:   (_) => const CedulaFormPage(),
+          AppRoutes.login:             (_) => const LoginPage(),
+          // ── Homes por rol ──────────────────────────────────────────────
+          AppRoutes.homeAdmin:         (_) => const HomeAdminPage(),
+          AppRoutes.homeMedico:        (_) => const HomeMedicoPage(),
+          AppRoutes.homeEncuestador:   (_) => const HomeEncuestadorPage(),
+          AppRoutes.homeAnalista:      (_) => const HomeAnalistaPage(),
+          // ── Features ──────────────────────────────────────────────────
+          AppRoutes.cedula:            (_) => const CedulaFormPage(),
+        },
+        // Guarda de ruta: si el usuario no está autenticado, va a login.
+        onGenerateRoute: (settings) {
+          // Cualquier ruta no definida arriba cae aquí; redirige a login.
+          return MaterialPageRoute(
+            builder: (_) => const LoginPage(),
+          );
         },
       ),
     );
