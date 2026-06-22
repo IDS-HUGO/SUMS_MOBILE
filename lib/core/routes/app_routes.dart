@@ -1,6 +1,8 @@
 class AppRoutes {
-  static const login    = '/login';
-  static const register = '/register';
-  static const home     = '/home';
-  static const cedula   = '/cedula';
+  static const login        = '/login';
+  static const homeAdmin    = '/home/admin';
+  static const homeMedico   = '/home/medico';
+  static const homeEncuestador = '/home/encuestador';
+  static const homeAnalista = '/home/analista';
+  static const cedula       = '/cedula';
 }
