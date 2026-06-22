@@ -1,17 +1,13 @@
 import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/auth_session.dart';
+import '../../domain/entities/user_role.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
-/// ViewModel para toda la feature de autenticacion (MVVM).
-///
-/// Expone estado reactivo via [ChangeNotifier].
-/// Las vistas solo llaman metodos publicos y leen propiedades; nunca tocan
-/// repositorios ni fuentes de datos directamente.
 class AuthViewModel extends ChangeNotifier {
   final LoginUseCase    loginUseCase;
   final RegisterUseCase registerUseCase;
@@ -28,16 +24,24 @@ class AuthViewModel extends ChangeNotifier {
   AuthSession? _session;
   String?      _errorMessage;
 
-  // ── getters publicos ──────────────────────────────────────────────────────
+  // ── getters públicos ──────────────────────────────────────────────────────
   AuthStatus   get status        => _status;
   AuthSession? get session       => _session;
   String?      get errorMessage  => _errorMessage;
   bool         get isLoading     => _status == AuthStatus.loading;
   bool         get isAuthenticated => _session?.isAuthenticated ?? false;
 
+  /// Rol del usuario autenticado. Null si no hay sesión.
+  UserRole? get role => _session == null
+      ? null
+      : UserRole.fromId(_session!.user.rolId);
+
+  /// Ruta home que corresponde al rol del usuario autenticado.
+  String get homeRoute => role?.homeRoute ?? '/login';
+
   // ── acciones ──────────────────────────────────────────────────────────────
 
-  /// Inicia sesion. Retorna [true] si fue exitoso.
+  /// Inicia sesión. Retorna [true] si fue exitoso.
   Future<bool> login({
     required String nombreUsuario,
     required String contrasena,
@@ -58,7 +62,8 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  /// Registra un usuario nuevo y hace login automatico. Retorna [true] si OK.
+  /// Registra un usuario nuevo y hace login automático.
+  /// Se mantiene para uso interno (ej. admin creando usuarios).
   Future<bool> register({
     required String nombreUsuario,
     required String contrasena,
@@ -85,7 +90,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  /// Cierra la sesion activa y elimina el token.
+  /// Cierra la sesión activa y elimina el token.
   Future<void> logout() async {
     _setLoading();
     try {
@@ -99,7 +104,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  /// Limpia el mensaje de error (util al navegar entre pantallas).
+  /// Limpia el mensaje de error (útil al navegar entre pantallas).
   void clearError() {
     _errorMessage = null;
     if (_status == AuthStatus.error) _status = AuthStatus.initial;

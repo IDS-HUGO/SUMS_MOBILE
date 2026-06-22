@@ -19,6 +19,10 @@ import '../storage/token_storage.dart';
 
 /// Contenedor de dependencias manual para toda la app.
 /// Se crea una única vez en [_AppState.initState] y se destruye en [dispose].
+///
+/// La pantalla de registro fue eliminada del flujo de usuario.
+/// [RegisterUseCase] se conserva para uso interno (el admin puede crear
+/// usuarios desde su propio panel cuando esté implementado).
 class AppDependencies {
   AppDependencies() {
     // ── infraestructura compartida ────────────────────────────────────────
@@ -34,6 +38,8 @@ class AppDependencies {
     );
     authViewModel = AuthViewModel(
       loginUseCase:    LoginUseCase(authRepository),
+      // RegisterUseCase se mantiene por si el panel de admin lo necesita en
+      // el futuro, pero no está expuesto en ninguna pantalla pública.
       registerUseCase: RegisterUseCase(authRepository),
       logoutUseCase:   LogoutUseCase(authRepository),
     );
