@@ -15,223 +15,185 @@ class HomeEncuestadorPage extends StatefulWidget {
 }
 
 class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
-  // ── stats locales (pueden conectarse al backend en el futuro) ────────────
-  int _cedulasHoy = 0;
+  final int _cedulasHoy = 0;
+  final int _cedulasSemana = 0;
+  final int _personasRegistradas = 0;
 
   @override
   Widget build(BuildContext context) {
     final auth     = context.watch<AuthViewModel>();
     final userName = auth.session?.user.nombreUsuario ?? 'encuestador';
+    final today    = _todayLabel();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('SUMS · Encuestador'),
-        actions: [_logoutButton(context)],
-      ),
+      backgroundColor: AppColors.canvas,
+      appBar: _buildAppBar(context),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 980),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  BrandHeader(
-                    title:    'Hola, $userName',
-                    subtitle: 'Captura cédulas de microdiagnóstico familiar.',
-                    compact:  true,
-                  ),
-                  const SizedBox(height: 22),
+        child: CustomScrollView(
+          slivers: [
+            // ── Cabecera con saludo ─────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: _GreetingSection(userName: userName, date: today),
+            ),
 
-                  // ── tarjeta principal: nueva cédula ──────────────────────
-                  _NewCedulaCard(onTap: _goToCedula),
-
-                  const SizedBox(height: 16),
-
-                  // ── flujo de captura ─────────────────────────────────────
-                  _FlowCard(),
-
-                  const SizedBox(height: 16),
-
-                  // ── resumen rápido ───────────────────────────────────────
-                  _SummaryCard(cedulasHoy: _cedulasHoy),
-                ],
+            // ── Métricas ────────────────────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+              sliver: SliverToBoxAdapter(
+                child: _MetricsRow(
+                  cedulasHoy:         _cedulasHoy,
+                  cedulasSemana:      _cedulasSemana,
+                  personasRegistradas: _personasRegistradas,
+                ),
               ),
             ),
-          ),
+
+            // ── Acción principal ─────────────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: _MainActionCard(onTap: _goToCedula),
+              ),
+            ),
+
+            // ── Flujo de captura ─────────────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: SectionCard(
+                  title:       'Flujo de captura',
+                  subtitle:    '4 secciones · ~15 min por familia',
+                  icon:        Icons.route_outlined,
+                  accentColor: AppColors.terracota,
+                  children: const [_FlowSteps()],
+                ),
+              ),
+            ),
+
+            // ── Consejo de campo ─────────────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
+              sliver: SliverToBoxAdapter(
+                child: _TipCard(),
+              ),
+            ),
+          ],
         ),
       ),
-
-      // FAB flotante para acceso rápido
       floatingActionButton: FloatingActionButton.extended(
-        onPressed:  _goToCedula,
-        icon:       const Icon(Icons.assignment_add),
-        label:      const Text('Nueva cédula'),
-        tooltip:    'Iniciar captura de cédula familiar',
+        onPressed:       _goToCedula,
+        icon:            const Icon(Icons.assignment_add),
+        label:           const Text('Nueva cédula'),
         backgroundColor: AppColors.green,
         foregroundColor: Colors.white,
+        elevation:       2,
       ),
     );
   }
 
   void _goToCedula() {
-    // Limpia mensajes del viewmodel antes de navegar
     context.read<CedulaViewModel>().clearMessages();
     Navigator.of(context).pushNamed(AppRoutes.cedula);
   }
 
-  Widget _logoutButton(BuildContext context) => IconButton(
-        tooltip:  'Cerrar sesión',
-        icon:     const Icon(Icons.logout_outlined),
-        onPressed: () async {
-          await context.read<AuthViewModel>().logout();
-          if (!context.mounted) return;
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
-        },
+  AppBar _buildAppBar(BuildContext context) => AppBar(
+        title: Row(
+          children: [
+            Container(
+              width: 8, height: 8,
+              decoration: const BoxDecoration(
+                color: AppColors.rolEncuestador,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text('Encuestador'),
+          ],
+        ),
+        actions: [
+          IconButton(
+            tooltip:  'Cerrar sesión',
+            icon:     const Icon(Icons.logout_outlined),
+            onPressed: () async {
+              await context.read<AuthViewModel>().logout();
+              if (!context.mounted) return;
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+            },
+          ),
+          const SizedBox(width: 4),
+        ],
       );
+
+  String _todayLabel() {
+    final now = DateTime.now();
+    const meses = [
+      '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+    ];
+    return '${now.day} de ${meses[now.month]} ${now.year}';
+  }
 }
 
-// ── tarjeta de acción principal ─────────────────────────────────────────────
+// ── Sección de saludo ─────────────────────────────────────────────────────────
 
-class _NewCedulaCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _NewCedulaCard({required this.onTap});
+class _GreetingSection extends StatelessWidget {
+  final String userName;
+  final String date;
+  const _GreetingSection({required this.userName, required this.date});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.green,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap:        onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Row(
+    return Container(
+      color: AppColors.greenDark,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              const CircleAvatar(
-                radius:          28,
-                backgroundColor: Colors.white24,
-                foregroundColor: Colors.white,
-                child:           Icon(Icons.assignment_add, size: 28),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person_outline,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Iniciar nueva cédula',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color:      Colors.white,
-                            fontWeight: FontWeight.w900,
-                          ),
+                      'Hola, $userName',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18, fontWeight: FontWeight.w800,
+                      ),
                     ),
-                    const SizedBox(height: 4),
                     Text(
-                      'Captura datos del núcleo familiar, vivienda y vacunación.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white70,
-                          ),
+                      date,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios_rounded,
-                  color: Colors.white70, size: 18),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── flujo de captura ─────────────────────────────────────────────────────────
-
-class _FlowCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const CircleAvatar(
-                  backgroundColor: AppColors.burgundy,
-                  foregroundColor: Colors.white,
-                  child: Icon(Icons.route_outlined),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Flujo de captura',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color:      AppColors.greenDark,
-                        fontWeight: FontWeight.w900,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            ..._steps.map((step) => _StepRow(step: step)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static const _steps = [
-    _Step('1', 'Familia', 'Nombre del informante, domicilio y localidad'),
-    _Step('2', 'Vivienda', 'Materiales, servicios y convivencia con animales'),
-    _Step('3', 'Vacunación', 'Esquema aplicado durante la visita'),
-    _Step('4', 'Integrantes', 'Datos personales, salud y alimentación de cada miembro'),
-  ];
-}
-
-class _Step {
-  final String num;
-  final String title;
-  final String detail;
-  const _Step(this.num, this.title, this.detail);
-}
-
-class _StepRow extends StatelessWidget {
-  final _Step step;
-  const _StepRow({required this.step});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius:          14,
-            backgroundColor: AppColors.soft,
-            foregroundColor: AppColors.greenDark,
-            child: Text(step.num,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w900, fontSize: 12)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(step.title,
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
-                Text(step.detail,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: AppColors.muted)),
-              ],
+          const SizedBox(height: 16),
+          Text(
+            'Captura cédulas de microdiagnóstico familiar',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.75),
+              fontSize: 13,
             ),
           ),
         ],
@@ -240,81 +202,343 @@ class _StepRow extends StatelessWidget {
   }
 }
 
-// ── resumen ──────────────────────────────────────────────────────────────────
+// ── Métricas ──────────────────────────────────────────────────────────────────
 
-class _SummaryCard extends StatelessWidget {
+class _MetricsRow extends StatelessWidget {
   final int cedulasHoy;
-  const _SummaryCard({required this.cedulasHoy});
+  final int cedulasSemana;
+  final int personasRegistradas;
+
+  const _MetricsRow({
+    required this.cedulasHoy,
+    required this.cedulasSemana,
+    required this.personasRegistradas,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Resumen de hoy',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color:      AppColors.greenDark,
-                      fontWeight: FontWeight.w900,
-                    )),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                _Stat(
-                  icon:  Icons.assignment_turned_in_outlined,
-                  value: '$cedulasHoy',
-                  label: 'Cédulas capturadas hoy',
-                  color: AppColors.green,
-                ),
-              ],
+    return Transform.translate(
+      offset: const Offset(0, -16),
+      child: Row(
+        children: [
+          Expanded(
+            child: _MetricCard(
+              value: '$cedulasHoy',
+              label: 'Hoy',
+              icon:  Icons.assignment_turned_in_outlined,
+              color: AppColors.green,
             ),
-          ],
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _MetricCard(
+              value: '$cedulasSemana',
+              label: 'Esta semana',
+              icon:  Icons.calendar_view_week_outlined,
+              color: AppColors.terracota,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _MetricCard(
+              value: '$personasRegistradas',
+              label: 'Personas',
+              icon:  Icons.people_outline,
+              color: AppColors.gold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricCard extends StatelessWidget {
+  final String value;
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _MetricCard({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppDimens.radiusM),
+        border: Border.all(color: AppColors.line),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.greenDark.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 26, fontWeight: FontWeight.w900,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11, fontWeight: FontWeight.w500,
+              color: AppColors.muted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Acción principal ──────────────────────────────────────────────────────────
+
+class _MainActionCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _MainActionCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.green,
+      borderRadius: BorderRadius.circular(AppDimens.radiusL),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(22),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.assignment_add,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Iniciar nueva cédula',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17, fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Familia · Vivienda · Vacunación · Integrantes',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white60,
+                size: 16,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _Stat extends StatelessWidget {
-  final IconData icon;
-  final String   value;
-  final String   label;
-  final Color    color;
+// ── Pasos del flujo ───────────────────────────────────────────────────────────
 
-  const _Stat({
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.color,
-  });
+class _FlowSteps extends StatelessWidget {
+  const _FlowSteps();
+
+  static const _steps = [
+    _FlowStep(
+      num: '1', title: 'Familia',
+      detail: 'Informante, domicilio, localidad',
+      icon: Icons.groups_outlined,
+    ),
+    _FlowStep(
+      num: '2', title: 'Vivienda',
+      detail: 'Materiales, servicios y saneamiento',
+      icon: Icons.home_outlined,
+    ),
+    _FlowStep(
+      num: '3', title: 'Vacunación',
+      detail: 'Esquema aplicado durante la visita',
+      icon: Icons.vaccines_outlined,
+    ),
+    _FlowStep(
+      num: '4', title: 'Integrantes',
+      detail: 'Salud, alimentación y datos de cada miembro',
+      icon: Icons.people_alt_outlined,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return Column(
+      children: [
+        for (var i = 0; i < _steps.length; i++) ...[
+          _FlowStepRow(step: _steps[i], isLast: i == _steps.length - 1),
+        ],
+      ],
+    );
+  }
+}
+
+class _FlowStep {
+  final String num;
+  final String title;
+  final String detail;
+  final IconData icon;
+  const _FlowStep({
+    required this.num,
+    required this.title,
+    required this.detail,
+    required this.icon,
+  });
+}
+
+class _FlowStepRow extends StatelessWidget {
+  final _FlowStep step;
+  final bool isLast;
+  const _FlowStepRow({required this.step, required this.isLast});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Número + línea vertical
+        Column(
+          children: [
+            Container(
+              width: 28, height: 28,
+              decoration: BoxDecoration(
+                color: AppColors.terracota.withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.terracota.withOpacity(0.3),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  step.num,
+                  style: const TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w900,
+                    color: AppColors.terracota,
+                  ),
+                ),
+              ),
+            ),
+            if (!isLast)
+              Container(
+                width: 1.5, height: 36,
+                color: AppColors.line,
+              ),
+          ],
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
+            child: Row(
+              children: [
+                Icon(step.icon, size: 16, color: AppColors.muted),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        step.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700, fontSize: 14,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      Text(
+                        step.detail,
+                        style: const TextStyle(
+                          fontSize: 12, color: AppColors.muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Consejo de campo ──────────────────────────────────────────────────────────
+
+class _TipCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.gold.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(AppDimens.radiusM),
+        border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+      ),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: color.withOpacity(0.12),
-            foregroundColor: color,
-            child:           Icon(icon),
-          ),
+          const Icon(Icons.tips_and_updates_outlined,
+              color: AppColors.gold, size: 20),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color:      color,
-                      )),
-              Text(label,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: AppColors.muted)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Consejo de campo',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700, fontSize: 13,
+                    color: AppColors.greenDark,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Verifica la conectividad antes de iniciar. Los datos se sincronizan al guardar.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.muted,
+                      ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -5,7 +5,7 @@ import '../datasources/remote/cedula_remote_datasource.dart';
 
 class CedulaRepositoryImpl implements CedulaRepository {
   final CedulaRemoteDataSource remoteDataSource;
-  final TokenStorage tokenStorage;
+  final TokenStorage           tokenStorage;
 
   const CedulaRepositoryImpl({
     required this.remoteDataSource,
@@ -26,6 +26,14 @@ class CedulaRepositoryImpl implements CedulaRepository {
         .whereType<Map<String, dynamic>>()
         .map(CatalogItem.fromJson)
         .toList();
+  }
+
+  @override
+  Future<Map<String, dynamic>> submitCapturaCompleta(
+    Map<String, dynamic> body,
+  ) async {
+    final token = await tokenStorage.readToken();
+    return remoteDataSource.postCapturaCompleta(body, token: token);
   }
 
   @override

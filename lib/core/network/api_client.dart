@@ -10,6 +10,8 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// Cliente HTTP genérico para la API SUMS.
+/// Base URL: https://api-sums.troy.engineer/sums
 class ApiClient {
   final http.Client client;
   final String baseUrl;
@@ -81,9 +83,9 @@ class ApiClient {
     Future<http.Response> Function() request,
   ) async {
     try {
-      return await request().timeout(const Duration(seconds: 20));
+      return await request().timeout(const Duration(seconds: 30));
     } on TimeoutException {
-      throw const ApiException('El servidor tardo demasiado en responder.');
+      throw const ApiException('El servidor tardó demasiado en responder.');
     } on ApiException {
       rethrow;
     } catch (_) {
