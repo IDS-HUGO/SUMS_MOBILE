@@ -13,7 +13,9 @@ class ViviendaStepWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ViviendaViewModel>();
 
-    return Column(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _StepPanel(
@@ -135,7 +137,7 @@ class ViviendaStepWidget extends StatelessWidget {
           ],
         ),
       ],
-    );
+    ));
   }
 
   // ── Helpers locales ─────────────────────────────────────────────────────────

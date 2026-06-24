@@ -13,7 +13,9 @@ class FamiliaStepWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<FamiliaViewModel>();
 
-    return _StepPanel(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: _StepPanel(
       title: 'III. Identificación de la familia',
       icon: Icons.groups_outlined,
       color: AppColors.green,
@@ -59,7 +61,7 @@ class FamiliaStepWidget extends StatelessWidget {
           ),
         ]),
       ],
-    );
+    ));
   }
 
   Widget _fieldGrid(List<Widget> children) {

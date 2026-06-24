@@ -31,7 +31,9 @@ class VacunacionStepWidget extends StatelessWidget {
       );
     }
 
-    return Column(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _StepPanel(
@@ -64,7 +66,7 @@ class VacunacionStepWidget extends StatelessWidget {
           ),
         ],
       ],
-    );
+    ));
   }
 
   Widget _yesNo(String label, bool value, ValueChanged<bool> onChanged) =>

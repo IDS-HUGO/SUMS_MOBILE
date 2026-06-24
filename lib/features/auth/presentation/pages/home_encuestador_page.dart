@@ -146,7 +146,7 @@ class _GreetingSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.greenDark,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

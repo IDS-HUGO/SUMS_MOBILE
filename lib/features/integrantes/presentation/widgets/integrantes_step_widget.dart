@@ -30,7 +30,9 @@ class IntegrantesStepWidget extends StatelessWidget {
       );
     }
 
-    return Column(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (var i = 0; i < vm.integrantes.length; i++)
@@ -63,7 +65,7 @@ class IntegrantesStepWidget extends StatelessWidget {
         ),
         const SizedBox(height: 80),
       ],
-    );
+    ));
   }
 }
 
