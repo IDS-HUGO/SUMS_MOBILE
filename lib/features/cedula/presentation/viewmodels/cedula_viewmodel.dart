@@ -1,24 +1,33 @@
 import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/catalog_item.dart';
+import '../../domain/entities/pending_cedula.dart';
 import '../../domain/usecases/load_catalogs_usecase.dart';
 import '../../domain/usecases/submit_record_usecase.dart';
+import '../../domain/usecases/local_storage_usecases.dart';
 
 enum CedulaStatus { initial, loading, success, error }
 
 class CedulaViewModel extends ChangeNotifier {
   final LoadCatalogsUseCase loadCatalogsUseCase;
   final SubmitRecordUseCase submitRecordUseCase;
+  final GetPendingRecordsUseCase getPendingRecordsUseCase;
+  final SaveLocalRecordUseCase saveLocalRecordUseCase;
+  final DeleteLocalRecordUseCase deleteLocalRecordUseCase;
 
   CedulaViewModel({
     required this.loadCatalogsUseCase,
     required this.submitRecordUseCase,
+    required this.getPendingRecordsUseCase,
+    required this.saveLocalRecordUseCase,
+    required this.deleteLocalRecordUseCase,
   });
 
   CedulaStatus _status = CedulaStatus.initial;
   String? _errorMessage;
   String? _successMessage;
   Map<String, List<CatalogItem>> _catalogs = {};
+  List<PendingCedula> _pendingRecords = [];
 
   int? lastNucleoId;
   int? lastPersonaId;
@@ -30,6 +39,7 @@ class CedulaViewModel extends ChangeNotifier {
   String? get successMessage => _successMessage;
   bool get isLoading => _status == CedulaStatus.loading;
   Map<String, List<CatalogItem>> get catalogs => _catalogs;
+  List<PendingCedula> get pendingRecords => _pendingRecords;
 
   Future<void> loadCatalogs() async {
     _setLoading();
@@ -38,6 +48,36 @@ class CedulaViewModel extends ChangeNotifier {
       _status = CedulaStatus.success;
       _errorMessage = null;
       notifyListeners();
+    } catch (error) {
+      _setError(error);
+    }
+  }
+
+  Future<void> loadPendingRecords() async {
+    try {
+      _pendingRecords = await getPendingRecordsUseCase();
+      notifyListeners();
+    } catch (error) {
+      _setError(error);
+    }
+  }
+
+  Future<void> saveLocal(PendingCedula record) async {
+    _setLoading();
+    try {
+      await saveLocalRecordUseCase(record);
+      _status = CedulaStatus.success;
+      _successMessage = 'Registro guardado localmente.';
+      await loadPendingRecords();
+    } catch (error) {
+      _setError(error);
+    }
+  }
+
+  Future<void> deleteLocal(int id) async {
+    try {
+      await deleteLocalRecordUseCase(id);
+      await loadPendingRecords();
     } catch (error) {
       _setError(error);
     }
@@ -67,6 +107,21 @@ class CedulaViewModel extends ChangeNotifier {
     } catch (error) {
       _setError(error);
       return false;
+    }
+  }
+
+  Future<void> syncRecord(PendingCedula record, String path) async {
+    _setLoading();
+    try {
+      await submitRecordUseCase(path, _clean(record.data));
+      if (record.id != null) {
+        await deleteLocalRecordUseCase(record.id!);
+      }
+      _status = CedulaStatus.success;
+      _successMessage = 'Sincronización exitosa.';
+      await loadPendingRecords();
+    } catch (error) {
+      _setError('Error al sincronizar: ${error.toString()}');
     }
   }
 

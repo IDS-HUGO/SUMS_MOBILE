@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
+import 'package:provider/provider.dart';
+
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
+import 'package:sums/features/cedula/domain/entities/pending_cedula.dart';
+import '../viewmodels/cedula_viewmodel.dart';
 import '../widgets/form_helpers.dart';
 
 class CedulaFormPage extends StatefulWidget {
-  const CedulaFormPage({super.key});
+  final PendingCedula? initialRecord;
+  const CedulaFormPage({super.key, this.initialRecord});
 
   @override
   State<CedulaFormPage> createState() => _CedulaFormPageState();
@@ -154,8 +159,92 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
   @override
   void initState() {
     super.initState();
-    _vacunas.add(_newVaccineForm());
-    _integrantes.add(_newMemberForm());
+    if (widget.initialRecord != null) {
+      _fillForm(widget.initialRecord!.data);
+    } else {
+      _vacunas.add(_newVaccineForm());
+      _integrantes.add(_newMemberForm());
+    }
+  }
+
+  void _fillForm(Map<String, dynamic> data) {
+    _informanteNombre.text = data['informante_nombre'] ?? '';
+    _informanteEdad.text = data['informante_edad'] ?? '';
+    _rolInformante = data['rol_informante'];
+    _domicilio.text = data['domicilio'] ?? '';
+    _localidad.text = data['localidad'] ?? '';
+    _manzana.text = data['manzana'] ?? '';
+    _viviendaReferencia.text = data['vivienda_referencia'] ?? '';
+    _techo = data['techo'];
+    _paredes = data['paredes'];
+    _piso = data['piso'];
+    _materialOtros.text = data['material_otros'] ?? '';
+    _cuartos.text = data['cuartos'] ?? '';
+    _habitantes.text = data['habitantes'] ?? '';
+    _aguaEntubada = data['agua_entubada'] ?? false;
+    _energiaElectrica = data['energia_electrica'] ?? false;
+    _cocina = data['cocina'];
+    _coccionLena = data['coccion_lena'] ?? false;
+    _excretas = data['excretas'];
+    _alcantarillado = data['alcantarillado'] ?? false;
+    _fosaSeptica = data['fosa_septica'] ?? false;
+    _perrosGatos = data['perros_gatos'] ?? false;
+    _animalesVacunas = data['animales_vacunas'] ?? false;
+    _esterilizados = data['esterilizados'] ?? false;
+    _otrosAnimales.addAll(List<String>.from(data['otros_animales'] ?? []));
+    _animalOtro.text = data['animal_otro'] ?? '';
+    _animalObservaciones.text = data['animal_observaciones'] ?? '';
+
+    final vacunasData = data['vacunas'] as List?;
+    if (vacunasData != null) {
+      for (final v in vacunasData) {
+        final form = _newVaccineForm();
+        form.paciente.text = v['paciente'] ?? '';
+        form.fechaNacimiento.text = v['fecha_nacimiento'] ?? '';
+        form.edad.text = v['edad'] ?? '';
+        form.tipo = v['tipo'];
+        form.dosis = v['dosis'];
+        form.otraVacuna.text = v['otra_vacuna'] ?? '';
+        _vacunas.add(form);
+      }
+    }
+
+    final integrantesData = data['integrantes'] as List?;
+    if (integrantesData != null) {
+      for (final m in integrantesData) {
+        final form = _newMemberForm();
+        form.nombre.text = m['nombre'] ?? '';
+        form.sexo = m['sexo'];
+        form.fechaNacimiento.text = m['fecha_nacimiento'] ?? '';
+        form.edad.text = m['edad'] ?? '';
+        form.estadoCivil = m['estado_civil'];
+        form.lengua = m['lengua'];
+        form.lenguaEspecificar.text = m['lengua_especificar'] ?? '';
+        form.parentesco = m['parentesco'];
+        form.escolaridad = m['escolaridad'];
+        form.ocupacion.text = m['ocupacion'] ?? '';
+        form.ingreso = m['ingreso'];
+        form.alfabetizacion = m['alfabetizacion'] ?? false;
+        form.seguridadSocial = m['seguridad_social'] ?? false;
+        form.higiene = m['higiene'] ?? false;
+        form.discapacidad = m['discapacidad'] ?? false;
+        form.proteina.text = m['proteina'] ?? '';
+        form.frutasVerduras.text = m['frutas_verduras'] ?? '';
+        form.cereales.text = m['cereales'] ?? '';
+        form.tipoDiscapacidad.text = m['tipo_discapacidad'] ?? '';
+        form.toxicomanias.addAll(List<String>.from(m['toxicomanias'] ?? []));
+        form.otraSustancia.text = m['otra_sustancia'] ?? '';
+        form.cronicas.addAll(List<String>.from(m['cronicas'] ?? []));
+        form.embarazo = m['embarazo'];
+        form.tamizajeCervico = m['tamizaje_cervico'];
+        form.fechaCervico.text = m['fecha_cervico'] ?? '';
+        form.tamizajeMama = m['tamizaje_mama'];
+        form.fechaMama.text = m['fecha_mama'] ?? '';
+        form.frecuenciaSalud = m['frecuencia_salud'];
+        form.motivoSalud.text = m['motivo_salud'] ?? '';
+        _integrantes.add(form);
+      }
+    }
   }
 
   @override
@@ -1031,6 +1120,12 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
             ),
           ),
           const SizedBox(width: 12),
+          IconButton(
+            tooltip: 'Guardar borrador local',
+            onPressed: _saveDraft,
+            icon: const Icon(Icons.save_outlined, color: AppColors.gold),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: FilledButton.icon(
               onPressed: isLast ? _finishCapture : _goNext,
@@ -1050,11 +1145,134 @@ class _CedulaFormPageState extends State<CedulaFormPage> {
     setState(() => _currentStep = _currentStep + 1);
   }
 
-  void _finishCapture() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Captura revisada y lista para guardar.')),
+  void _saveDraft() {
+    final data = _mapFormToData();
+    final record = (widget.initialRecord ?? PendingCedula(
+      data: data,
+      status: PendingStatus.draft,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      informanteNombre: _informanteNombre.text,
+    )).copyWith(
+      data: data,
+      informanteNombre: _informanteNombre.text,
+      updatedAt: DateTime.now(),
     );
+
+    context.read<CedulaViewModel>().saveLocal(record);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Borrador guardado localmente.')),
+    );
+  }
+
+  Map<String, dynamic> _mapFormToData() {
+    return {
+      'informante_nombre': _informanteNombre.text,
+      'informante_edad': _informanteEdad.text,
+      'rol_informante': _rolInformante,
+      'domicilio': _domicilio.text,
+      'localidad': _localidad.text,
+      'manzana': _manzana.text,
+      'vivienda_referencia': _viviendaReferencia.text,
+      'techo': _techo,
+      'paredes': _paredes,
+      'piso': _piso,
+      'material_otros': _materialOtros.text,
+      'cuartos': _cuartos.text,
+      'habitantes': _habitantes.text,
+      'agua_entubada': _aguaEntubada,
+      'energia_electrica': _energiaElectrica,
+      'cocina': _cocina,
+      'coccion_lena': _coccionLena,
+      'excretas': _excretas,
+      'alcantarillado': _alcantarillado,
+      'fosa_septica': _fosaSeptica,
+      'perros_gatos': _perrosGatos,
+      'animales_vacunas': _animalesVacunas,
+      'esterilizados': _esterilizados,
+      'otros_animales': _otrosAnimales.toList(),
+      'animal_otro': _animalOtro.text,
+      'animal_observaciones': _animalObservaciones.text,
+      'vacunas': _vacunas.map((v) => {
+        'paciente': v.paciente.text,
+        'fecha_nacimiento': v.fechaNacimiento.text,
+        'edad': v.edad.text,
+        'tipo': v.tipo,
+        'dosis': v.dosis,
+        'otra_vacuna': v.otraVacuna.text,
+      }).toList(),
+      'integrantes': _integrantes.map((m) => {
+        'nombre': m.nombre.text,
+        'sexo': m.sexo,
+        'fecha_nacimiento': m.fechaNacimiento.text,
+        'edad': m.edad.text,
+        'estado_civil': m.estadoCivil,
+        'lengua': m.lengua,
+        'lengua_especificar': m.lenguaEspecificar.text,
+        'parentesco': m.parentesco,
+        'escolaridad': m.escolaridad,
+        'ocupacion': m.ocupacion.text,
+        'ingreso': m.ingreso,
+        'alfabetizacion': m.alfabetizacion,
+        'seguridad_social': m.seguridadSocial,
+        'higiene': m.higiene,
+        'discapacidad': m.discapacidad,
+        'proteina': m.proteina.text,
+        'frutas_verduras': m.frutasVerduras.text,
+        'cereales': m.cereales.text,
+        'tipo_discapacidad': m.tipoDiscapacidad.text,
+        'toxicomanias': m.toxicomanias.toList(),
+        'otra_sustancia': m.otraSustancia.text,
+        'cronicas': m.cronicas.toList(),
+        'embarazo': m.embarazo,
+        'tamizaje_cervico': m.tamizajeCervico,
+        'fecha_cervico': m.fechaCervico.text,
+        'tamizaje_mama': m.tamizajeMama,
+        'fecha_mama': m.fechaMama.text,
+        'frecuencia_salud': m.frecuenciaSalud,
+        'motivo_salud': m.motivoSalud.text,
+      }).toList(),
+    };
+  }
+
+  Future<void> _finishCapture() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final data = _mapFormToData();
+    final vm = context.read<CedulaViewModel>();
+
+    // Intentar enviar a la API
+    final success = await vm.submit(
+      path: '/cedulas',
+      body: data,
+      successMessage: 'Cédula guardada con éxito.',
+    );
+
+    if (!success && mounted) {
+      // Si falla (ej. sin internet), guardar localmente
+      final record = PendingCedula(
+        data: data,
+        status: PendingStatus.pending,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        informanteNombre: _informanteNombre.text,
+      );
+      await vm.saveLocal(record);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sin conexión. Cédula guardada localmente para sincronizar después.'),
+            backgroundColor: AppColors.gold,
+          ),
+        );
+      }
+    } else if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Captura revisada y lista para guardar.')),
+      );
+      Navigator.of(context).pop();
+    }
   }
 }
 

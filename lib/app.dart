@@ -10,6 +10,7 @@ import 'features/auth/presentation/pages/home_medico_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/cedula/presentation/pages/cedula_form_page.dart';
+import 'features/cedula/presentation/pages/pending_captures_page.dart';
 import 'features/cedula/presentation/viewmodels/cedula_viewmodel.dart';
 import 'shared/theme/app_theme.dart';
 
@@ -60,6 +61,7 @@ class _AppState extends State<App> {
           AppRoutes.homeAnalista:      (_) => const HomeAnalistaPage(),
           // ── Features ──────────────────────────────────────────────────
           AppRoutes.cedula:            (_) => const CedulaFormPage(),
+          AppRoutes.pending:           (_) => const PendingCapturesPage(),
         },
         // Guarda de ruta: si el usuario no está autenticado, va a login.
         onGenerateRoute: (settings) {

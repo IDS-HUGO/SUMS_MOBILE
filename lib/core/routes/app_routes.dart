@@ -5,4 +5,5 @@ class AppRoutes {
   static const homeEncuestador = '/home/encuestador';
   static const homeAnalista = '/home/analista';
   static const cedula       = '/cedula';
+  static const pending      = '/cedula/pending';
 }

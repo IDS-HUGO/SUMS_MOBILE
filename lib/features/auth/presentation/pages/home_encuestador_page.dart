@@ -49,6 +49,11 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
 
                   const SizedBox(height: 16),
 
+                  // ── tarjeta secundaria: capturas pendientes ──────────────
+                  _PendingCapturesCard(onTap: () => Navigator.of(context).pushNamed(AppRoutes.pending)),
+
+                  const SizedBox(height: 16),
+
                   // ── flujo de captura ─────────────────────────────────────
                   _FlowCard(),
 
@@ -91,6 +96,56 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
               .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
         },
       );
+}
+
+class _PendingCapturesCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _PendingCapturesCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        onTap:        onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Row(
+            children: [
+              const CircleAvatar(
+                backgroundColor: AppColors.gold,
+                foregroundColor: Colors.white,
+                child:           Icon(Icons.sync_problem),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Capturas pendientes',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color:      AppColors.greenDark,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    Text(
+                      'Sincroniza tus capturas guardadas offline.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.muted,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  color: AppColors.muted, size: 14),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ── tarjeta de acción principal ─────────────────────────────────────────────
