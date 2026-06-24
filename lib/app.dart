@@ -9,8 +9,12 @@ import 'features/auth/presentation/pages/home_encuestador_page.dart';
 import 'features/auth/presentation/pages/home_medico_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
-import 'features/cedula/presentation/pages/cedula_form_page.dart';
-import 'features/cedula/presentation/viewmodels/cedula_viewmodel.dart';
+import 'features/cedula_orquestador/presentation/pages/cedula_form_page.dart';
+import 'features/cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
+import 'features/familia/presentation/viewmodels/familia_viewmodel.dart';
+import 'features/vivienda/presentation/viewmodels/vivienda_viewmodel.dart';
+import 'features/vacunacion/presentation/viewmodels/vacunacion_viewmodel.dart';
+import 'features/integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
 import 'shared/theme/app_theme.dart';
 
 class App extends StatefulWidget {
@@ -44,6 +48,18 @@ class _AppState extends State<App> {
         ),
         ChangeNotifierProvider<CedulaViewModel>.value(
           value: _dependencies.cedulaViewModel,
+        ),
+        ChangeNotifierProvider<FamiliaViewModel>.value(
+          value: _dependencies.familiaViewModel,
+        ),
+        ChangeNotifierProvider<ViviendaViewModel>.value(
+          value: _dependencies.viviendaViewModel,
+        ),
+        ChangeNotifierProvider<VacunacionViewModel>.value(
+          value: _dependencies.vacunacionViewModel,
+        ),
+        ChangeNotifierProvider<IntegrantesViewModel>.value(
+          value: _dependencies.integrantesViewModel,
         ),
       ],
       child: MaterialApp(

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/brand_header.dart';
-import '../../../cedula/presentation/viewmodels/cedula_viewmodel.dart';
+import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class HomeEncuestadorPage extends StatefulWidget {
@@ -146,7 +146,7 @@ class _GreetingSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.greenDark,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
