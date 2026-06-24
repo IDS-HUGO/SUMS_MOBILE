@@ -118,8 +118,8 @@ class _AdminUsersListPageState extends State<AdminUsersListPage> {
     switch (rolId) {
       case 1: return 'Administrador';
       case 2: return 'Médico';
-      case 3: return 'Encuestador';
-      case 4: return 'Analista';
+      case 4: return 'Encuestador';
+      case 3: return 'Analista';
       default: return 'Desconocido';
     }
   }

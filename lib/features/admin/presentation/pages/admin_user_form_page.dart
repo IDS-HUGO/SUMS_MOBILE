@@ -126,8 +126,8 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
                   items: const [
                     DropdownMenuItem(value: 1, child: Text('Administrador')),
                     DropdownMenuItem(value: 2, child: Text('Médico')),
-                    DropdownMenuItem(value: 3, child: Text('Encuestador')),
-                    DropdownMenuItem(value: 4, child: Text('Analista')),
+                    DropdownMenuItem(value: 4, child: Text('Encuestador')),
+                    DropdownMenuItem(value: 3, child: Text('Analista')),
                   ],
                   onChanged: (v) => setState(() => _selectedRol = v!),
                 ),
