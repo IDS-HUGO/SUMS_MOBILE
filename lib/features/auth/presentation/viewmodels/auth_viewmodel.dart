@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/auth_session.dart';
 import '../../domain/entities/user_role.dart';
+import '../../../cedula_orquestador/domain/usecases/load_catalogs_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
@@ -12,11 +13,13 @@ class AuthViewModel extends ChangeNotifier {
   final LoginUseCase    loginUseCase;
   final RegisterUseCase registerUseCase;
   final LogoutUseCase   logoutUseCase;
+  final LoadCatalogsUseCase? loadCatalogsUseCase;
 
   AuthViewModel({
     required this.loginUseCase,
     required this.registerUseCase,
     required this.logoutUseCase,
+    this.loadCatalogsUseCase,
   });
 
   // ── estado ────────────────────────────────────────────────────────────────
@@ -54,6 +57,16 @@ class AuthViewModel extends ChangeNotifier {
       );
       _status       = AuthStatus.authenticated;
       _errorMessage = null;
+
+      // Cargar y guardar catálogos en local después de un login exitoso
+      if (loadCatalogsUseCase != null) {
+        try {
+          await loadCatalogsUseCase!();
+        } catch (e) {
+          print("Error cargando catálogos en background: $e");
+        }
+      }
+
       notifyListeners();
       return true;
     } catch (error) {

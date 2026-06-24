@@ -5,8 +5,8 @@ class SubmitRecordUseCase {
 
   const SubmitRecordUseCase(this.repository);
 
-  Future<Map<String, dynamic>> submitCompleta(Map<String, dynamic> body) {
-    return repository.submitCapturaCompleta(body);
+  Future<Map<String, dynamic>> submitCompleta(Map<String, dynamic> body, {bool isDraft = false}) {
+    return repository.submitCapturaCompleta(body, isDraft: isDraft);
   }
 
   /// Envío individual a un endpoint específico (uso secundario).

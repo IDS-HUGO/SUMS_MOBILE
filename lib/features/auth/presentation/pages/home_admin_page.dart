@@ -43,24 +43,27 @@ class HomeAdminPage extends StatelessWidget {
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
                 childAspectRatio: 1.4,
-                children: const [
+                children: [
                   _AdminActionCard(
                     icon:    Icons.people_outline,
                     label:   'Usuarios',
                     detail:  'Gestión de cuentas y roles',
                     color:   AppColors.rolAdmin,
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminUsers),
                   ),
                   _AdminActionCard(
                     icon:    Icons.local_hospital_outlined,
                     label:   'Unidades',
                     detail:  'Unidades de salud registradas',
                     color:   AppColors.green,
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminUnidades),
                   ),
                   _AdminActionCard(
                     icon:    Icons.dataset_outlined,
                     label:   'Catálogos',
                     detail:  'Tablas y valores de referencia',
                     color:   AppColors.terracota,
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminCatalogos),
                   ),
                   _AdminActionCard(
                     icon:    Icons.bar_chart_outlined,
@@ -231,12 +234,14 @@ class _AdminActionCard extends StatelessWidget {
   final String   label;
   final String   detail;
   final Color    color;
+  final VoidCallback? onTap;
 
   const _AdminActionCard({
     required this.icon,
     required this.label,
     required this.detail,
     required this.color,
+    this.onTap,
   });
 
   @override
@@ -245,7 +250,7 @@ class _AdminActionCard extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
-        onTap:        () {},
+        onTap:        onTap,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
         child: Container(
           decoration: BoxDecoration(

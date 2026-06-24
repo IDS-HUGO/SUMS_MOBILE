@@ -5,4 +5,8 @@ class AppRoutes {
   static const homeEncuestador = '/home/encuestador';
   static const homeAnalista = '/home/analista';
   static const cedula       = '/cedula';
+
+  static const adminUsers     = '/admin/users';
+  static const adminUnidades  = '/admin/unidades';
+  static const adminCatalogos = '/admin/catalogos';
 }
