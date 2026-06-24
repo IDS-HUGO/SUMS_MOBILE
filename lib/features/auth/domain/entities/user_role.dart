@@ -1,8 +1,8 @@
 enum UserRole {
   admin(1),
   medico(2),
-  encuestador(3),
-  analista(4);
+  encuestador(4),
+  analista(3);
 
   final int id;
   const UserRole(this.id);
