@@ -113,6 +113,16 @@ class CedulaViewModel extends ChangeNotifier {
     _setLoading();
     try {
       final response = await submitRecordUseCase.submitCompleta(_clean(payload));
+      
+      // Manejar caso de borrador o fallback offline
+      if (response['status'] == 'draft' || response['status'] == 'pending_sync') {
+        _status = CedulaStatus.success;
+        _errorMessage = null;
+        _successMessage = response['warnings']?.first ?? 'Guardado localmente';
+        notifyListeners();
+        return true;
+      }
+
       _lastResult = CapturaCompletaResult.fromJson(response);
 
       // Guardar IDs principales
@@ -126,6 +136,22 @@ class CedulaViewModel extends ChangeNotifier {
       final warnings = _lastResult?.warnings ?? [];
       _successMessage = _buildSuccessMessage(_lastResult!, warnings);
 
+      notifyListeners();
+      return true;
+    } catch (error) {
+      _setError(error);
+      return false;
+    }
+  }
+
+  /// Guarda explícitamente como borrador local sin intentar enviarlo
+  Future<bool> saveDraft(Map<String, dynamic> payload) async {
+    _setLoading();
+    try {
+      final response = await submitRecordUseCase.submitCompleta(_clean(payload), isDraft: true);
+      _status = CedulaStatus.success;
+      _errorMessage = null;
+      _successMessage = response['warnings']?.first ?? 'Guardado como borrador localmente';
       notifyListeners();
       return true;
     } catch (error) {
