@@ -24,7 +24,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
       final token = await tokenStorage.readToken();
       return await remoteDataSource.getCatalogKeys(token: token);
     } catch (e) {
-      return ['roles', 'vacunas', 'material_techo', 'material_pared', 'material_piso']; // Fallback keys
+      return ['parentesco', 'estado-civil', 'lengua', 'escolaridad', 'ingreso-salarial', 'atencion-embarazo', 'frecuencia-servicio-salud', 'toxicomania', 'enfermedad-cronica', 'material', 'manejo-excretas', 'animal']; // Fallback keys
     }
   }
 
@@ -41,6 +41,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
       // Caching
       if (localDataSource != null) {
         final jsonStr = jsonEncode(list.map((e) => {'id': e.id, 'nombre': e.nombre, 'descripcion': e.descripcion}).toList());
+        await (localDataSource!.db.delete(localDataSource!.db.catalogosLocal)..where((tbl) => tbl.tipo.equals(key))).go();
         await localDataSource!.db.into(localDataSource!.db.catalogosLocal).insert(
           CatalogosLocalCompanion.insert(
             tipo: key,
@@ -118,5 +119,52 @@ class CedulaRepositoryImpl implements CedulaRepository {
   ) async {
     final token = await tokenStorage.readToken();
     return remoteDataSource.patch(path, body, token: token);
+  }
+
+  @override
+  Future<int> getPendingSyncCount() async {
+    if (localDataSource != null) {
+      return await localDataSource!.countCedulasByStatus(1); // 1 = PENDING_SYNC
+    }
+    return 0;
+  }
+
+  @override
+  Future<int> getDraftCount() async {
+    if (localDataSource != null) {
+      return await localDataSource!.countCedulasByStatus(0); // 0 = DRAFT
+    }
+    return 0;
+  }
+
+  @override
+  Future<SyncResult> syncPendingCedulas() async {
+    if (localDataSource == null) {
+      return const SyncResult(error: 'Sin almacenamiento local');
+    }
+
+    final pending = await localDataSource!.getCedulasByStatus(1); // 1 = PENDING_SYNC
+    if (pending.isEmpty) return const SyncResult(synced: 0, failed: 0);
+
+    final token = await tokenStorage.readToken();
+    int synced = 0;
+    int failed = 0;
+
+    for (final record in pending) {
+      final localId = record['_localId'] as int;
+      final payload = Map<String, dynamic>.from(record)..remove('_localId');
+      try {
+        await remoteDataSource.postCapturaCompleta(payload, token: token);
+        await localDataSource!.updateSyncStatus(localId, 2); // 2 = SYNCED
+        synced++;
+      } catch (e) {
+        failed++;
+      }
+    }
+
+    // Purgar antiguos sincronizados (>7 días)
+    await localDataSource!.deleteOldSynced(7);
+
+    return SyncResult(synced: synced, failed: failed);
   }
 }

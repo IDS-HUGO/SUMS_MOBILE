@@ -20,13 +20,22 @@ class AuthRepositoryImpl implements AuthRepository {
     required String nombreUsuario,
     required String contrasena,
   }) async {
-    final response = await remoteDataSource.login(
-      nombreUsuario: nombreUsuario,
-      contrasena:    contrasena,
-    );
-    final session = _parseSession(response);
-    await tokenStorage.saveToken(session.token);
-    return session;
+    try {
+      final response = await remoteDataSource.login(
+        nombreUsuario: nombreUsuario,
+        contrasena:    contrasena,
+      );
+      final session = _parseSession(response);
+      await tokenStorage.saveSession(session);
+      return session;
+    } catch (e) {
+      // Intento de login offline
+      final localSession = await tokenStorage.readSession();
+      if (localSession != null && localSession.user.nombreUsuario == nombreUsuario) {
+        return localSession;
+      }
+      rethrow; // Si no hay sesión local o es otro usuario, relanzar el error
+    }
   }
 
   @override

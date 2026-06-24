@@ -42,6 +42,8 @@ import '../../features/admin/presentation/viewmodels/admin_users_viewmodel.dart'
 import '../../features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
 import '../../features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 /// Contenedor de dependencias manual para toda la app.
 /// Se crea una única vez en [_AppState.initState] y se destruye en [dispose].
 ///
@@ -49,10 +51,10 @@ import '../../features/admin/presentation/viewmodels/admin_catalogos_viewmodel.d
 /// [RegisterUseCase] se conserva para uso interno (el admin puede crear
 /// usuarios desde su propio panel cuando esté implementado).
 class AppDependencies {
-  AppDependencies() {
+  AppDependencies(SharedPreferences prefs) {
     // ── infraestructura compartida ────────────────────────────────────────
     httpClient   = http.Client();
-    tokenStorage = InMemoryTokenStorage();
+    tokenStorage = SharedPreferencesTokenStorage(prefs);
     apiClient    = ApiClient(client: httpClient, baseUrl: ApiEndpoints.baseUrl);
 
     // ── feature: cedula_orquestador ───────────────────────────────────────────
@@ -68,6 +70,7 @@ class AppDependencies {
     cedulaViewModel = CedulaViewModel(
       loadCatalogsUseCase: LoadCatalogsUseCase(cedulaRepository),
       submitRecordUseCase: SubmitRecordUseCase(cedulaRepository),
+      cedulaRepository: cedulaRepository,
     );
 
     // ── feature: auth ──────────────────────────────────────────────────────────
@@ -88,6 +91,7 @@ class AppDependencies {
     familiaRepository = FamiliaRepositoryImpl(
       remoteDataSource: familiaRemoteDataSource,
       tokenStorage:     tokenStorage,
+      cedulaRepository: cedulaRepository,
     );
     familiaViewModel = FamiliaViewModel(repository: familiaRepository);
 
@@ -95,6 +99,7 @@ class AppDependencies {
     viviendaRepository = ViviendaRepositoryImpl(
       remoteDataSource: viviendaRemoteDataSource,
       tokenStorage:     tokenStorage,
+      cedulaRepository: cedulaRepository,
     );
     viviendaViewModel = ViviendaViewModel(repository: viviendaRepository);
 
@@ -102,6 +107,7 @@ class AppDependencies {
     vacunacionRepository = VacunacionRepositoryImpl(
       remoteDataSource: vacunacionRemoteDataSource,
       tokenStorage:     tokenStorage,
+      cedulaRepository: cedulaRepository,
     );
     vacunacionViewModel = VacunacionViewModel(repository: vacunacionRepository);
 
@@ -109,6 +115,7 @@ class AppDependencies {
     integrantesRepository = IntegrantesRepositoryImpl(
       remoteDataSource: integrantesRemoteDataSource,
       tokenStorage:     tokenStorage,
+      cedulaRepository: cedulaRepository,
     );
     integrantesViewModel = IntegrantesViewModel(repository: integrantesRepository);
 

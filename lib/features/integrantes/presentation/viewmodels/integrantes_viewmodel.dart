@@ -107,39 +107,58 @@ class IntegrantesViewModel extends ChangeNotifier {
         addMemberForm();
       }
 
-      // Dummy Data
-      if (_integrantes.isNotEmpty) {
-        final form = _integrantes[0];
-        form.nombre.text = 'María González Pérez';
-        form.fechaNacimiento.text = '1992-05-14';
-        form.edad.text = '34';
-        form.sexo = 'Femenino';
-        form.estadoCivil = 'Casado(a)';
-        form.parentesco = 'Madre';
-        form.lengua = 'Español';
-        form.escolaridad = 'Preparatoria';
-        form.ocupacion.text = 'Hogar';
-        form.ingreso = 'No recibe ingresos';
-        form.alfabetizacion = true;
-        form.seguridadSocial = false;
-        form.higiene = true;
-        form.discapacidad = false;
-        form.proteina.text = '4';
-        form.frutasVerd.text = '5';
-        form.cereales.text = '7';
-        form.toxicomanias.add('Ninguna');
-        form.cronicas.add('Ninguna');
-        form.embarazo = 'Ninguno';
-        form.tamizajeCervico = 'No';
-        form.tamizajeMama = 'No';
-        form.frecuenciaSalud = 'Nunca';
-        form.motivoSalud.text = 'Ninguno';
-      }
     } catch (e) {
       _errorMessage = e.toString();
+      // Fallback for UI if error occurs
+      rolesOpts = ['Madre', 'Padre', 'Hijo(a)'];
+      sexoOpts = ['Masculino', 'Femenino'];
+      edoCivilOpts = ['Soltero(a)', 'Casado(a)'];
+      lenguaOpts = ['Español', 'Indígena'];
+      escolaridadOpts = ['Primaria', 'Secundaria', 'Preparatoria'];
+      ingresoOpts = ['No recibe ingresos', 'Menos de 1 salario'];
+      embarazoOpts = ['Ninguno', 'En control'];
+      tamizajeOpts = ['Sí', 'No', 'No aplica'];
+      freqSaludOpts = ['Nunca', 'Anual'];
+      toxicomaniasOpts = ['Ninguna', 'Alcohol'];
+      cronicasOpts = ['Ninguna', 'Diabetes'];
+      
+      if (_integrantes.isEmpty) {
+        addMemberForm();
+      }
     } finally {
+      _applyDummyData();
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  void _applyDummyData() {
+    if (_integrantes.isNotEmpty) {
+      final form = _integrantes[0];
+      form.nombre.text = 'María González Pérez';
+      form.fechaNacimiento.text = '1992-05-14';
+      form.edad.text = '34';
+      form.sexo = 'Femenino';
+      form.estadoCivil = 'Casado(a)';
+      form.parentesco = 'Madre';
+      form.lengua = 'Español';
+      form.escolaridad = 'Preparatoria';
+      form.ocupacion.text = 'Hogar';
+      form.ingreso = 'No recibe ingresos';
+      form.alfabetizacion = true;
+      form.seguridadSocial = false;
+      form.higiene = true;
+      form.discapacidad = false;
+      form.proteina.text = '4';
+      form.frutasVerd.text = '5';
+      form.cereales.text = '7';
+      form.toxicomanias.add('Ninguna');
+      form.cronicas.add('Ninguna');
+      form.embarazo = 'Ninguno';
+      form.tamizajeCervico = 'No';
+      form.tamizajeMama = 'No';
+      form.frecuenciaSalud = 'Nunca';
+      form.motivoSalud.text = 'Ninguno';
     }
   }
 
