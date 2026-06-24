@@ -80,33 +80,60 @@ class IntegrantesViewModel extends ChangeNotifier {
       notifyListeners();
 
       final results = await Future.wait([
-        repository.getCatalogOpts('roles'),
-        repository.getCatalogOpts('sexo'),
-        repository.getCatalogOpts('estado_civil'),
+        repository.getCatalogOpts('parentesco'),
+        repository.getCatalogOpts('estado-civil'),
         repository.getCatalogOpts('lengua'),
         repository.getCatalogOpts('escolaridad'),
-        repository.getCatalogOpts('ingreso'),
-        repository.getCatalogOpts('embarazo'),
-        repository.getCatalogOpts('tamizaje'),
-        repository.getCatalogOpts('frecuencia_salud'),
-        repository.getCatalogOpts('toxicomanias'),
-        repository.getCatalogOpts('cronicas'),
+        repository.getCatalogOpts('ingreso-salarial'),
+        repository.getCatalogOpts('atencion-embarazo'),
+        repository.getCatalogOpts('frecuencia-servicio-salud'),
+        repository.getCatalogOpts('toxicomania'),
+        repository.getCatalogOpts('enfermedad-cronica'),
       ]);
 
       rolesOpts = results[0];
-      sexoOpts = results[1];
-      edoCivilOpts = results[2];
-      lenguaOpts = results[3];
-      escolaridadOpts = results[4];
-      ingresoOpts = results[5];
-      embarazoOpts = results[6];
-      tamizajeOpts = results[7];
-      freqSaludOpts = results[8];
-      toxicomaniasOpts = results[9];
-      cronicasOpts = results[10];
+      sexoOpts = ['Masculino', 'Femenino'];
+      edoCivilOpts = results[1];
+      lenguaOpts = results[2];
+      escolaridadOpts = results[3];
+      ingresoOpts = results[4];
+      embarazoOpts = results[5];
+      tamizajeOpts = ['Sí', 'No', 'No aplica'];
+      freqSaludOpts = results[6];
+      toxicomaniasOpts = results[7];
+      cronicasOpts = results[8];
 
       if (_integrantes.isEmpty) {
         addMemberForm();
+      }
+
+      // Dummy Data
+      if (_integrantes.isNotEmpty) {
+        final form = _integrantes[0];
+        form.nombre.text = 'María González Pérez';
+        form.fechaNacimiento.text = '1992-05-14';
+        form.edad.text = '34';
+        form.sexo = 'Femenino';
+        form.estadoCivil = 'Casado(a)';
+        form.parentesco = 'Madre';
+        form.lengua = 'Español';
+        form.escolaridad = 'Preparatoria';
+        form.ocupacion.text = 'Hogar';
+        form.ingreso = 'No recibe ingresos';
+        form.alfabetizacion = true;
+        form.seguridadSocial = false;
+        form.higiene = true;
+        form.discapacidad = false;
+        form.proteina.text = '4';
+        form.frutasVerd.text = '5';
+        form.cereales.text = '7';
+        form.toxicomanias.add('Ninguna');
+        form.cronicas.add('Ninguna');
+        form.embarazo = 'Ninguno';
+        form.tamizajeCervico = 'No';
+        form.tamizajeMama = 'No';
+        form.frecuenciaSalud = 'Nunca';
+        form.motivoSalud.text = 'Ninguno';
       }
     } catch (e) {
       _errorMessage = e.toString();
@@ -155,29 +182,30 @@ class IntegrantesViewModel extends ChangeNotifier {
         "edad": int.tryParse(i.edad.text),
         "sexo": i.sexo,
         "estado_civil": i.estadoCivil,
+        "parentesco": i.parentesco,
         "lengua": i.lengua,
-        "lengua_especificar": i.lenguaEsp.text,
+        "lenguaEspecificar": i.lenguaEsp.text,
         "escolaridad": i.escolaridad,
         "ocupacion": i.ocupacion.text,
-        "ingreso_salarial": i.ingreso,
+        "ingreso": i.ingreso,
         "alfabetizacion": i.alfabetizacion,
         "seguridad_social": i.seguridadSocial,
-        "higiene_diaria": i.higiene,
-        "presenta_discapacidad": i.discapacidad,
-        "tipo_discapacidad": i.tipoDisc.text,
-        "proteina_dias": int.tryParse(i.proteina.text),
-        "frutas_dias": int.tryParse(i.frutasVerd.text),
-        "cereales_dias": int.tryParse(i.cereales.text),
+        "higiene": i.higiene,
+        "discapacidad": i.discapacidad,
+        "tipoDiscapacidad": i.tipoDisc.text,
+        "proteina": int.tryParse(i.proteina.text),
+        "frutasVerduras": int.tryParse(i.frutasVerd.text),
+        "cereales": int.tryParse(i.cereales.text),
         "toxicomanias": i.toxicomanias.toList(),
-        "otra_sustancia": i.otraSust.text,
+        "otraSustancia": i.otraSust.text,
         "cronicas": i.cronicas.toList(),
-        "atencion_embarazo": i.embarazo,
-        "tamizaje_cervico": i.tamizajeCervico,
-        "fecha_cervico": i.fechaCervico.text,
-        "tamizaje_mama": i.tamizajeMama,
-        "fecha_mama": i.fechaMama.text,
-        "frecuencia_salud": i.frecuenciaSalud,
-        "motivo_salud": i.motivoSalud.text,
+        "embarazo": i.embarazo,
+        "tamizajeCervico": i.tamizajeCervico,
+        "fechaCervico": i.fechaCervico.text,
+        "tamizajeMama": i.tamizajeMama,
+        "fechaMama": i.fechaMama.text,
+        "frecuenciaSalud": i.frecuenciaSalud,
+        "motivoSalud": i.motivoSalud.text,
     }).toList();
   }
 

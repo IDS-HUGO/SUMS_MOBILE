@@ -11,6 +11,8 @@ class SumsTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final int minLines;
   final int maxLines;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const SumsTextField({
     super.key,
@@ -24,6 +26,8 @@ class SumsTextField extends StatelessWidget {
     this.validator,
     this.minLines = 1,
     this.maxLines = 1,
+    this.readOnly = false,
+    this.onTap,
   });
 
   @override
@@ -34,6 +38,8 @@ class SumsTextField extends StatelessWidget {
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       validator: validator,
+      readOnly: readOnly,
+      onTap: onTap,
       minLines: obscureText ? 1 : minLines,
       maxLines: obscureText ? 1 : maxLines,
       decoration: InputDecoration(

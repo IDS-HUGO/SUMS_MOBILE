@@ -26,8 +26,17 @@ class FamiliaViewModel extends ChangeNotifier {
       notifyListeners();
 
       // Consultar el catálogo de la API
-      final items = await repository.getCatalog('roles_familiares');
+      final items = await repository.getCatalog('parentesco');
       roles = items.map((e) => e.nombre).toList();
+
+      // Dummy Data
+      informanteNombre.text = 'María González Pérez';
+      informanteEdad.text = '34';
+      domicilio.text = 'Av. Siempre Viva 123';
+      localidad.text = 'Centro';
+      manzana.text = '42';
+      viviendaRef.text = 'Casa amarilla con rejas negras';
+      rolInformante = 'Madre';
     } catch (e) {
       errorMessage = e.toString();
       // Fallback a hardcoded en caso de error, o dejar vacío.

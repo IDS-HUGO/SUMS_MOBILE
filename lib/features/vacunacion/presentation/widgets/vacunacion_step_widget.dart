@@ -207,7 +207,7 @@ class _VaccineCard extends StatelessWidget {
               spacing: 12, runSpacing: 12,
               children: [
                 SizedBox(width: w, child: SumsTextField(controller: form.paciente, label: 'Identificación del paciente', icon: Icons.person_outline)),
-                SizedBox(width: w, child: SumsTextField(controller: form.fechaNacimiento, label: 'Fecha de nacimiento', icon: Icons.event_outlined, keyboardType: TextInputType.datetime)),
+                SizedBox(width: w, child: SumsTextField(controller: form.fechaNacimiento, label: 'Fecha de nacimiento', icon: Icons.event_outlined, readOnly: true, onTap: () => _selectDate(context, form.fechaNacimiento))),
                 SizedBox(width: w, child: _numberField(form.edad, 'Edad', Icons.cake_outlined)),
                 SizedBox(width: w, child: _select(label: 'Vacuna aplicada', icon: Icons.vaccines_outlined, value: form.tipo, options: vacunasOpts, onChanged: (v) { form.tipo = v; onChanged(); })),
                 SizedBox(width: w, child: _select(label: 'Dosis', icon: Icons.medication_liquid_outlined, value: form.dosis, options: dosisOpts, onChanged: (v) { form.dosis = v; onChanged(); })),
@@ -218,6 +218,18 @@ class _VaccineCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+    }
   }
 
   Widget _numberField(TextEditingController c, String label, IconData icon) =>

@@ -152,7 +152,7 @@ class _MemberCard extends StatelessWidget {
                   Wrap(spacing: 12, runSpacing: 12, children: [
                     SizedBox(width: w, child: SumsTextField(controller: form.nombre, label: 'Nombre completo', icon: Icons.person_outline)),
                     SizedBox(width: w, child: _select(label: 'Sexo', icon: Icons.wc_outlined, value: form.sexo, options: sexoOpts, onChanged: (v) { form.sexo = v; onChanged(); })),
-                    SizedBox(width: w, child: SumsTextField(controller: form.fechaNacimiento, label: 'Fecha de nacimiento', icon: Icons.event_outlined, keyboardType: TextInputType.datetime)),
+                    SizedBox(width: w, child: SumsTextField(controller: form.fechaNacimiento, label: 'Fecha de nacimiento', icon: Icons.event_outlined, readOnly: true, onTap: () => _selectDate(context, form.fechaNacimiento))),
                     SizedBox(width: w, child: _numberField(form.edad, 'Edad', Icons.cake_outlined)),
                     SizedBox(width: w, child: _select(label: 'Estado civil', icon: Icons.favorite_border, value: form.estadoCivil, options: edoCivilOpts, onChanged: (v) { form.estadoCivil = v; onChanged(); })),
                     SizedBox(width: w, child: _select(label: 'Parentesco/rol familiar', icon: Icons.diversity_3_outlined, value: form.parentesco, options: roles, onChanged: (v) { form.parentesco = v; onChanged(); })),
@@ -194,9 +194,9 @@ class _MemberCard extends StatelessWidget {
                   Wrap(spacing: 12, runSpacing: 12, children: [
                     SizedBox(width: w, child: _select(label: 'Atención de embarazo', icon: Icons.pregnant_woman_outlined, value: form.embarazo, options: embarazoOpts, onChanged: (v) { form.embarazo = v; onChanged(); })),
                     SizedBox(width: w, child: _select(label: 'Tamizaje cérvico-uterino', icon: Icons.health_and_safety_outlined, value: form.tamizajeCervico, options: tamizajeOpts, onChanged: (v) { form.tamizajeCervico = v; onChanged(); })),
-                    SizedBox(width: w, child: SumsTextField(controller: form.fechaCervico, label: 'Fecha cérvico-uterino', icon: Icons.event_outlined, keyboardType: TextInputType.datetime)),
+                    SizedBox(width: w, child: SumsTextField(controller: form.fechaCervico, label: 'Fecha cérvico-uterino', icon: Icons.event_outlined, readOnly: true, onTap: () => _selectDate(context, form.fechaCervico))),
                     SizedBox(width: w, child: _select(label: 'Tamizaje cáncer de mama', icon: Icons.medical_services_outlined, value: form.tamizajeMama, options: tamizajeOpts, onChanged: (v) { form.tamizajeMama = v; onChanged(); })),
-                    SizedBox(width: w, child: SumsTextField(controller: form.fechaMama, label: 'Fecha cáncer de mama', icon: Icons.event_outlined, keyboardType: TextInputType.datetime)),
+                    SizedBox(width: w, child: SumsTextField(controller: form.fechaMama, label: 'Fecha cáncer de mama', icon: Icons.event_outlined, readOnly: true, onTap: () => _selectDate(context, form.fechaMama))),
                     SizedBox(width: w, child: _select(label: 'Frecuencia de uso de servicios', icon: Icons.schedule_outlined, value: form.frecuenciaSalud, options: freqSaludOpts, onChanged: (v) { form.frecuenciaSalud = v; onChanged(); })),
                     SizedBox(width: w, child: SumsTextField(controller: form.motivoSalud, label: 'Motivo de uso de servicios', icon: Icons.notes_outlined)),
                   ]),
@@ -207,6 +207,18 @@ class _MemberCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+    }
   }
 
   Widget _select({

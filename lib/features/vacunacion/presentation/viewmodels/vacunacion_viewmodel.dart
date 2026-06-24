@@ -64,6 +64,16 @@ class VacunacionViewModel extends ChangeNotifier {
       if (_vacunas.isEmpty) {
         addVaccineForm();
       }
+
+      // Dummy Data
+      _seAplicoVacuna = true;
+      if (_vacunas.isNotEmpty) {
+        _vacunas[0].paciente.text = 'María González Pérez';
+        _vacunas[0].fechaNacimiento.text = '1992-05-14';
+        _vacunas[0].edad.text = '34';
+        _vacunas[0].tipo = 'Influenza estacional';
+        _vacunas[0].dosis = 'Única';
+      }
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
@@ -97,7 +107,7 @@ class VacunacionViewModel extends ChangeNotifier {
         "fecha_nacimiento": v.fechaNacimiento.text,
         "edad": int.tryParse(v.edad.text),
         "vacuna": v.tipo,
-        "otra_vacuna": v.otraVacuna.text,
+        "otraVacuna": v.otraVacuna.text,
         "dosis": v.dosis,
       }).toList() : [],
     };

@@ -11,6 +11,7 @@ import '../../../familia/presentation/viewmodels/familia_viewmodel.dart';
 import '../../../vivienda/presentation/viewmodels/vivienda_viewmodel.dart';
 import '../../../vacunacion/presentation/viewmodels/vacunacion_viewmodel.dart';
 import '../../../integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
+import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 
 class CedulaFormPage extends StatefulWidget {
   const CedulaFormPage({super.key});
@@ -98,9 +99,12 @@ class _CedulaFormPageState extends State<CedulaFormPage> with TickerProviderStat
                       final viviendaVm = context.read<ViviendaViewModel>();
                       final vacunasVm = context.read<VacunacionViewModel>();
                       final integrantesVm = context.read<IntegrantesViewModel>();
+                      final authVm = context.read<AuthViewModel>();
                       
                       // Construir el JSON consolidado
                       final payload = {
+                        "unidad_salud_id": authVm.session?.user.unidadSaludId ?? 1,
+                        "entrevistador_id": authVm.session?.user.entrevistadorId ?? authVm.session?.user.id,
                         "familia": familiaVm.toPayload(),
                         "vivienda": viviendaVm.toPayload(),
                         "vacunacion": vacunasVm.toPayload(),

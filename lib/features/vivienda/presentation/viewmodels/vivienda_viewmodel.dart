@@ -46,18 +46,34 @@ class ViviendaViewModel extends ChangeNotifier {
       notifyListeners();
 
       final futures = await Future.wait([
-        repository.getCatalog('materiales_techo_paredes'),
-        repository.getCatalog('materiales_piso'),
-        repository.getCatalog('ubicacion_cocina'),
-        repository.getCatalog('manejo_excretas'),
-        repository.getCatalog('otros_animales'),
+        repository.getCatalog('material'),
+        repository.getCatalog('material'),
+        repository.getCatalog('manejo-excretas'),
+        repository.getCatalog('animal'),
       ]);
 
-      matTechoParedesOpts = futures[0].map((e) => e.nombre).toList();
+      matTechoParedesOpts = futures[0].where((e) => e.nombre != 'Tierra').map((e) => e.nombre).toList();
       matPisoOpts = futures[1].map((e) => e.nombre).toList();
-      cocinasOpts = futures[2].map((e) => e.nombre).toList();
-      excretasOpts = futures[3].map((e) => e.nombre).toList();
-      otrosAnimalesOpts = futures[4].map((e) => e.nombre).toList();
+      cocinasOpts = ['Fuera del dormitorio', 'Dentro del dormitorio'];
+      excretasOpts = futures[2].map((e) => e.nombre).toList();
+      otrosAnimalesOpts = futures[3].map((e) => e.nombre).toList();
+
+      // Set Dummy Data
+      techo = 'Lámina';
+      paredes = 'Madera';
+      piso = 'Tierra';
+      cuartos.text = '3';
+      habitantes.text = '5';
+      aguaEntubada = true;
+      energiaElect = true;
+      cocina = 'Dentro del dormitorio';
+      coccionLena = true;
+      excretas = 'Letrina';
+      alcantarillado = false;
+      fosaSeptica = true;
+      perrosGatos = true;
+      animVacunas = true;
+      esterilizados = false;
 
     } catch (e) {
       errorMessage = e.toString();
@@ -109,22 +125,22 @@ class ViviendaViewModel extends ChangeNotifier {
       "techo": techo,
       "paredes": paredes,
       "piso": piso,
-      "materiales_otros": materialOtros.text,
+      "materialOtros": materialOtros.text,
       "cuartos": int.tryParse(cuartos.text),
       "habitantes": int.tryParse(habitantes.text),
       "agua_entubada": aguaEntubada,
       "energia_electrica": energiaElect,
       "coccion_lena": coccionLena,
-      "ubicacion_cocina": cocina,
-      "manejo_excretas": excretas,
+      "cocina": cocina,
+      "excretas": excretas,
       "red_alcantarillado": alcantarillado,
       "fosa_septica": fosaSeptica,
       "perros_gatos": perrosGatos,
-      "vacunas_corrientes": animVacunas,
+      "animales_vacunas": animVacunas,
       "mascotas_esterilizadas": esterilizados,
       "otros_animales": otrosAnimales.toList(),
-      "otros_animales_especificar": animalOtro.text,
-      "observaciones_animales": animalObs.text,
+      "animalOtro": animalOtro.text,
+      "animalObservaciones": animalObs.text,
     };
   }
 
