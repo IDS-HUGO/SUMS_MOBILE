@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../domain/entities/catalog_item.dart';
 import '../../domain/usecases/load_catalogs_usecase.dart';
 import '../../domain/usecases/submit_record_usecase.dart';
+import '../../domain/repositories/cedula_repository.dart';
 
 enum CedulaStatus { initial, loading, success, error }
 
@@ -58,7 +61,64 @@ class CedulaViewModel extends ChangeNotifier {
   CedulaViewModel({
     required this.loadCatalogsUseCase,
     required this.submitRecordUseCase,
-  });
+    required this.cedulaRepository,
+  }) {
+    refreshSyncCounts();
+    _listenConnectivity();
+  }
+
+  final CedulaRepository cedulaRepository;
+
+  int _pendingSyncCount = 0;
+  int _draftCount = 0;
+  bool _isSyncing = false;
+  bool _isOnline = true;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+
+  int get pendingSyncCount => _pendingSyncCount;
+  int get draftCount => _draftCount;
+  bool get isSyncing => _isSyncing;
+  bool get isOnline => _isOnline;
+
+  void _listenConnectivity() {
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((results) async {
+      final online = !results.contains(ConnectivityResult.none);
+      final wasOffline = !_isOnline;
+      _isOnline = online;
+      notifyListeners();
+      // Si acabamos de recuperar la conexión y hay cédulas pendientes → sincronizar
+      if (online && wasOffline && _pendingSyncCount > 0) {
+        await syncNow();
+      }
+    });
+    // También verificar el estado inicial de conectividad
+    Connectivity().checkConnectivity().then((results) {
+      _isOnline = !results.contains(ConnectivityResult.none);
+      notifyListeners();
+    });
+  }
+
+  Future<void> refreshSyncCounts() async {
+    _pendingSyncCount = await cedulaRepository.getPendingSyncCount();
+    _draftCount = await cedulaRepository.getDraftCount();
+    notifyListeners();
+  }
+
+  /// Sincronización manual/automática en foreground
+  Future<SyncResult> syncNow() async {
+    if (_isSyncing) return const SyncResult(error: 'Ya hay una sincronización en curso');
+    _isSyncing = true;
+    notifyListeners();
+    try {
+      final result = await cedulaRepository.syncPendingCedulas();
+      await refreshSyncCounts();
+      return result;
+    } finally {
+      _isSyncing = false;
+      notifyListeners();
+    }
+  }
+
 
   CedulaStatus _status = CedulaStatus.initial;
   String?      _errorMessage;
@@ -113,6 +173,17 @@ class CedulaViewModel extends ChangeNotifier {
     _setLoading();
     try {
       final response = await submitRecordUseCase.submitCompleta(_clean(payload));
+      
+      // Manejar caso de borrador o fallback offline
+      if (response['status'] == 'draft' || response['status'] == 'pending_sync') {
+        _status = CedulaStatus.success;
+        _errorMessage = null;
+        _successMessage = response['warnings']?.first ?? 'Guardado localmente';
+        await refreshSyncCounts();
+        notifyListeners();
+        return true;
+      }
+
       _lastResult = CapturaCompletaResult.fromJson(response);
 
       // Guardar IDs principales
@@ -126,6 +197,24 @@ class CedulaViewModel extends ChangeNotifier {
       final warnings = _lastResult?.warnings ?? [];
       _successMessage = _buildSuccessMessage(_lastResult!, warnings);
 
+      await refreshSyncCounts();
+      notifyListeners();
+      return true;
+    } catch (error) {
+      _setError(error);
+      return false;
+    }
+  }
+
+  /// Guarda explícitamente como borrador local sin intentar enviarlo
+  Future<bool> saveDraft(Map<String, dynamic> payload) async {
+    _setLoading();
+    try {
+      final response = await submitRecordUseCase.submitCompleta(_clean(payload), isDraft: true);
+      _status = CedulaStatus.success;
+      _errorMessage = null;
+      _successMessage = response['warnings']?.first ?? 'Guardado como borrador localmente';
+      await refreshSyncCounts();
       notifyListeners();
       return true;
     } catch (error) {
@@ -224,5 +313,11 @@ class CedulaViewModel extends ChangeNotifier {
     _errorMessage   = error.toString();
     _successMessage = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySub?.cancel();
+    super.dispose();
   }
 }

@@ -13,6 +13,8 @@ import '../../features/cedula_orquestador/domain/repositories/cedula_repository.
 import '../../features/cedula_orquestador/domain/usecases/load_catalogs_usecase.dart';
 import '../../features/cedula_orquestador/domain/usecases/submit_record_usecase.dart';
 import '../../features/cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
+import '../../features/cedula_orquestador/data/datasources/local/cedula_local_datasource.dart';
+import '../storage/local_database.dart';
 import '../../features/familia/data/datasources/remote/familia_remote_datasource.dart';
 import '../../features/familia/data/repositories/familia_repository_impl.dart';
 import '../../features/familia/domain/repositories/familia_repository.dart';
@@ -33,6 +35,15 @@ import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
 import '../storage/token_storage.dart';
 
+import '../../features/admin/data/datasources/remote/admin_remote_datasource.dart';
+import '../../features/admin/data/repositories/admin_repository_impl.dart';
+import '../../features/admin/domain/repositories/admin_repository.dart';
+import '../../features/admin/presentation/viewmodels/admin_users_viewmodel.dart';
+import '../../features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
+import '../../features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 /// Contenedor de dependencias manual para toda la app.
 /// Se crea una única vez en [_AppState.initState] y se destruye en [dispose].
 ///
@@ -40,13 +51,29 @@ import '../storage/token_storage.dart';
 /// [RegisterUseCase] se conserva para uso interno (el admin puede crear
 /// usuarios desde su propio panel cuando esté implementado).
 class AppDependencies {
-  AppDependencies() {
+  AppDependencies(SharedPreferences prefs) {
     // ── infraestructura compartida ────────────────────────────────────────
     httpClient   = http.Client();
-    tokenStorage = InMemoryTokenStorage();
+    tokenStorage = SharedPreferencesTokenStorage(prefs);
     apiClient    = ApiClient(client: httpClient, baseUrl: ApiEndpoints.baseUrl);
 
-    // ── feature: auth ─────────────────────────────────────────────────────
+    // ── feature: cedula_orquestador ───────────────────────────────────────────
+    final db = AppDatabase();
+    final cedulaLocalDataSource = CedulaLocalDataSource(db);
+
+    cedulaRemoteDataSource = CedulaRemoteDataSource(apiClient: apiClient);
+    cedulaRepository = CedulaRepositoryImpl(
+      remoteDataSource: cedulaRemoteDataSource,
+      localDataSource: cedulaLocalDataSource,
+      tokenStorage:     tokenStorage,
+    );
+    cedulaViewModel = CedulaViewModel(
+      loadCatalogsUseCase: LoadCatalogsUseCase(cedulaRepository),
+      submitRecordUseCase: SubmitRecordUseCase(cedulaRepository),
+      cedulaRepository: cedulaRepository,
+    );
+
+    // ── feature: auth ──────────────────────────────────────────────────────────
     authRemoteDataSource = AuthRemoteDataSource(apiClient: apiClient);
     authRepository = AuthRepositoryImpl(
       remoteDataSource: authRemoteDataSource,
@@ -54,21 +81,9 @@ class AppDependencies {
     );
     authViewModel = AuthViewModel(
       loginUseCase:    LoginUseCase(authRepository),
-      // RegisterUseCase se mantiene por si el panel de admin lo necesita en
-      // el futuro, pero no está expuesto en ninguna pantalla pública.
       registerUseCase: RegisterUseCase(authRepository),
       logoutUseCase:   LogoutUseCase(authRepository),
-    );
-
-    // ── feature: cedula_orquestador ───────────────────────────────────────────
-    cedulaRemoteDataSource = CedulaRemoteDataSource(apiClient: apiClient);
-    cedulaRepository = CedulaRepositoryImpl(
-      remoteDataSource: cedulaRemoteDataSource,
-      tokenStorage:     tokenStorage,
-    );
-    cedulaViewModel = CedulaViewModel(
       loadCatalogsUseCase: LoadCatalogsUseCase(cedulaRepository),
-      submitRecordUseCase: SubmitRecordUseCase(cedulaRepository),
     );
 
     // ── features de dominios ──────────────────────────────────────────────────
@@ -76,6 +91,7 @@ class AppDependencies {
     familiaRepository = FamiliaRepositoryImpl(
       remoteDataSource: familiaRemoteDataSource,
       tokenStorage:     tokenStorage,
+      cedulaRepository: cedulaRepository,
     );
     familiaViewModel = FamiliaViewModel(repository: familiaRepository);
 
@@ -83,6 +99,7 @@ class AppDependencies {
     viviendaRepository = ViviendaRepositoryImpl(
       remoteDataSource: viviendaRemoteDataSource,
       tokenStorage:     tokenStorage,
+      cedulaRepository: cedulaRepository,
     );
     viviendaViewModel = ViviendaViewModel(repository: viviendaRepository);
 
@@ -90,6 +107,7 @@ class AppDependencies {
     vacunacionRepository = VacunacionRepositoryImpl(
       remoteDataSource: vacunacionRemoteDataSource,
       tokenStorage:     tokenStorage,
+      cedulaRepository: cedulaRepository,
     );
     vacunacionViewModel = VacunacionViewModel(repository: vacunacionRepository);
 
@@ -97,8 +115,22 @@ class AppDependencies {
     integrantesRepository = IntegrantesRepositoryImpl(
       remoteDataSource: integrantesRemoteDataSource,
       tokenStorage:     tokenStorage,
+      cedulaRepository: cedulaRepository,
     );
     integrantesViewModel = IntegrantesViewModel(repository: integrantesRepository);
+
+    // ── feature: admin ────────────────────────────────────────────────────────
+    adminRemoteDataSource = AdminRemoteDataSource(apiClient: apiClient);
+    adminRepository = AdminRepositoryImpl(
+      remoteDataSource: adminRemoteDataSource,
+      tokenStorage:     tokenStorage,
+    );
+    adminUsersViewModel = AdminUsersViewModel(repository: adminRepository);
+    adminUnidadesViewModel = AdminUnidadesViewModel(repository: adminRepository);
+    adminCatalogosViewModel = AdminCatalogosViewModel(
+      repository: adminRepository,
+      loadCatalogsUseCase: LoadCatalogsUseCase(cedulaRepository),
+    );
   }
 
   // ── infraestructura ───────────────────────────────────────────────────────
@@ -133,6 +165,13 @@ class AppDependencies {
   late final IntegrantesRepository       integrantesRepository;
   late final IntegrantesViewModel        integrantesViewModel;
 
+  // ── admin ─────────────────────────────────────────────────────────────────
+  late final AdminRemoteDataSource       adminRemoteDataSource;
+  late final AdminRepository             adminRepository;
+  late final AdminUsersViewModel         adminUsersViewModel;
+  late final AdminUnidadesViewModel      adminUnidadesViewModel;
+  late final AdminCatalogosViewModel     adminCatalogosViewModel;
+
   /// Libera ViewModels y cierra el cliente HTTP.
   void dispose() {
     authViewModel.dispose();
@@ -141,6 +180,9 @@ class AppDependencies {
     viviendaViewModel.dispose();
     vacunacionViewModel.dispose();
     integrantesViewModel.dispose();
+    adminUsersViewModel.dispose();
+    adminUnidadesViewModel.dispose();
+    adminCatalogosViewModel.dispose();
     httpClient.close();
   }
 }

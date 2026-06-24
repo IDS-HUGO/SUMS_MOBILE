@@ -65,20 +65,34 @@ class VacunacionViewModel extends ChangeNotifier {
         addVaccineForm();
       }
 
-      // Dummy Data
-      _seAplicoVacuna = true;
-      if (_vacunas.isNotEmpty) {
-        _vacunas[0].paciente.text = 'María González Pérez';
-        _vacunas[0].fechaNacimiento.text = '1992-05-14';
-        _vacunas[0].edad.text = '34';
-        _vacunas[0].tipo = 'Influenza estacional';
-        _vacunas[0].dosis = 'Única';
+      if (_vacunas.isEmpty) {
+        addVaccineForm();
       }
+
     } catch (e) {
       _errorMessage = e.toString();
+      // Fallbacks
+      _vacunasOpts = ['Influenza estacional', 'COVID-19', 'Otra'];
+      _dosisOpts = ['Única', 'Primera', 'Segunda'];
+      
+      if (_vacunas.isEmpty) {
+        addVaccineForm();
+      }
     } finally {
+      _applyDummyData();
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  void _applyDummyData() {
+    _seAplicoVacuna = true;
+    if (_vacunas.isNotEmpty) {
+      _vacunas[0].paciente.text = 'María González Pérez';
+      _vacunas[0].fechaNacimiento.text = '1992-05-14';
+      _vacunas[0].edad.text = '34';
+      _vacunas[0].tipo = 'Influenza estacional';
+      _vacunas[0].dosis = 'Única';
     }
   }
 

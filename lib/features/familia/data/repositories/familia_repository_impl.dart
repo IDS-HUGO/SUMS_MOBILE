@@ -3,22 +3,21 @@ import '../../../cedula_orquestador/domain/entities/catalog_item.dart';
 import '../../domain/repositories/familia_repository.dart';
 import '../datasources/remote/familia_remote_datasource.dart';
 
+import '../../../cedula_orquestador/domain/repositories/cedula_repository.dart';
+
 class FamiliaRepositoryImpl implements FamiliaRepository {
   final FamiliaRemoteDataSource remoteDataSource;
   final TokenStorage tokenStorage;
+  final CedulaRepository cedulaRepository;
 
   const FamiliaRepositoryImpl({
     required this.remoteDataSource,
     required this.tokenStorage,
+    required this.cedulaRepository,
   });
 
   @override
   Future<List<CatalogItem>> getCatalog(String key) async {
-    final token = await tokenStorage.readToken();
-    final response = await remoteDataSource.getCatalog(key, token: token);
-    return response
-        .whereType<Map<String, dynamic>>()
-        .map(CatalogItem.fromJson)
-        .toList();
+    return cedulaRepository.getCatalog(key);
   }
 }

@@ -147,7 +147,50 @@ class _CedulaFormPageState extends State<CedulaFormPage> with TickerProviderStat
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(title: const Text('Microdiagnóstico Familiar')),
+      appBar: AppBar(
+        title: const Text('Microdiagnóstico Familiar'),
+        actions: [
+          TextButton.icon(
+            onPressed: () async {
+              final familiaVm = context.read<FamiliaViewModel>();
+              final viviendaVm = context.read<ViviendaViewModel>();
+              final vacunasVm = context.read<VacunacionViewModel>();
+              final integrantesVm = context.read<IntegrantesViewModel>();
+              final authVm = context.read<AuthViewModel>();
+              
+              final payload = {
+                "unidad_salud_id": authVm.session?.user.unidadSaludId ?? 1,
+                "entrevistador_id": authVm.session?.user.entrevistadorId ?? authVm.session?.user.id,
+                "familia": familiaVm.toPayload(),
+                "vivienda": viviendaVm.toPayload(),
+                "vacunacion": vacunasVm.toPayload(),
+                "integrantes": integrantesVm.toPayload()
+              }; 
+
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) => const Center(child: CircularProgressIndicator()),
+              );
+
+              final vm = context.read<CedulaViewModel>();
+              final success = await vm.saveDraft(payload);
+
+              if (!context.mounted) return;
+              Navigator.pop(context); // Cierra loader
+
+              if (success) {
+                Navigator.pop(context); // Regresa
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vm.successMessage ?? 'Borrador guardado')));
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vm.errorMessage ?? 'Error al guardar borrador')));
+              }
+            },
+            icon: const Icon(Icons.save_outlined, color: Colors.white),
+            label: const Text('Guardar Borrador', style: TextStyle(color: Colors.white)),
+          )
+        ],
+      ),
       body: Column(
         children: [
           Expanded(

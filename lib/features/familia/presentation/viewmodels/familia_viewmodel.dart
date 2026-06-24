@@ -28,23 +28,25 @@ class FamiliaViewModel extends ChangeNotifier {
       // Consultar el catálogo de la API
       final items = await repository.getCatalog('parentesco');
       roles = items.map((e) => e.nombre).toList();
-
-      // Dummy Data
-      informanteNombre.text = 'María González Pérez';
-      informanteEdad.text = '34';
-      domicilio.text = 'Av. Siempre Viva 123';
-      localidad.text = 'Centro';
-      manzana.text = '42';
-      viviendaRef.text = 'Casa amarilla con rejas negras';
-      rolInformante = 'Madre';
     } catch (e) {
       errorMessage = e.toString();
       // Fallback a hardcoded en caso de error, o dejar vacío.
       roles = ['Madre', 'Padre', 'Hijo(a)', 'Abuelo(a)'];
     } finally {
+      _applyDummyData();
       isLoadingRoles = false;
       notifyListeners();
     }
+  }
+
+  void _applyDummyData() {
+    informanteNombre.text = 'María González Pérez';
+    informanteEdad.text = '34';
+    domicilio.text = 'Av. Siempre Viva 123';
+    localidad.text = 'Centro';
+    manzana.text = '42';
+    viviendaRef.text = 'Casa amarilla con rejas negras';
+    rolInformante = 'Madre';
   }
 
   void setRol(String? rol) {
