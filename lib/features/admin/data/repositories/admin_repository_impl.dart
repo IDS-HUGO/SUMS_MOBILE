@@ -18,7 +18,7 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<List<AdminUserEntity>> getUsers() async {
     final token = await tokenStorage.readToken();
     final data = await remoteDataSource.getUsers(token: token);
-    return data.map((json) => AdminUserEntity.fromJson(json)).toList();
+    return data.map((json) => AdminUserEntity.fromJson(json as Map<String, dynamic>)).toList();
   }
 
   @override
@@ -32,7 +32,7 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<List<UnidadSaludEntity>> getUnidadesSalud() async {
     final token = await tokenStorage.readToken();
     final data = await remoteDataSource.getUnidadesSalud(token: token);
-    return data.map((json) => UnidadSaludEntity.fromJson(json)).toList();
+    return data.map((json) => UnidadSaludEntity.fromJson(json as Map<String, dynamic>)).toList();
   }
 
   @override
@@ -46,7 +46,7 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<List<CatalogItem>> getCatalog(String key) async {
     final token = await tokenStorage.readToken();
     final data = await remoteDataSource.getCatalog(key, token: token);
-    return data.map((json) => CatalogItem.fromJson(json)).toList();
+    return data.map((json) => CatalogItem.fromJson(json as Map<String, dynamic>)).toList();
   }
 
   @override

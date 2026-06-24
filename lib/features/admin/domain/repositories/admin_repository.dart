@@ -1,5 +1,5 @@
-import 'user_entity.dart';
-import 'unidad_salud_entity.dart';
+import '../entities/user_entity.dart';
+import '../entities/unidad_salud_entity.dart';
 import '../../../cedula_orquestador/domain/entities/catalog_item.dart';
 
 abstract class AdminRepository {
