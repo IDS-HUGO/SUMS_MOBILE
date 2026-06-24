@@ -29,6 +29,18 @@ class User {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nombre_usuario': nombreUsuario,
+      'rol_id': rolId,
+      'activo': activo,
+      'unidad_salud_id': unidadSaludId,
+      'datos_laborales_id': datosLaboralesId,
+      'entrevistador_id': entrevistadorId,
+    };
+  }
+
   static int? _asInt(dynamic value) {
     if (value == null) return null;
     if (value is int) return value;

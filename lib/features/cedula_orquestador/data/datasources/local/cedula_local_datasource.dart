@@ -115,4 +115,11 @@ class CedulaLocalDataSource {
           ..where((tbl) => tbl.syncStatus.equals(2) & tbl.createdAt.isSmallerThanValue(cutoff)))
         .go();
   }
+
+  Future<int> countCedulasByStatus(int syncStatus) async {
+    final countExp = db.cedulas.id.count();
+    final query = db.selectOnly(db.cedulas)..addColumns([countExp])..where(db.cedulas.syncStatus.equals(syncStatus));
+    final result = await query.map((row) => row.read(countExp)).getSingle();
+    return result ?? 0;
+  }
 }

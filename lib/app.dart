@@ -24,8 +24,11 @@ import 'features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
 import 'features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 import 'shared/theme/app_theme.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class App extends StatefulWidget {
-  const App({super.key});
+  final SharedPreferences prefs;
+  const App({super.key, required this.prefs});
 
   @override
   State<App> createState() => _AppState();
@@ -37,7 +40,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    _dependencies = AppDependencies();
+    _dependencies = AppDependencies(widget.prefs);
   }
 
   @override

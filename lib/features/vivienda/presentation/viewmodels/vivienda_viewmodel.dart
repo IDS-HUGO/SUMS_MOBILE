@@ -58,23 +58,6 @@ class ViviendaViewModel extends ChangeNotifier {
       excretasOpts = futures[2].map((e) => e.nombre).toList();
       otrosAnimalesOpts = futures[3].map((e) => e.nombre).toList();
 
-      // Set Dummy Data
-      techo = 'Lámina';
-      paredes = 'Madera';
-      piso = 'Tierra';
-      cuartos.text = '3';
-      habitantes.text = '5';
-      aguaEntubada = true;
-      energiaElect = true;
-      cocina = 'Dentro del dormitorio';
-      coccionLena = true;
-      excretas = 'Letrina';
-      alcantarillado = false;
-      fosaSeptica = true;
-      perrosGatos = true;
-      animVacunas = true;
-      esterilizados = false;
-
     } catch (e) {
       errorMessage = e.toString();
       // Fallback
@@ -84,9 +67,28 @@ class ViviendaViewModel extends ChangeNotifier {
       excretasOpts = ['WC', 'Letrina', 'Al ras de suelo'];
       otrosAnimalesOpts = ['Aves de corral', 'Bovinos', 'Porcinos', 'NA'];
     } finally {
+      _applyDummyData();
       isLoadingCatalogs = false;
       notifyListeners();
     }
+  }
+
+  void _applyDummyData() {
+    techo = 'Lámina';
+    paredes = 'Madera';
+    piso = 'Tierra';
+    cuartos.text = '3';
+    habitantes.text = '5';
+    aguaEntubada = true;
+    energiaElect = true;
+    cocina = 'Dentro del dormitorio';
+    coccionLena = true;
+    excretas = 'Letrina';
+    alcantarillado = false;
+    fosaSeptica = true;
+    perrosGatos = true;
+    animVacunas = true;
+    esterilizados = false;
   }
 
   void setTecho(String? value) { techo = value; notifyListeners(); }
