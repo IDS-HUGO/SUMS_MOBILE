@@ -135,11 +135,13 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
                 child: Consumer<CedulaViewModel>(
                   builder: (context, cvm, child) {
                     if (cvm.pendingSyncCount == 0) return const SizedBox.shrink();
-                    return _SyncStatusCard(
-                      pendingCount: cvm.pendingSyncCount,
-                      isSyncing: cvm.isSyncing,
-                      isOnline: cvm.isOnline,
-                      onSyncTap: () async {
+                    return GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.cedulaHistorial),
+                      child: _SyncStatusCard(
+                        pendingCount: cvm.pendingSyncCount,
+                        isSyncing: cvm.isSyncing,
+                        isOnline: cvm.isOnline,
+                        onSyncTap: () async {
                         final result = await cvm.syncNow();
                         if (!context.mounted) return;
                         if (result.error != null) {
