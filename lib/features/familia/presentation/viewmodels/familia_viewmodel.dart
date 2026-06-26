@@ -5,7 +5,7 @@ class FamiliaViewModel extends ChangeNotifier {
   final FamiliaRepository repository;
 
   final informanteNombre = TextEditingController();
-  final informanteEdad = TextEditingController();
+  String? informanteSexo;
   final domicilio = TextEditingController();
   final localidad = TextEditingController();
   final manzana = TextEditingController();
@@ -33,31 +33,27 @@ class FamiliaViewModel extends ChangeNotifier {
       // Fallback a hardcoded en caso de error, o dejar vacío.
       roles = ['Madre', 'Padre', 'Hijo(a)', 'Abuelo(a)'];
     } finally {
-      _applyDummyData();
       isLoadingRoles = false;
       notifyListeners();
     }
   }
 
-  void _applyDummyData() {
-    informanteNombre.text = 'María González Pérez';
-    informanteEdad.text = '34';
-    domicilio.text = 'Av. Siempre Viva 123';
-    localidad.text = 'Centro';
-    manzana.text = '42';
-    viviendaRef.text = 'Casa amarilla con rejas negras';
-    rolInformante = 'Madre';
-  }
+
 
   void setRol(String? rol) {
     rolInformante = rol;
     notifyListeners();
   }
 
+  void setSexo(String? sexo) {
+    informanteSexo = sexo;
+    notifyListeners();
+  }
+
   Map<String, dynamic> toPayload() {
     return {
       "informante_nombre": informanteNombre.text,
-      "edad": int.tryParse(informanteEdad.text),
+      "sexo": informanteSexo,
       "domicilio": domicilio.text,
       "localidad": localidad.text,
       "manzana": manzana.text,
@@ -69,7 +65,6 @@ class FamiliaViewModel extends ChangeNotifier {
   @override
   void dispose() {
     informanteNombre.dispose();
-    informanteEdad.dispose();
     domicilio.dispose();
     localidad.dispose();
     manzana.dispose();

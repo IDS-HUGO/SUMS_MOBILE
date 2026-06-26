@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../features/cedula_orquestador/data/datasources/local/cedula_local_datasource.dart';
 import '../../features/cedula_orquestador/data/datasources/remote/cedula_remote_datasource.dart';
-import '../storage/local_database.dart';
 
 class SyncEngine {
   final CedulaLocalDataSource localDataSource;
@@ -48,7 +46,7 @@ class SyncEngine {
       // El backend debe tener un endpoint que acepte un array de cédulas
       // En la API recién creada, el endpoint es POST /sums/sync
       // Como CedulaRemoteDataSource tiene un mētodo post genérico:
-      final response = await remoteDataSource.post('/sums/sync', {'payloads': payloadsForApi});
+      await remoteDataSource.post('/sums/sync', {'payloads': payloadsForApi});
       
       // Si llegamos aquí, asumimos éxito HTTP 200/201.
       print('SyncEngine: Sincronización exitosa.');

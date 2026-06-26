@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
 import '../viewmodels/integrantes_viewmodel.dart';
+import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
+import '../../../familia/presentation/viewmodels/familia_viewmodel.dart';
 
 class IntegrantesStepWidget extends StatelessWidget {
   const IntegrantesStepWidget({super.key});
@@ -128,7 +130,7 @@ class _MemberCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'VI. Integrante ${index + 1}',
+                  'V. Integrante ${index + 1}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w800, fontSize: 15,
                     color: AppColors.greenDark,
@@ -147,19 +149,51 @@ class _MemberCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: LayoutBuilder(builder: (_, con) {
+              final familiaVm = context.read<FamiliaViewModel>();
               final w = con.maxWidth < 720 ? con.maxWidth : (con.maxWidth - 12) / 2;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Wrap(spacing: 12, runSpacing: 12, children: [
-                    SizedBox(width: w, child: SumsTextField(controller: form.nombre, label: 'Nombre completo', icon: Icons.person_outline)),
-                    SizedBox(width: w, child: _select(label: 'Sexo', icon: Icons.wc_outlined, value: form.sexo, options: sexoOpts, onChanged: (v) { form.sexo = v; onChanged(); })),
-                    SizedBox(width: w, child: SumsTextField(controller: form.fechaNacimiento, label: 'Fecha de nacimiento', icon: Icons.event_outlined, readOnly: true, onTap: () => _selectDate(context, form.fechaNacimiento))),
-                    SizedBox(width: w, child: _numberField(form.edad, 'Edad', Icons.cake_outlined)),
+                    SizedBox(width: w, child: SumsTextField(controller: form.nombre, label: 'Nombre completo', icon: Icons.person_outline, validator: requiredText, onChanged: (v) {
+                      if (index == 0) {
+                        familiaVm.informanteNombre.text = v;
+                      }
+                      onChanged();
+                    })),
+                    SizedBox(width: w, child: _select(label: 'Sexo', icon: Icons.wc_outlined, value: form.sexo, options: sexoOpts, onChanged: (v) {
+                      form.sexo = v;
+                      if (index == 0) {
+                        familiaVm.setSexo(v);
+                      }
+                      if (v != 'Femenino') {
+                        form.embarazo = null;
+                        form.tamizajeCervico = null;
+                        form.fechaCervico.clear();
+                        form.tamizajeMama = null;
+                        form.fechaMama.clear();
+                      }
+                      onChanged();
+                    }, validator: requiredText)),
+                    SizedBox(width: w, child: SumsTextField(controller: form.fechaNacimiento, label: 'Fecha de nacimiento', icon: Icons.event_outlined, readOnly: true, validator: requiredText, onTap: () => _selectBirthDate(context, form.fechaNacimiento, form.edad, onChanged))),
+                    SizedBox(width: w, child: SumsTextField(controller: form.edad, label: 'Edad', icon: Icons.cake_outlined, readOnly: true)),
                     SizedBox(width: w, child: _select(label: 'Estado civil', icon: Icons.favorite_border, value: form.estadoCivil, options: edoCivilOpts, onChanged: (v) { form.estadoCivil = v; onChanged(); })),
-                    SizedBox(width: w, child: _select(label: 'Parentesco/rol familiar', icon: Icons.diversity_3_outlined, value: form.parentesco, options: roles, onChanged: (v) { form.parentesco = v; onChanged(); })),
-                    SizedBox(width: w, child: _select(label: 'Lengua', icon: Icons.record_voice_over_outlined, value: form.lengua, options: lenguaOpts, onChanged: (v) { form.lengua = v; onChanged(); })),
-                    SizedBox(width: w, child: SumsTextField(controller: form.lenguaEsp, label: 'Lengua indígena, especificar', icon: Icons.edit_outlined)),
+                    SizedBox(width: w, child: _select(label: 'Parentesco/rol familiar', icon: Icons.diversity_3_outlined, value: form.parentesco, options: roles, onChanged: (v) { 
+                      form.parentesco = v; 
+                      if (index == 0) {
+                        familiaVm.setRol(v);
+                      }
+                      onChanged(); 
+                    }, validator: requiredText)),
+                    SizedBox(width: w, child: _select(label: 'Lengua', icon: Icons.record_voice_over_outlined, value: form.lengua, options: lenguaOpts, onChanged: (v) {
+                      form.lengua = v;
+                      if (v != 'Lengua indígena') {
+                        form.lenguaEsp.clear();
+                      }
+                      onChanged();
+                    })),
+                    if (form.lengua == 'Lengua indígena')
+                      SizedBox(width: w, child: SumsTextField(controller: form.lenguaEsp, label: 'Lengua indígena, especificar', icon: Icons.edit_outlined, validator: requiredText)),
                     SizedBox(width: w, child: _select(label: 'Escolaridad', icon: Icons.school_outlined, value: form.escolaridad, options: escolaridadOpts, onChanged: (v) { form.escolaridad = v; onChanged(); })),
                     SizedBox(width: w, child: SumsTextField(controller: form.ocupacion, label: 'Ocupación', icon: Icons.work_outline)),
                     SizedBox(width: w, child: _select(label: 'Ingreso - salario mínimo', icon: Icons.payments_outlined, value: form.ingreso, options: ingresoOpts, onChanged: (v) { form.ingreso = v; onChanged(); })),
@@ -171,21 +205,29 @@ class _MemberCard extends StatelessWidget {
                     SizedBox(width: w, child: _buildYesNo(context, 'Alfabetización', form.alfabetizacion, (v) { form.alfabetizacion = v; onChanged(); })),
                     SizedBox(width: w, child: _buildYesNo(context, 'Seguridad social', form.seguridadSocial, (v) { form.seguridadSocial = v; onChanged(); })),
                     SizedBox(width: w, child: _buildYesNo(context, 'Higiene buco-dental diaria', form.higiene, (v) { form.higiene = v; onChanged(); })),
-                    SizedBox(width: w, child: _buildYesNo(context, 'Presenta discapacidad', form.discapacidad, (v) { form.discapacidad = v; onChanged(); })),
+                    SizedBox(width: w, child: _buildYesNo(context, 'Presenta discapacidad', form.discapacidad, (v) {
+                      form.discapacidad = v;
+                      if (!v) {
+                        form.tipoDisc.clear();
+                      }
+                      onChanged();
+                    })),
+                    if (form.discapacidad)
+                      SizedBox(width: w, child: SumsTextField(controller: form.tipoDisc, label: 'Tipo de discapacidad', icon: Icons.accessible_forward_outlined, validator: requiredText)),
                   ]),
                   const SizedBox(height: 14),
                   Wrap(spacing: 12, runSpacing: 12, children: [
                     SizedBox(width: w, child: _daysField(form.proteina, 'Carne, pescado y pollo')),
                     SizedBox(width: w, child: _daysField(form.frutasVerd, 'Frutas y verduras')),
                     SizedBox(width: w, child: _daysField(form.cereales, 'Cereales, granos y leguminosas')),
-                    SizedBox(width: w, child: SumsTextField(controller: form.tipoDisc, label: 'Tipo de discapacidad', icon: Icons.accessible_forward_outlined)),
                   ]),
                   const SizedBox(height: 16),
                   const _SubLabel(text: 'Toxicomanías'),
                   const SizedBox(height: 10),
                   _chipGroup(context, toxicomaniasOpts, form.toxicomanias),
                   const SizedBox(height: 12),
-                  SumsTextField(controller: form.otraSust, label: 'Otra sustancia, especificar', icon: Icons.edit_outlined),
+                  if (form.toxicomanias.contains('Otras sustancias'))
+                    SumsTextField(controller: form.otraSust, label: 'Otra sustancia, especificar', icon: Icons.edit_outlined, validator: requiredText),
                   const SizedBox(height: 16),
                   const _SubLabel(text: 'Enfermedades crónico-degenerativas'),
                   const SizedBox(height: 10),
@@ -194,12 +236,42 @@ class _MemberCard extends StatelessWidget {
                   const _SubLabel(text: 'Seguimiento preventivo'),
                   const SizedBox(height: 12),
                   Wrap(spacing: 12, runSpacing: 12, children: [
-                    SizedBox(width: w, child: _select(label: 'Atención de embarazo', icon: Icons.pregnant_woman_outlined, value: form.embarazo, options: embarazoOpts, onChanged: (v) { form.embarazo = v; onChanged(); })),
-                    SizedBox(width: w, child: _select(label: 'Tamizaje cérvico-uterino', icon: Icons.health_and_safety_outlined, value: form.tamizajeCervico, options: tamizajeOpts, onChanged: (v) { form.tamizajeCervico = v; onChanged(); })),
-                    SizedBox(width: w, child: SumsTextField(controller: form.fechaCervico, label: 'Fecha cérvico-uterino', icon: Icons.event_outlined, readOnly: true, onTap: () => _selectDate(context, form.fechaCervico))),
-                    SizedBox(width: w, child: _select(label: 'Tamizaje cáncer de mama', icon: Icons.medical_services_outlined, value: form.tamizajeMama, options: tamizajeOpts, onChanged: (v) { form.tamizajeMama = v; onChanged(); })),
-                    SizedBox(width: w, child: SumsTextField(controller: form.fechaMama, label: 'Fecha cáncer de mama', icon: Icons.event_outlined, readOnly: true, onTap: () => _selectDate(context, form.fechaMama))),
-                    SizedBox(width: w, child: _select(label: 'Frecuencia de uso de servicios', icon: Icons.schedule_outlined, value: form.frecuenciaSalud, options: freqSaludOpts, onChanged: (v) { form.frecuenciaSalud = v; onChanged(); })),
+                    if (form.sexo == 'Femenino') ...[
+                      SizedBox(width: w, child: _select(label: 'Atención de embarazo', icon: Icons.pregnant_woman_outlined, value: form.embarazo, options: embarazoOpts, onChanged: (v) { form.embarazo = v; onChanged(); })),
+                      SizedBox(width: w, child: _select(label: 'Tamizaje cérvico-uterino', icon: Icons.health_and_safety_outlined, value: form.tamizajeCervico, options: tamizajeOpts, onChanged: (v) {
+                        form.tamizajeCervico = v;
+                        if (v != 'Sí') {
+                          form.fechaCervico.clear();
+                        }
+                        onChanged();
+                      })),
+                      if (form.tamizajeCervico == 'Sí')
+                        SizedBox(width: w, child: SumsTextField(
+                          controller: form.fechaCervico,
+                          label: 'Fecha cérvico-uterino',
+                          icon: Icons.event_outlined,
+                          readOnly: true,
+                          validator: (v) => _validateTamizajeDate(v, form.fechaNacimiento.text),
+                          onTap: () => _selectDateSimple(context, form.fechaCervico, form.fechaNacimiento.text, onChanged),
+                        )),
+                      SizedBox(width: w, child: _select(label: 'Tamizaje cáncer de mama', icon: Icons.medical_services_outlined, value: form.tamizajeMama, options: tamizajeOpts, onChanged: (v) {
+                        form.tamizajeMama = v;
+                        if (v != 'Sí') {
+                          form.fechaMama.clear();
+                        }
+                        onChanged();
+                      })),
+                      if (form.tamizajeMama == 'Sí')
+                        SizedBox(width: w, child: SumsTextField(
+                          controller: form.fechaMama,
+                          label: 'Fecha cáncer de mama',
+                          icon: Icons.event_outlined,
+                          readOnly: true,
+                          validator: (v) => _validateTamizajeDate(v, form.fechaNacimiento.text),
+                          onTap: () => _selectDateSimple(context, form.fechaMama, form.fechaNacimiento.text, onChanged),
+                        )),
+                    ],
+                    SizedBox(width: w, child: _select(label: 'Frecuencia de uso de servicios', icon: Icons.schedule_outlined, value: form.frecuenciaSalud, options: freqSaludOpts, onChanged: (v) { form.frecuenciaSalud = v; onChanged(); }, validator: requiredText)),
                     SizedBox(width: w, child: SumsTextField(controller: form.motivoSalud, label: 'Motivo de uso de servicios', icon: Icons.notes_outlined)),
                   ]),
                 ],
@@ -211,7 +283,23 @@ class _MemberCard extends StatelessWidget {
     );
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  String? _validateTamizajeDate(String? value, String birthDateStr) {
+    final req = requiredText(value);
+    if (req != null) return req;
+    if (birthDateStr.trim().isEmpty) return null;
+    try {
+      final birthDate = DateTime.parse(birthDateStr);
+      final tamizajeDate = DateTime.parse(value!);
+      if (tamizajeDate.isBefore(birthDate)) {
+        return 'No puede ser anterior al nacimiento';
+      }
+    } catch (_) {
+      return 'Fecha inválida';
+    }
+    return null;
+  }
+
+  Future<void> _selectBirthDate(BuildContext context, TextEditingController controller, TextEditingController edadController, VoidCallback onChanged) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -220,12 +308,45 @@ class _MemberCard extends StatelessWidget {
     );
     if (picked != null) {
       controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      
+      final now = DateTime.now();
+      int anos = now.year - picked.year;
+      if (now.month < picked.month || (now.month == picked.month && now.day < picked.day)) anos--;
+      if (anos < 2) {
+        int meses = (now.year - picked.year) * 12 + now.month - picked.month;
+        if (now.day < picked.day) meses--;
+        if (meses < 0) meses = 0;
+        edadController.text = '$meses meses';
+      } else {
+        edadController.text = '$anos';
+      }
+      onChanged();
+    }
+  }
+
+  Future<void> _selectDateSimple(BuildContext context, TextEditingController controller, String birthDateStr, VoidCallback onChanged) async {
+    DateTime firstDate = DateTime(1900);
+    if (birthDateStr.isNotEmpty) {
+      try {
+        firstDate = DateTime.parse(birthDateStr);
+      } catch (_) {}
+    }
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().isBefore(firstDate) ? firstDate : DateTime.now(),
+      firstDate: firstDate,
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      onChanged();
     }
   }
 
   Widget _select({
     required String label, required IconData icon, required String? value,
     required List<String> options, required ValueChanged<String?> onChanged,
+    String? Function(String?)? validator,
   }) =>
       DropdownButtonFormField<String>(
         isExpanded:    true,
@@ -233,18 +354,7 @@ class _MemberCard extends StatelessWidget {
         decoration:    InputDecoration(labelText: label, prefixIcon: Icon(icon)),
         items: options.map((o) => DropdownMenuItem(value: o, child: Text(o, overflow: TextOverflow.ellipsis))).toList(),
         onChanged:     onChanged,
-      );
-
-  Widget _numberField(TextEditingController c, String label, IconData icon) =>
-      SumsTextField(
-        controller: c, label: label, icon: icon,
-        keyboardType: TextInputType.number,
-        validator: (v) {
-          if (v == null || v.trim().isEmpty) return null;
-          final parsed = int.tryParse(v);
-          if (parsed == null || parsed < 0) return 'Ingresa un numero valido';
-          return null;
-        },
+        validator:     validator,
       );
 
   Widget _daysField(TextEditingController c, String label) =>
@@ -252,12 +362,8 @@ class _MemberCard extends StatelessWidget {
         controller: c, label: label,
         icon: Icons.calendar_view_week_outlined,
         helperText: '0 a 7 días', keyboardType: TextInputType.number,
-        validator: (v) {
-          if (v == null || v.trim().isEmpty) return null;
-          final p = int.tryParse(v.trim());
-          if (p == null || p < 0 || p > 7) return 'Ingresa un número de 0 a 7';
-          return null;
-        },
+        inputFormatters: digitsOnly,
+        validator: (v) => requiredText(v) ?? intRange(0, 7)(v),
       );
 
   Widget _buildYesNo(BuildContext context, String label, bool value, ValueChanged<bool> onChange) =>
@@ -275,18 +381,28 @@ class _MemberCard extends StatelessWidget {
       );
 
   Widget _chipGroup(BuildContext context, List<String> options, Set<String> selected) =>
-      InputDecorator(
-        decoration: const InputDecoration(labelText: ''),
-        child: Wrap(
-          spacing: 8, runSpacing: 8,
-          children: [
-            for (final o in options)
-              FilterChip(
-                label:      Text(o),
-                selected:   selected.contains(o),
-                onSelected: (_) => toggleSet(selected, o),
-              ),
-          ],
+      FormField<Set<String>>(
+        initialValue: selected,
+        validator: (val) => selected.isEmpty ? 'Seleccione una opción' : null,
+        builder: (state) => InputDecorator(
+          decoration: InputDecoration(
+            labelText: '',
+            errorText: state.errorText,
+          ),
+          child: Wrap(
+            spacing: 8, runSpacing: 8,
+            children: [
+              for (final o in options)
+                FilterChip(
+                  label:      Text(o),
+                  selected:   selected.contains(o),
+                  onSelected: (_) {
+                    toggleSet(selected, o);
+                    state.didChange(selected);
+                  },
+                ),
+            ],
+          ),
         ),
       );
 }

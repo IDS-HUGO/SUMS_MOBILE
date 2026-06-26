@@ -5,6 +5,7 @@ import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
 import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
 import '../viewmodels/familia_viewmodel.dart';
+import '../../../integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
 
 class FamiliaStepWidget extends StatelessWidget {
   const FamiliaStepWidget({super.key});
@@ -25,24 +26,51 @@ class FamiliaStepWidget extends StatelessWidget {
             controller: vm.informanteNombre,
             label: 'Nombre del informante',
             icon: Icons.person_outline,
+            validator: requiredText,
+            onChanged: (v) {
+              final intVm = context.read<IntegrantesViewModel>();
+              if (intVm.integrantes.isNotEmpty) {
+                intVm.integrantes[0].nombre.text = v;
+                intVm.updateForm();
+              }
+            },
           ),
-          _numberField(
-            vm.informanteEdad,
-            'Edad del informante',
-            Icons.cake_outlined,
+          _select(
+            label: 'Sexo del informante',
+            icon: Icons.wc_outlined,
+            value: vm.informanteSexo,
+            options: const ['Masculino', 'Femenino'],
+            onChanged: (v) {
+              vm.setSexo(v);
+              final intVm = context.read<IntegrantesViewModel>();
+              if (intVm.integrantes.isNotEmpty) {
+                intVm.integrantes[0].sexo = v;
+                intVm.updateForm();
+              }
+            },
+            validator: requiredText,
           ),
           _select(
             label: 'Rol familiar',
             icon: Icons.diversity_3_outlined,
             value: vm.rolInformante,
             options: vm.roles,
-            onChanged: vm.setRol,
+            onChanged: (v) {
+              vm.setRol(v);
+              final intVm = context.read<IntegrantesViewModel>();
+              if (intVm.integrantes.isNotEmpty) {
+                intVm.integrantes[0].parentesco = v;
+                intVm.updateForm();
+              }
+            },
             isLoading: vm.isLoadingRoles,
+            validator: requiredText,
           ),
           SumsTextField(
             controller: vm.domicilio,
             label: 'Domicilio',
             icon: Icons.location_on_outlined,
+            validator: requiredText,
           ),
           SumsTextField(
             controller: vm.localidad,
@@ -85,14 +113,7 @@ class FamiliaStepWidget extends StatelessWidget {
     });
   }
 
-  Widget _numberField(TextEditingController c, String label, IconData icon) =>
-      SumsTextField(
-        controller: c,
-        label: label,
-        icon: icon,
-        keyboardType: TextInputType.number,
-        validator: nonNegativeIntText,
-      );
+
 
   Widget _select({
     required String label,
@@ -101,6 +122,7 @@ class FamiliaStepWidget extends StatelessWidget {
     required List<String> options,
     required ValueChanged<String?> onChanged,
     bool isLoading = false,
+    String? Function(String?)? validator,
   }) =>
       DropdownButtonFormField<String>(
         isExpanded: true,
@@ -120,6 +142,7 @@ class FamiliaStepWidget extends StatelessWidget {
                 value: o, child: Text(o, overflow: TextOverflow.ellipsis)))
             .toList(),
         onChanged: onChanged,
+        validator: validator,
       );
 }
 

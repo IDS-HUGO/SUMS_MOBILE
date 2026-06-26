@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/admin_catalogos_viewmodel.dart';
-import '../../../cedula_orquestador/domain/entities/catalog_item.dart';
 
 class AdminCatalogosPage extends StatefulWidget {
   const AdminCatalogosPage({super.key});
