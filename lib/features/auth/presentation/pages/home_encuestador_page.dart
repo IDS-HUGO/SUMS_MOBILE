@@ -510,7 +510,7 @@ class _MainActionCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Familia · Vivienda · Vacunación · Integrantes',
+                      'Familia · Vivienda · Integrantes · Vacunación',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.7),
                         fontSize: 12,
@@ -549,14 +549,14 @@ class _FlowSteps extends StatelessWidget {
       icon: Icons.home_outlined,
     ),
     _FlowStep(
-      num: '3', title: 'Vacunación',
-      detail: 'Esquema aplicado durante la visita',
-      icon: Icons.vaccines_outlined,
-    ),
-    _FlowStep(
-      num: '4', title: 'Integrantes',
+      num: '3', title: 'Integrantes',
       detail: 'Salud, alimentación y datos de cada miembro',
       icon: Icons.people_alt_outlined,
+    ),
+    _FlowStep(
+      num: '4', title: 'Vacunación',
+      detail: 'Esquema aplicado durante la visita',
+      icon: Icons.vaccines_outlined,
     ),
   ];
 

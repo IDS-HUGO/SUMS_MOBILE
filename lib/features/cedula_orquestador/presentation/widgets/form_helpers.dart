@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+final digitsOnly = [FilteringTextInputFormatter.digitsOnly];
 
 int? optionalInt(String value) {
   if (value.trim().isEmpty) return null;
@@ -30,6 +33,24 @@ String? nonNegativeIntText(String? value) {
   final parsed = int.tryParse(value);
   if (parsed == null || parsed < 0) return 'Ingresa un numero valido';
   return null;
+}
+
+String? Function(String?) intMin(int min) {
+  return (String? value) {
+    if (value == null || value.trim().isEmpty) return 'Campo requerido';
+    final parsed = int.tryParse(value);
+    if (parsed == null || parsed < min) return 'Debe ser al menos $min';
+    return null;
+  };
+}
+
+String? Function(String?) intRange(int min, int max) {
+  return (String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final parsed = int.tryParse(value);
+    if (parsed == null || parsed < min || parsed > max) return 'Debe estar entre $min y $max';
+    return null;
+  };
 }
 
 class BooleanSwitch extends StatelessWidget {

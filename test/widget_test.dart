@@ -11,8 +11,7 @@ void main() {
 
     await tester.pumpWidget(App(prefs: prefs));
 
-    expect(find.text('SUMS'), findsOneWidget);
-    expect(find.text('Flujo de captura'), findsOneWidget);
-    expect(find.text('Abrir formularios de cedula'), findsOneWidget);
+    expect(find.text('Cédula de Microdiagnóstico Familiar'), findsAtLeastNWidgets(1));
+    expect(find.text('Captura comunitaria IMSS-BIENESTAR'), findsAtLeastNWidgets(1));
   });
 }

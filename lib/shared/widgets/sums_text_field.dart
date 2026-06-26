@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SumsTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -13,6 +14,8 @@ class SumsTextField extends StatelessWidget {
   final int maxLines;
   final bool readOnly;
   final VoidCallback? onTap;
+  final ValueChanged<String>? onChanged;
+  final List<TextInputFormatter>? inputFormatters;
 
   const SumsTextField({
     super.key,
@@ -28,6 +31,8 @@ class SumsTextField extends StatelessWidget {
     this.maxLines = 1,
     this.readOnly = false,
     this.onTap,
+    this.onChanged,
+    this.inputFormatters,
   });
 
   @override
@@ -40,6 +45,8 @@ class SumsTextField extends StatelessWidget {
       validator: validator,
       readOnly: readOnly,
       onTap: onTap,
+      onChanged: onChanged,
+      inputFormatters: inputFormatters,
       minLines: obscureText ? 1 : minLines,
       maxLines: obscureText ? 1 : maxLines,
       decoration: InputDecoration(

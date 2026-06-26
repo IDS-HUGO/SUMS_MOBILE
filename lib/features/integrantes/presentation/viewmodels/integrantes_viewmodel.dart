@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/repositories/integrantes_repository.dart';
@@ -126,41 +125,12 @@ class IntegrantesViewModel extends ChangeNotifier {
         addMemberForm();
       }
     } finally {
-      _applyDummyData();
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  void _applyDummyData() {
-    if (_integrantes.isNotEmpty) {
-      final form = _integrantes[0];
-      form.nombre.text = 'María González Pérez';
-      form.fechaNacimiento.text = '1992-05-14';
-      form.edad.text = '34';
-      form.sexo = 'Femenino';
-      form.estadoCivil = 'Casado(a)';
-      form.parentesco = 'Madre';
-      form.lengua = 'Español';
-      form.escolaridad = 'Preparatoria';
-      form.ocupacion.text = 'Hogar';
-      form.ingreso = 'No recibe ingresos';
-      form.alfabetizacion = true;
-      form.seguridadSocial = false;
-      form.higiene = true;
-      form.discapacidad = false;
-      form.proteina.text = '4';
-      form.frutasVerd.text = '5';
-      form.cereales.text = '7';
-      form.toxicomanias.add('Ninguna');
-      form.cronicas.add('Ninguna');
-      form.embarazo = 'Ninguno';
-      form.tamizajeCervico = 'No';
-      form.tamizajeMama = 'No';
-      form.frecuenciaSalud = 'Nunca';
-      form.motivoSalud.text = 'Ninguno';
-    }
-  }
+
 
   void addMemberForm() {
     _integrantes.add(MemberForm());
@@ -180,11 +150,12 @@ class IntegrantesViewModel extends ChangeNotifier {
   }
 
   void toggleSet(Set<String> selected, String option) {
-    if (option == 'NA') {
+    if (option == 'NA' || option == 'Ninguna') {
       selected.clear();
       selected.add(option);
     } else {
       selected.remove('NA');
+      selected.remove('Ninguna');
       if (selected.contains(option)) {
         selected.remove(option);
       } else {
@@ -194,16 +165,35 @@ class IntegrantesViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  int? _parseEdad(String ageText) {
+    final text = ageText.trim();
+    if (text.isEmpty) return null;
+    if (text.toLowerCase().contains('mes')) {
+      final regExp = RegExp(r'\d+');
+      final match = regExp.firstMatch(text);
+      if (match != null) {
+        return int.tryParse(match.group(0)!);
+      }
+    }
+    final digits = RegExp(r'\d+').firstMatch(text);
+    if (digits != null) {
+      return int.tryParse(digits.group(0)!);
+    }
+    return int.tryParse(text);
+  }
+
   List<Map<String, dynamic>> toPayload() {
-    return _integrantes.map((i) => {
+    return _integrantes.map((i) {
+      final isFem = i.sexo == 'Femenino';
+      return {
         "nombre": i.nombre.text,
         "fecha_nacimiento": i.fechaNacimiento.text,
-        "edad": int.tryParse(i.edad.text),
+        "edad": _parseEdad(i.edad.text),
         "sexo": i.sexo,
         "estado_civil": i.estadoCivil,
         "parentesco": i.parentesco,
         "lengua": i.lengua,
-        "lenguaEspecificar": i.lenguaEsp.text,
+        "lenguaEspecificar": i.lengua == 'Lengua indígena' ? (i.lenguaEsp.text.isEmpty ? null : i.lenguaEsp.text) : null,
         "escolaridad": i.escolaridad,
         "ocupacion": i.ocupacion.text,
         "ingreso": i.ingreso,
@@ -211,20 +201,21 @@ class IntegrantesViewModel extends ChangeNotifier {
         "seguridad_social": i.seguridadSocial,
         "higiene": i.higiene,
         "discapacidad": i.discapacidad,
-        "tipoDiscapacidad": i.tipoDisc.text,
+        "tipoDiscapacidad": i.discapacidad ? (i.tipoDisc.text.isEmpty ? null : i.tipoDisc.text) : null,
         "proteina": int.tryParse(i.proteina.text),
         "frutasVerduras": int.tryParse(i.frutasVerd.text),
         "cereales": int.tryParse(i.cereales.text),
         "toxicomanias": i.toxicomanias.toList(),
-        "otraSustancia": i.otraSust.text,
+        "otraSustancia": i.toxicomanias.contains('Otras sustancias') ? (i.otraSust.text.isEmpty ? null : i.otraSust.text) : null,
         "cronicas": i.cronicas.toList(),
-        "embarazo": i.embarazo,
-        "tamizajeCervico": i.tamizajeCervico,
-        "fechaCervico": i.fechaCervico.text,
-        "tamizajeMama": i.tamizajeMama,
-        "fechaMama": i.fechaMama.text,
+        "embarazo": isFem ? i.embarazo : null,
+        "tamizajeCervico": isFem ? i.tamizajeCervico : null,
+        "fechaCervico": (isFem && i.tamizajeCervico == 'Sí') ? (i.fechaCervico.text.isEmpty ? null : i.fechaCervico.text) : null,
+        "tamizajeMama": isFem ? i.tamizajeMama : null,
+        "fechaMama": (isFem && i.tamizajeMama == 'Sí') ? (i.fechaMama.text.isEmpty ? null : i.fechaMama.text) : null,
         "frecuenciaSalud": i.frecuenciaSalud,
         "motivoSalud": i.motivoSalud.text,
+      };
     }).toList();
   }
 

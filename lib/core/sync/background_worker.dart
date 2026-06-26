@@ -17,7 +17,6 @@ void callbackDispatcher() {
     if (task == syncTaskName) {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('auth_token');
         // Usamos una base URL por defecto o la guardada
         final apiUrl = prefs.getString('api_url') ?? 'http://10.0.2.2:3000';
 
