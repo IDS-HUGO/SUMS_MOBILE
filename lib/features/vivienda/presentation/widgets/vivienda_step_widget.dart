@@ -31,7 +31,15 @@ class ViviendaStepWidget extends StatelessWidget {
                 options: vm.matTechoParedesOpts,
                 onChanged: vm.setTecho,
                 isLoading: vm.isLoadingCatalogs,
+                validator: requiredText,
               ),
+              if (vm.techo == 'Otros (especifique)')
+                SumsTextField(
+                  controller: vm.techoOtro,
+                  label: 'Otros materiales, especificar',
+                  icon: Icons.edit_outlined,
+                  validator: requiredText,
+                ),
               _select(
                 label: 'Paredes',
                 icon: Icons.foundation_outlined,
@@ -39,7 +47,15 @@ class ViviendaStepWidget extends StatelessWidget {
                 options: vm.matTechoParedesOpts,
                 onChanged: vm.setParedes,
                 isLoading: vm.isLoadingCatalogs,
+                validator: requiredText,
               ),
+              if (vm.paredes == 'Otros (especifique)')
+                SumsTextField(
+                  controller: vm.paredesOtro,
+                  label: 'Otros materiales, especificar',
+                  icon: Icons.edit_outlined,
+                  validator: requiredText,
+                ),
               _select(
                 label: 'Piso',
                 icon: Icons.square_foot_outlined,
@@ -47,12 +63,15 @@ class ViviendaStepWidget extends StatelessWidget {
                 options: vm.matPisoOpts,
                 onChanged: vm.setPiso,
                 isLoading: vm.isLoadingCatalogs,
+                validator: requiredText,
               ),
-              SumsTextField(
-                controller: vm.materialOtros,
-                label: 'Otros materiales, especificar',
-                icon: Icons.edit_outlined,
-              ),
+              if (vm.piso == 'Otros (especifique)')
+                SumsTextField(
+                  controller: vm.pisoOtro,
+                  label: 'Otros materiales, especificar',
+                  icon: Icons.edit_outlined,
+                  validator: requiredText,
+                ),
               _numberField(
                 vm.cuartos,
                 'Número de cuartos',
@@ -81,6 +100,7 @@ class ViviendaStepWidget extends StatelessWidget {
                 options: vm.cocinasOpts,
                 onChanged: vm.setCocina,
                 isLoading: vm.isLoadingCatalogs,
+                validator: requiredText,
               ),
               _select(
                 label: 'Manejo de excretas',
@@ -89,6 +109,7 @@ class ViviendaStepWidget extends StatelessWidget {
                 options: vm.excretasOpts,
                 onChanged: vm.setExcretas,
                 isLoading: vm.isLoadingCatalogs,
+                validator: requiredText,
               ),
             ]),
             const SizedBox(height: 14),
@@ -121,11 +142,13 @@ class ViviendaStepWidget extends StatelessWidget {
               ),
             const SizedBox(height: 12),
             _fieldGrid([
-              SumsTextField(
-                controller: vm.animalOtro,
-                label: 'Otros, especificar',
-                icon: Icons.edit_outlined,
-              ),
+              if (vm.otrosAnimales.contains('Otros'))
+                SumsTextField(
+                  controller: vm.animalOtro,
+                  label: 'Otros, especificar',
+                  icon: Icons.edit_outlined,
+                  validator: requiredText,
+                ),
               SumsTextField(
                 controller: vm.animalObs,
                 label: 'Observaciones',
@@ -195,6 +218,7 @@ class ViviendaStepWidget extends StatelessWidget {
     required String? value, required List<String> options,
     required ValueChanged<String?> onChanged,
     bool isLoading = false,
+    String? Function(String?)? validator,
   }) =>
       DropdownButtonFormField<String>(
         isExpanded:    true,
@@ -211,6 +235,7 @@ class ViviendaStepWidget extends StatelessWidget {
         ),
         items: options.map((o) => DropdownMenuItem(value: o, child: Text(o, overflow: TextOverflow.ellipsis))).toList(),
         onChanged:     onChanged,
+        validator:     validator,
       );
 
   Widget _yesNo(String label, bool value, ValueChanged<bool> onChanged) =>
@@ -250,7 +275,8 @@ class ViviendaStepWidget extends StatelessWidget {
       SumsTextField(
         controller: c, label: label, icon: icon,
         keyboardType: TextInputType.number,
-        validator: nonNegativeIntText,
+        inputFormatters: digitsOnly,
+        validator: intMin(1),
       );
 }
 

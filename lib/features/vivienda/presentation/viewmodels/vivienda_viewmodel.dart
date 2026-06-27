@@ -7,7 +7,9 @@ class ViviendaViewModel extends ChangeNotifier {
   String? techo;
   String? paredes;
   String? piso;
-  final materialOtros = TextEditingController();
+  final techoOtro = TextEditingController();
+  final paredesOtro = TextEditingController();
+  final pisoOtro = TextEditingController();
   final cuartos = TextEditingController();
   final habitantes = TextEditingController();
 
@@ -53,41 +55,26 @@ class ViviendaViewModel extends ChangeNotifier {
       ]);
 
       matTechoParedesOpts = futures[0].where((e) => e.nombre != 'Tierra').map((e) => e.nombre).toList();
-      matPisoOpts = futures[1].map((e) => e.nombre).toList();
+      matPisoOpts = futures[1].where((e) => e.nombre != 'Lámina').map((e) => e.nombre).toList();
       cocinasOpts = ['Fuera del dormitorio', 'Dentro del dormitorio'];
       excretasOpts = futures[2].map((e) => e.nombre).toList();
       otrosAnimalesOpts = futures[3].map((e) => e.nombre).toList();
 
-      // Set Dummy Data
-      techo = 'Lámina';
-      paredes = 'Madera';
-      piso = 'Tierra';
-      cuartos.text = '3';
-      habitantes.text = '5';
-      aguaEntubada = true;
-      energiaElect = true;
-      cocina = 'Dentro del dormitorio';
-      coccionLena = true;
-      excretas = 'Letrina';
-      alcantarillado = false;
-      fosaSeptica = true;
-      perrosGatos = true;
-      animVacunas = true;
-      esterilizados = false;
-
     } catch (e) {
       errorMessage = e.toString();
       // Fallback
-      matTechoParedesOpts = ['Concreto o cemento', 'Madera', 'Lámina', 'Otros'];
-      matPisoOpts = ['Concreto o cemento', 'Madera', 'Tierra', 'Otros'];
+      matTechoParedesOpts = ['Concreto o cemento', 'Madera', 'Lámina', 'Otros (especifique)'];
+      matPisoOpts = ['Concreto o cemento', 'Madera', 'Tierra', 'Otros (especifique)'];
       cocinasOpts = ['Fuera del dormitorio', 'Dentro del dormitorio'];
       excretasOpts = ['WC', 'Letrina', 'Al ras de suelo'];
-      otrosAnimalesOpts = ['Aves de corral', 'Bovinos', 'Porcinos', 'NA'];
+      otrosAnimalesOpts = ['Aves de corral', 'Bovinos', 'Porcinos', 'Otros', 'NA'];
     } finally {
       isLoadingCatalogs = false;
       notifyListeners();
     }
   }
+
+
 
   void setTecho(String? value) { techo = value; notifyListeners(); }
   void setParedes(String? value) { paredes = value; notifyListeners(); }
@@ -121,11 +108,17 @@ class ViviendaViewModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toPayload() {
+    final parts = <String>[];
+    if (techo == 'Otros (especifique)' && techoOtro.text.trim().isNotEmpty) parts.add('Techo: ${techoOtro.text.trim()}');
+    if (paredes == 'Otros (especifique)' && paredesOtro.text.trim().isNotEmpty) parts.add('Paredes: ${paredesOtro.text.trim()}');
+    if (piso == 'Otros (especifique)' && pisoOtro.text.trim().isNotEmpty) parts.add('Piso: ${pisoOtro.text.trim()}');
+    final materialOtrosStr = parts.join(', ');
+
     return {
       "techo": techo,
       "paredes": paredes,
       "piso": piso,
-      "materialOtros": materialOtros.text,
+      "materialOtros": materialOtrosStr,
       "cuartos": int.tryParse(cuartos.text),
       "habitantes": int.tryParse(habitantes.text),
       "agua_entubada": aguaEntubada,
@@ -146,7 +139,9 @@ class ViviendaViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    materialOtros.dispose();
+    techoOtro.dispose();
+    paredesOtro.dispose();
+    pisoOtro.dispose();
     cuartos.dispose();
     habitantes.dispose();
     animalOtro.dispose();

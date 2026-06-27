@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
@@ -19,6 +21,74 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
   final int _cedulasSemana = 0;
   final int _personasRegistradas = 0;
 
+  // ── Connectivity banner ─────────────────────────────────────────────
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+  bool _wasOffline = false;
+  bool _showBanner = false;
+  String _bannerMessage = '';
+  Color _bannerColor = Colors.green;
+  Timer? _bannerTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupConnectivityListener();
+    // Refrescar el conteo de cédulas cada vez que se entra al Home
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<CedulaViewModel>().refreshSyncCounts();
+      }
+    });
+  }
+
+  void _setupConnectivityListener() {
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((results) async {
+      final isOnline = !results.contains(ConnectivityResult.none);
+
+      if (!isOnline && !_wasOffline) {
+        // Acaba de perder conexión
+        _wasOffline = true;
+        _showToast('Sin conexión a internet', const Color(0xFF616161));
+      } else if (isOnline && _wasOffline) {
+        // Acaba de recuperar conexión
+        _wasOffline = false;
+        _showToast('Conexión restaurada', const Color(0xFF2E7D32));
+        // Siempre refrescar el conteo al reconectar
+        if (mounted) {
+          final cvm = context.read<CedulaViewModel>();
+          await cvm.refreshSyncCounts();
+          await Future.delayed(const Duration(milliseconds: 600));
+          if (mounted && cvm.pendingSyncCount > 0) {
+            await cvm.syncNow();
+          }
+        }
+      }
+    });
+    // Checar estado inicial
+    Connectivity().checkConnectivity().then((results) {
+      _wasOffline = results.contains(ConnectivityResult.none);
+    });
+  }
+
+  void _showToast(String message, Color color) {
+    _bannerTimer?.cancel();
+    setState(() {
+      _bannerMessage = message;
+      _bannerColor = color;
+      _showBanner = true;
+    });
+    _bannerTimer = Timer(const Duration(seconds: 6), () {
+      if (mounted) setState(() => _showBanner = false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySub?.cancel();
+    _bannerTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth     = context.watch<AuthViewModel>();
@@ -28,9 +98,11 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: _buildAppBar(context),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
+      body: Stack(
+        children: [
+          SafeArea(
+            child: CustomScrollView(
+              slivers: [
             // ── Cabecera con saludo ─────────────────────────────────────────
             SliverToBoxAdapter(
               child: _GreetingSection(userName: userName, date: today),
@@ -53,6 +125,49 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               sliver: SliverToBoxAdapter(
                 child: _MainActionCard(onTap: _goToCedula),
+              ),
+            ),
+            
+            // ── Sincronización ───────────────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: Consumer<CedulaViewModel>(
+                  builder: (context, cvm, child) {
+                    if (cvm.pendingSyncCount == 0) return const SizedBox.shrink();
+                    return _SyncStatusCard(
+                      pendingCount: cvm.pendingSyncCount,
+                      isSyncing: cvm.isSyncing,
+                      isOnline: cvm.isOnline,
+                      onSyncTap: () async {
+                        final result = await cvm.syncNow();
+                        if (!context.mounted) return;
+                        if (result.error != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${result.error}'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        } else if (result.synced > 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('✅ ${result.synced} cédula(s) sincronizadas correctamente'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else if (result.failed > 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('⚠ ${result.failed} cédula(s) fallaron. Verifica tu conexión.'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                ),
               ),
             ),
 
@@ -78,7 +193,51 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
               ),
             ),
           ],
-        ),
+            ),
+          ),
+          // ── Banner de conectividad (tipo YouTube) ──────────────────────────
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedSlide(
+              offset: _showBanner ? Offset.zero : const Offset(0, 1),
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeOutCubic,
+              child: AnimatedOpacity(
+                opacity: _showBanner ? 1 : 0,
+                duration: const Duration(milliseconds: 250),
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _bannerColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _bannerColor.withValues(alpha: 0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      _bannerMessage,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed:       _goToCedula,
@@ -351,7 +510,7 @@ class _MainActionCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Familia · Vivienda · Vacunación · Integrantes',
+                      'Familia · Vivienda · Integrantes · Vacunación',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.7),
                         fontSize: 12,
@@ -390,14 +549,14 @@ class _FlowSteps extends StatelessWidget {
       icon: Icons.home_outlined,
     ),
     _FlowStep(
-      num: '3', title: 'Vacunación',
-      detail: 'Esquema aplicado durante la visita',
-      icon: Icons.vaccines_outlined,
-    ),
-    _FlowStep(
-      num: '4', title: 'Integrantes',
+      num: '3', title: 'Integrantes',
       detail: 'Salud, alimentación y datos de cada miembro',
       icon: Icons.people_alt_outlined,
+    ),
+    _FlowStep(
+      num: '4', title: 'Vacunación',
+      detail: 'Esquema aplicado durante la visita',
+      icon: Icons.vaccines_outlined,
     ),
   ];
 
@@ -540,6 +699,94 @@ class _TipCard extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Tarjeta de Estado de Sincronización ──────────────────────────────────────────
+
+class _SyncStatusCard extends StatelessWidget {
+  final int pendingCount;
+  final bool isSyncing;
+  final bool isOnline;
+  final Future<void> Function() onSyncTap;
+
+  const _SyncStatusCard({
+    required this.pendingCount,
+    required this.isSyncing,
+    required this.isOnline,
+    required this.onSyncTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSyncing
+        ? const Color(0xFF2196F3)  // blue while syncing
+        : isOnline
+            ? AppColors.terracota   // orange when online+pending
+            : const Color(0xFF757575); // grey when offline
+
+    final subtitle = isSyncing
+        ? 'Sincronizando… por favor espera.'
+        : isOnline
+            ? 'Tienes conexión. Presiona sincronizar para enviar.'
+            : 'Sin conexión. La sincronización ocurrirá al volver online.';
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimens.radiusM),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          isSyncing
+              ? SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: color,
+                  ),
+                )
+              : Icon(
+                  isOnline ? Icons.sync_outlined : Icons.sync_disabled_outlined,
+                  color: color,
+                  size: 28,
+                ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$pendingCount cédula(s) pendiente(s) de sincronizar',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 12, color: AppColors.ink),
+                ),
+              ],
+            ),
+          ),
+          if (!isSyncing)
+            IconButton(
+              onPressed: isOnline ? onSyncTap : null,
+              icon: Icon(Icons.sync, color: isOnline ? color : Colors.grey),
+              tooltip: isOnline
+                  ? 'Sincronizar ahora'
+                  : 'Sin conexión a internet',
+            ),
         ],
       ),
     );

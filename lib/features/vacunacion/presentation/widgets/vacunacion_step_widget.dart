@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
 import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
+import '../../../integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
 import '../viewmodels/vacunacion_viewmodel.dart';
 
 class VacunacionStepWidget extends StatelessWidget {
@@ -12,6 +13,30 @@ class VacunacionStepWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<VacunacionViewModel>();
+    final intVm = context.watch<IntegrantesViewModel>();
+    final pacientesOpts = intVm.integrantes.where((i) => i.nombre.text.isNotEmpty).toList();
+
+    // Synchronize vaccine card fields with Integrantes step
+    for (final v in vm.vacunas) {
+      if (v.paciente.text.isNotEmpty) {
+        final match = pacientesOpts.cast<MemberForm?>().firstWhere(
+          (p) => p?.nombre.text == v.paciente.text,
+          orElse: () => null,
+        );
+        if (match != null) {
+          if (v.fechaNacimiento.text != match.fechaNacimiento.text ||
+              v.edad.text != match.edad.text) {
+            v.fechaNacimiento.text = match.fechaNacimiento.text;
+            v.edad.text = match.edad.text;
+          }
+        } else {
+          // Patient not found in list (deleted or renamed), so clear fields
+          v.paciente.text = '';
+          v.fechaNacimiento.text = '';
+          v.edad.text = '';
+        }
+      }
+    }
 
     if (vm.isLoading) {
       return const Center(
@@ -37,7 +62,7 @@ class VacunacionStepWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _StepPanel(
-          title: 'V. Esquema de vacunación',
+          title: 'VI. Esquema de vacunación',
           icon: Icons.vaccines_outlined,
           color: AppColors.burgundy,
           children: [
@@ -56,6 +81,7 @@ class VacunacionStepWidget extends StatelessWidget {
                 onRemove: () => vm.removeVaccineForm(i),
                 vacunasOpts: vm.vacunasOpts,
                 dosisOpts: vm.dosisOpts,
+                pacientesOpts: pacientesOpts,
                 onChanged: () => vm.updateForm(),
               ),
             ),
@@ -153,12 +179,13 @@ class _VaccineCard extends StatelessWidget {
   final VoidCallback onRemove;
   final List<String> vacunasOpts;
   final List<String> dosisOpts;
+  final List<MemberForm> pacientesOpts;
   final VoidCallback onChanged;
 
   const _VaccineCard({
     required this.index, required this.form, required this.canRemove,
     required this.onRemove, required this.vacunasOpts, required this.dosisOpts,
-    required this.onChanged,
+    required this.pacientesOpts, required this.onChanged,
   });
 
   @override
@@ -208,12 +235,64 @@ class _VaccineCard extends StatelessWidget {
             return Wrap(
               spacing: 12, runSpacing: 12,
               children: [
-                SizedBox(width: w, child: SumsTextField(controller: form.paciente, label: 'Identificación del paciente', icon: Icons.person_outline)),
-                SizedBox(width: w, child: SumsTextField(controller: form.fechaNacimiento, label: 'Fecha de nacimiento', icon: Icons.event_outlined, readOnly: true, onTap: () => _selectDate(context, form.fechaNacimiento))),
-                SizedBox(width: w, child: _numberField(form.edad, 'Edad', Icons.cake_outlined)),
-                SizedBox(width: w, child: _select(label: 'Vacuna aplicada', icon: Icons.vaccines_outlined, value: form.tipo, options: vacunasOpts, onChanged: (v) { form.tipo = v; onChanged(); })),
-                SizedBox(width: w, child: _select(label: 'Dosis', icon: Icons.medication_liquid_outlined, value: form.dosis, options: dosisOpts, onChanged: (v) { form.dosis = v; onChanged(); })),
-                SizedBox(width: w, child: SumsTextField(controller: form.otraVacuna, label: 'Otra, especificar', icon: Icons.edit_outlined)),
+                SizedBox(width: w, child: DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Identificación del paciente', prefixIcon: Icon(Icons.person_outline)),
+                  value: form.paciente.text.isEmpty || !pacientesOpts.any((p) => p.nombre.text == form.paciente.text) ? null : form.paciente.text,
+                  items: pacientesOpts.map((m) => DropdownMenuItem(value: m.nombre.text, child: Text(m.nombre.text, overflow: TextOverflow.ellipsis))).toList(),
+                  onChanged: (v) {
+                    if (v == null) return;
+                    form.paciente.text = v;
+                    final m = pacientesOpts.firstWhere((p) => p.nombre.text == v, orElse: () => pacientesOpts.first);
+                    form.fechaNacimiento.text = m.fechaNacimiento.text;
+                    form.edad.text = m.edad.text;
+                    onChanged();
+                  },
+                  validator: requiredText,
+                )),
+                SizedBox(width: w, child: SumsTextField(
+                  controller: form.fechaNacimiento,
+                  label: 'Fecha de nacimiento',
+                  icon: Icons.event_outlined,
+                  readOnly: true,
+                  validator: (v) {
+                    final req = requiredText(v);
+                    if (req != null) return req;
+                    try {
+                      final bDate = DateTime.parse(v!);
+                      final age = DateTime.now().difference(bDate).inDays / 365.25;
+                      if (age < 2) return 'No aplicable a menores de 2 años';
+                    } catch (_) {}
+                    return null;
+                  },
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now().subtract(const Duration(days: 365 * 2)),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      form.fechaNacimiento.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                      final now = DateTime.now();
+                      int anos = now.year - picked.year;
+                      if (now.month < picked.month || (now.month == picked.month && now.day < picked.day)) anos--;
+                      form.edad.text = '$anos';
+                      onChanged();
+                    }
+                  },
+                )),
+                SizedBox(width: w, child: SumsTextField(controller: form.edad, label: 'Edad', icon: Icons.cake_outlined)),
+                SizedBox(width: w, child: _select(label: 'Vacuna aplicada', icon: Icons.vaccines_outlined, value: form.tipo, options: vacunasOpts, onChanged: (v) {
+                  form.tipo = v;
+                  if (v != 'Otra') {
+                    form.otraVacuna.clear();
+                  }
+                  onChanged();
+                }, validator: requiredText)),
+                SizedBox(width: w, child: _select(label: 'Dosis', icon: Icons.medication_liquid_outlined, value: form.dosis, options: dosisOpts, onChanged: (v) { form.dosis = v; onChanged(); }, validator: requiredText)),
+                if (form.tipo == 'Otra')
+                  SizedBox(width: w, child: SumsTextField(controller: form.otraVacuna, label: 'Otra, especificar', icon: Icons.edit_outlined, validator: requiredText)),
               ],
             );
           }),
@@ -222,29 +301,13 @@ class _VaccineCard extends StatelessWidget {
     );
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-    }
-  }
 
-  Widget _numberField(TextEditingController c, String label, IconData icon) =>
-      SumsTextField(
-        controller: c, label: label, icon: icon,
-        keyboardType: TextInputType.number,
-        validator: nonNegativeIntText,
-      );
 
   Widget _select({
     required String label, required IconData icon,
     required String? value, required List<String> options,
     required ValueChanged<String?> onChanged,
+    String? Function(String?)? validator,
   }) =>
       DropdownButtonFormField<String>(
         isExpanded:    true,
@@ -252,5 +315,6 @@ class _VaccineCard extends StatelessWidget {
         decoration:    InputDecoration(labelText: label, prefixIcon: Icon(icon)),
         items: options.map((o) => DropdownMenuItem(value: o, child: Text(o, overflow: TextOverflow.ellipsis))).toList(),
         onChanged:     onChanged,
+        validator:     validator,
       );
 }

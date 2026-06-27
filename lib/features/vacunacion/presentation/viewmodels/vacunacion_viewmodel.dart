@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/repositories/vacunacion_repository.dart';
@@ -65,22 +64,21 @@ class VacunacionViewModel extends ChangeNotifier {
         addVaccineForm();
       }
 
-      // Dummy Data
-      _seAplicoVacuna = true;
-      if (_vacunas.isNotEmpty) {
-        _vacunas[0].paciente.text = 'María González Pérez';
-        _vacunas[0].fechaNacimiento.text = '1992-05-14';
-        _vacunas[0].edad.text = '34';
-        _vacunas[0].tipo = 'Influenza estacional';
-        _vacunas[0].dosis = 'Única';
-      }
     } catch (e) {
       _errorMessage = e.toString();
+      _vacunasOpts = ['Influenza estacional', 'COVID-19', 'Otra'];
+      _dosisOpts = ['Única', '1era', '2da', '3era', 'Refuerzo'];
+      
+      if (_vacunas.isEmpty) {
+        addVaccineForm();
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
+
+
 
   void addVaccineForm() {
     _vacunas.add(VaccineForm());
@@ -99,15 +97,32 @@ class VacunacionViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  int? _parseEdad(String ageText) {
+    final text = ageText.trim();
+    if (text.isEmpty) return null;
+    if (text.toLowerCase().contains('mes')) {
+      final regExp = RegExp(r'\d+');
+      final match = regExp.firstMatch(text);
+      if (match != null) {
+        return int.tryParse(match.group(0)!);
+      }
+    }
+    final digits = RegExp(r'\d+').firstMatch(text);
+    if (digits != null) {
+      return int.tryParse(digits.group(0)!);
+    }
+    return int.tryParse(text);
+  }
+
   Map<String, dynamic> toPayload() {
     return {
       "se_aplico_vacuna": _seAplicoVacuna,
       "vacunas": _seAplicoVacuna ? _vacunas.map((v) => {
         "paciente": v.paciente.text,
         "fecha_nacimiento": v.fechaNacimiento.text,
-        "edad": int.tryParse(v.edad.text),
+        "edad": _parseEdad(v.edad.text),
         "vacuna": v.tipo,
-        "otraVacuna": v.otraVacuna.text,
+        "otraVacuna": v.tipo == 'Otra' ? (v.otraVacuna.text.isEmpty ? null : v.otraVacuna.text) : null,
         "dosis": v.dosis,
       }).toList() : [],
     };
