@@ -113,13 +113,20 @@ class ApiClient {
 
   dynamic _decodeBody(http.Response response) {
     if (response.body.isEmpty) return <String, dynamic>{};
-    return jsonDecode(response.body);
+    try {
+      return jsonDecode(response.body);
+    } catch (_) {
+      return response.body;
+    }
   }
 
   Never _throwError(http.Response response, dynamic body) {
     if (body is Map<String, dynamic>) {
       final error = body['error'] ?? body['message'] ?? body['detail'];
       if (error != null) throw ApiException(error.toString());
+    } else if (body is String && body.isNotEmpty) {
+      // Si la respuesta fue un texto plano en lugar de JSON
+      throw ApiException(body);
     }
     throw ApiException('Error HTTP ${response.statusCode}.');
   }

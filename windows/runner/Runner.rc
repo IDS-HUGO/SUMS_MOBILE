@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
+            VALUE "CompanyName", "com.kazedev" "\0"
             VALUE "FileDescription", "sums" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "sums" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.kazedev. All rights reserved." "\0"
             VALUE "OriginalFilename", "sums.exe" "\0"
-            VALUE "ProductName", "sums" "\0"
+            VALUE "ProductName", "SUMS" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
