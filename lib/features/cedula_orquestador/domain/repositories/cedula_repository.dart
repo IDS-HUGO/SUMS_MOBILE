@@ -17,7 +17,9 @@ abstract class CedulaRepository {
   /// Métodos locales para sincronización
   Future<int> getPendingSyncCount();
   Future<int> getDraftCount();
+  Future<List<Map<String, dynamic>>> getAllLocalCedulas();
   Future<SyncResult> syncPendingCedulas();
+  Future<SyncResult> syncSingleCedula(int localId);
 }
 
 /// Resultado de una sincronización

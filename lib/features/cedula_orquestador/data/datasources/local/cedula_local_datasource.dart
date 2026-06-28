@@ -102,10 +102,40 @@ class CedulaLocalDataSource {
     return results;
   }
 
-  /// Actualiza el estado de sincronización
-  Future<void> updateSyncStatus(int localId, int newStatus) async {
-    await (db.update(db.cedulas)..where((tbl) => tbl.id.equals(localId)))
-        .write(CedulasCompanion(syncStatus: Value(newStatus)));
+  /// Actualiza el estado de sincronización, opcionalmente guardando un mensaje de error
+  Future<void> updateSyncStatus(int localId, int newStatus, {String? error}) async {
+    if (error != null) {
+      // Recuperar el registro actual para no perder datos
+      final current = await (db.select(db.cedulas)..where((tbl) => tbl.id.equals(localId))).getSingle();
+      final decoded = jsonDecode(current.familiaData) as Map<String, dynamic>;
+      decoded['_lastSyncError'] = error;
+      decoded['_lastSyncAttempt'] = DateTime.now().toIso8601String();
+      
+      await (db.update(db.cedulas)..where((tbl) => tbl.id.equals(localId)))
+          .write(CedulasCompanion(
+            syncStatus: Value(newStatus),
+            familiaData: Value(jsonEncode(decoded)),
+          ));
+    } else {
+      await (db.update(db.cedulas)..where((tbl) => tbl.id.equals(localId)))
+          .write(CedulasCompanion(syncStatus: Value(newStatus)));
+    }
+  }
+
+  /// Recupera todas las cédulas locales para el historial
+  Future<List<Map<String, dynamic>>> getAllCedulas() async {
+    final results = <Map<String, dynamic>>[];
+    final cedulasList = await (db.select(db.cedulas)..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
+    
+    for (final c in cedulasList) {
+      final cedulaPayload = jsonDecode(c.familiaData) as Map<String, dynamic>;
+      cedulaPayload['_localId'] = c.id;
+      cedulaPayload['_syncStatus'] = c.syncStatus;
+      cedulaPayload['_createdAt'] = c.createdAt.toIso8601String();
+      cedulaPayload['_informante'] = c.informanteNombre;
+      results.add(cedulaPayload);
+    }
+    return results;
   }
 
   /// Elimina registros sincronizados más antiguos que los días especificados
