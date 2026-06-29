@@ -71,12 +71,14 @@ class CedulaViewModel extends ChangeNotifier {
 
   int _pendingSyncCount = 0;
   int _draftCount = 0;
+  List<Map<String, dynamic>> _allLocalRecords = [];
   bool _isSyncing = false;
   bool _isOnline = true;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
   int get pendingSyncCount => _pendingSyncCount;
   int get draftCount => _draftCount;
+  List<Map<String, dynamic>> get allLocalRecords => _allLocalRecords;
   bool get isSyncing => _isSyncing;
   bool get isOnline => _isOnline;
 
@@ -101,6 +103,7 @@ class CedulaViewModel extends ChangeNotifier {
   Future<void> refreshSyncCounts() async {
     _pendingSyncCount = await cedulaRepository.getPendingSyncCount();
     _draftCount = await cedulaRepository.getDraftCount();
+    _allLocalRecords = await cedulaRepository.getAllLocalCedulas();
     notifyListeners();
   }
 
@@ -111,6 +114,20 @@ class CedulaViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       final result = await cedulaRepository.syncPendingCedulas();
+      await refreshSyncCounts();
+      return result;
+    } finally {
+      _isSyncing = false;
+      notifyListeners();
+    }
+  }
+
+  /// Reintenta la sincronización de un registro específico
+  Future<SyncResult> retrySyncSingle(int localId) async {
+    _isSyncing = true;
+    notifyListeners();
+    try {
+      final result = await cedulaRepository.syncSingleCedula(localId);
       await refreshSyncCounts();
       return result;
     } finally {

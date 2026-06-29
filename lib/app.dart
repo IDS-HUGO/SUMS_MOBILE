@@ -13,6 +13,7 @@ import 'features/admin/presentation/pages/admin_unidades_list_page.dart';
 import 'features/admin/presentation/pages/admin_catalogos_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/cedula_orquestador/presentation/pages/cedula_form_page.dart';
+import 'features/cedula_orquestador/presentation/pages/cedula_history_page.dart';
 import 'features/cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
 import 'features/familia/presentation/viewmodels/familia_viewmodel.dart';
 import 'features/vivienda/presentation/viewmodels/vivienda_viewmodel.dart';
@@ -94,6 +95,7 @@ class _AppState extends State<App> {
           AppRoutes.homeAnalista:      (_) => const HomeAnalistaPage(),
           // ── Features ────────────────────────────────────────────────────────────
           AppRoutes.cedula:            (_) => const CedulaFormPage(),
+          AppRoutes.cedulaHistorial:   (_) => const CedulaHistoryPage(),
           AppRoutes.adminUsers:        (_) => const AdminUsersListPage(),
           AppRoutes.adminUnidades:     (_) => const AdminUnidadesListPage(),
           AppRoutes.adminCatalogos:    (_) => const AdminCatalogosPage(),
