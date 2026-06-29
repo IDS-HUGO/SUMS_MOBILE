@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: _MobileLoginHeader(),
                 ),
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+                  padding: const EdgeInsets.fromLTRB(32, 24, 32, 40),
                   sliver: SliverToBoxAdapter(
                     child: _LoginCard(
                       formKey:            _formKey,
@@ -211,13 +211,12 @@ class _InfoBadge extends StatelessWidget {
 }
 
 // ── Header móvil ─────────────────────────────────────────────────────────────
-
 class _MobileLoginHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.greenDark,
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+      padding: const EdgeInsets.fromLTRB(40, 15, 40, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

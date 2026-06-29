@@ -128,8 +128,7 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
               ),
             ),
             
-            // ── Sincronización ───────────────────────────────────────────────
-            SliverPadding(
+SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
               sliver: SliverToBoxAdapter(
                 child: Consumer<CedulaViewModel>(
@@ -142,37 +141,37 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
                         isSyncing: cvm.isSyncing,
                         isOnline: cvm.isOnline,
                         onSyncTap: () async {
-                        final result = await cvm.syncNow();
-                        if (!context.mounted) return;
-                        if (result.error != null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Error: ${result.error}'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        } else if (result.synced > 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('✅ ${result.synced} cédula(s) sincronizadas correctamente'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        } else if (result.failed > 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('⚠ ${result.failed} cédula(s) fallaron. Verifica tu conexión.'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        }
-                      },
+                          final result = await cvm.syncNow();
+                          if (!context.mounted) return;
+                          if (result.error != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error: ${result.error}'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } else if (result.synced > 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('✅ ${result.synced} cédula(s) sincronizadas correctamente'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          } else if (result.failed > 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('⚠ ${result.failed} cédula(s) fallaron. Verifica tu conexión.'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     );
                   },
                 ),
               ),
             ),
-
             // ── Flujo de captura ─────────────────────────────────────────────
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
