@@ -333,6 +333,8 @@ class _LoginCard extends StatelessWidget {
               icon:            Icons.person_outline,
               textInputAction: TextInputAction.next,
               validator:       _required,
+              enableSuggestions: false,
+              autocorrect:      false,
             ),
             const SizedBox(height: 14),
             SumsTextField(
@@ -342,6 +344,9 @@ class _LoginCard extends StatelessWidget {
               obscureText:     true,
               textInputAction: TextInputAction.done,
               validator:       _required,
+              enableSuggestions: false,
+              autocorrect:      false,
+              enableInteractiveSelection: false,
             ),
             const SizedBox(height: 24),
 
