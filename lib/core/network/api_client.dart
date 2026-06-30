@@ -76,7 +76,11 @@ class ApiClient {
     if (clean.isEmpty) throw const ApiException('Configura API_BASE_URL.');
     final normalized =
         clean.endsWith('/') ? clean.substring(0, clean.length - 1) : clean;
-    return Uri.parse('$normalized$path');
+    final uri = Uri.parse('$normalized$path');
+    if (uri.scheme != 'https') {
+      throw const ApiException('La comunicación no segura (HTTP) está bloqueada por políticas de seguridad (OWASP MASVS-NETWORK-1).');
+    }
+    return uri;
   }
 
   Future<http.Response> _sendRequest(

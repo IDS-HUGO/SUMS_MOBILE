@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/di/app_dependencies.dart';
 import 'core/routes/app_routes.dart';
@@ -29,25 +31,68 @@ import 'features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 import 'shared/theme/app_theme.dart';
 
 class App extends StatefulWidget {
-  const App({super.key});
+  final SharedPreferences prefs;
+  final bool isSecureDevice;
+
+  const App({
+    super.key,
+    required this.prefs,
+    this.isSecureDevice = true,
+  });
 
   @override
   State<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> {
+class _AppState extends State<App> with WidgetsBindingObserver {
   late final AppDependencies _dependencies;
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  Timer? _idleTimer;
+  bool _showOverlay = false;
 
   @override
   void initState() {
     super.initState();
-    _dependencies = AppDependencies();
+    _dependencies = AppDependencies(widget.prefs);
+    WidgetsBinding.instance.addObserver(this);
+    _resetIdleTimer();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _idleTimer?.cancel();
     _dependencies.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    setState(() {
+      _showOverlay = state == AppLifecycleState.paused || state == AppLifecycleState.inactive;
+    });
+  }
+
+  void _resetIdleTimer() {
+    _idleTimer?.cancel();
+    // 15 minutos de inactividad
+    _idleTimer = Timer(const Duration(minutes: 15), _onIdleTimeout);
+  }
+
+  void _onIdleTimeout() {
+    final authViewModel = _dependencies.authViewModel;
+    if (authViewModel.isAuthenticated) {
+      authViewModel.logout();
+      _navigatorKey.currentState?.pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+
+      ScaffoldMessenger.of(_navigatorKey.currentContext!).showSnackBar(
+        const SnackBar(
+          content: Text('Sesión cerrada por inactividad (OWASP MASVS-PLATFORM-1)'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   @override
@@ -83,6 +128,7 @@ class _AppState extends State<App> {
         ),
       ],
       child: MaterialApp(
+        navigatorKey: _navigatorKey,
         debugShowCheckedModeBanner: false,
         title:        'SUMS IMSS Bienestar',
         theme:        AppTheme.light(),
@@ -107,6 +153,76 @@ class _AppState extends State<App> {
           // Cualquier ruta no definida arriba cae aquí; redirige a login.
           return MaterialPageRoute(
             builder: (_) => const LoginPage(),
+          );
+        },
+        builder: (context, child) {
+          return Listener(
+            onPointerDown: (_) => _resetIdleTimer(),
+            onPointerMove: (_) => _resetIdleTimer(),
+            child: Stack(
+              children: [
+                if (child != null) child,
+                if (_showOverlay)
+                  Positioned.fill(
+                    child: Container(
+                      color: AppColors.greenDark,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.lock, size: 64, color: AppColors.gold),
+                            SizedBox(height: 16),
+                            Text(
+                              'Sesión Protegida',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                if (!widget.isSecureDevice)
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 16,
+                    child: SafeArea(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
+                          ],
+                        ),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.security, color: Colors.white),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Entorno no seguro detectado (Root/Jailbreak). Ejecutando bajo su propio riesgo.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           );
         },
       ),

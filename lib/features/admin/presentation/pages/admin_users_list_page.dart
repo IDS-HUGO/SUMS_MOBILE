@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../shared/theme/app_theme.dart';
+import '../../../auth/domain/entities/user_role.dart';
 import '../viewmodels/admin_users_viewmodel.dart';
 import 'admin_user_form_page.dart';
 
@@ -68,6 +69,7 @@ class _AdminUsersListPageState extends State<AdminUsersListPage> {
       itemCount: vm.users.length,
       itemBuilder: (context, index) {
         final user = vm.users[index];
+        final role = UserRole.fromId(user.rolId);
         return Card(
           elevation: 0,
           margin: const EdgeInsets.only(bottom: 12),
@@ -77,14 +79,14 @@ class _AdminUsersListPageState extends State<AdminUsersListPage> {
           ),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: _getRoleColor(user.rolId),
-              child: Icon(_getRoleIcon(user.rolId), color: Colors.white, size: 20),
+              backgroundColor: role.color,
+              child: Icon(role.icon, color: Colors.white, size: 20),
             ),
             title: Text(
               user.nombreUsuario,
               style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink),
             ),
-            subtitle: Text('ID: ${user.id} | Rol: ${_getRoleName(user.rolId)}'),
+            subtitle: Text('ID: ${user.id} | Rol: ${role.displayName}'),
             trailing: user.activo
                 ? const Icon(Icons.check_circle, color: AppColors.green, size: 20)
                 : const Icon(Icons.cancel, color: Colors.red, size: 20),
@@ -92,35 +94,5 @@ class _AdminUsersListPageState extends State<AdminUsersListPage> {
         );
       },
     );
-  }
-
-  Color _getRoleColor(int rolId) {
-    switch (rolId) {
-      case 1: return AppColors.rolAdmin;
-      case 2: return AppColors.rolMedico;
-      case 3: return AppColors.rolEncuestador;
-      case 4: return AppColors.rolAnalista;
-      default: return AppColors.muted;
-    }
-  }
-
-  IconData _getRoleIcon(int rolId) {
-    switch (rolId) {
-      case 1: return Icons.admin_panel_settings;
-      case 2: return Icons.medical_services;
-      case 3: return Icons.assignment_ind;
-      case 4: return Icons.analytics;
-      default: return Icons.person;
-    }
-  }
-
-  String _getRoleName(int rolId) {
-    switch (rolId) {
-      case 1: return 'Administrador';
-      case 2: return 'Médico';
-      case 4: return 'Encuestador';
-      case 3: return 'Analista';
-      default: return 'Desconocido';
-    }
   }
 }

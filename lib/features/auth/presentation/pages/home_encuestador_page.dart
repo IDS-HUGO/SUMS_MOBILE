@@ -491,7 +491,7 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
@@ -658,7 +658,6 @@ class _FlowStepRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Número + línea vertical
         Column(
           children: [
             Container(
@@ -786,10 +785,10 @@ class _SyncStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isSyncing
-        ? const Color(0xFF2196F3)  // blue while syncing
+        ? const Color(0xFF2196F3)
         : isOnline
-        ? AppColors.terracota   // orange when online+pending
-        : const Color(0xFF757575); // grey when offline
+        ? AppColors.terracota
+        : const Color(0xFF757575);
 
     final subtitle = isSyncing
         ? 'Sincronizando… por favor espera.'

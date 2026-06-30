@@ -7,6 +7,8 @@ import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
 
+import 'package:sums/core/network/app_logger.dart';
+
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthViewModel extends ChangeNotifier {
@@ -63,7 +65,7 @@ class AuthViewModel extends ChangeNotifier {
         try {
           await loadCatalogsUseCase!();
         } catch (e) {
-          print("Error cargando catálogos en background: $e");
+          AppLogger.error("Error cargando catálogos en background", e);
         }
       }
 
