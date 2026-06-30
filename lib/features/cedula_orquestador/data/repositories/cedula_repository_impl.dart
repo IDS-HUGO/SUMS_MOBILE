@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import '../../../../core/storage/token_storage.dart';
+import 'package:sums/core/network/app_logger.dart';
 import '../../domain/entities/catalog_item.dart';
 import '../../domain/repositories/cedula_repository.dart';
 import '../datasources/remote/cedula_remote_datasource.dart';
@@ -89,7 +90,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
       return await remoteDataSource.postCapturaCompleta(body, token: token);
     } catch (e) {
       // Si falla por red u otro error, hacer fallback a SQLite
-      print('Fallo red, guardando localmente. Error: $e');
+      AppLogger.warn('Fallo red, guardando localmente. (OWASP MASVS-STORAGE-3)');
       if (localDataSource != null) {
         final localId = await localDataSource!.saveCedula(body, 1); // 1 = PENDING_SYNC
         return {
