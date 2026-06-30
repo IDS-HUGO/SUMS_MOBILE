@@ -1,6 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:screen_protector/screen_protector.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../familia/presentation/widgets/familia_step_widget.dart';
@@ -56,13 +57,27 @@ class _CedulaFormPageState extends State<CedulaFormPage> with TickerProviderStat
     );
   }
 
+  static const platform = MethodChannel('com.kazedev.sums/security');
+
   void _initScreenProtector() async {
-    await ScreenProtector.preventScreenshotOn();
+    if (Platform.isAndroid) {
+      try {
+        await platform.invokeMethod('secureScreen');
+      } catch (e) {
+        // Ignore
+      }
+    }
   }
 
   @override
   void dispose() {
-    ScreenProtector.preventScreenshotOff();
+    if (Platform.isAndroid) {
+      try {
+        platform.invokeMethod('unsecureScreen');
+      } catch (e) {
+        // Ignore
+      }
+    }
     _animController.dispose();
     super.dispose();
   }

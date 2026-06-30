@@ -1,6 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:screen_protector/screen_protector.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
@@ -24,13 +25,27 @@ class _LoginPageState extends State<LoginPage> {
     _initScreenProtector();
   }
 
+  static const platform = MethodChannel('com.kazedev.sums/security');
+
   void _initScreenProtector() async {
-    await ScreenProtector.preventScreenshotOn();
+    if (Platform.isAndroid) {
+      try {
+        await platform.invokeMethod('secureScreen');
+      } catch (e) {
+        // Ignore
+      }
+    }
   }
 
   @override
   void dispose() {
-    ScreenProtector.preventScreenshotOff();
+    if (Platform.isAndroid) {
+      try {
+        platform.invokeMethod('unsecureScreen');
+      } catch (e) {
+        // Ignore
+      }
+    }
     _userController.dispose();
     _passwordController.dispose();
     super.dispose();
