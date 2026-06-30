@@ -16,7 +16,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.5
   sqflite: ^2.3.0
-  path: ^1.8.3
 
   # --- Networking & Background ---
   http: ^1.6.0
@@ -24,7 +23,7 @@ dependencies:
   workmanager: ^0.9.0+3
   shared_preferences: ^2.5.5
 
-  # --- Database (Drift / SQLite) ---
+  # --- Database (Drift / SQLite) & Paths ---
   drift: ^2.34.0
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.6
