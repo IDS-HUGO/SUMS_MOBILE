@@ -11,4 +11,5 @@ class AppRoutes {
   static const adminUsers     = '/admin/users';
   static const adminUnidades  = '/admin/unidades';
   static const adminCatalogos = '/admin/catalogos';
+  static const productividadAdmin = '/admin/productividad';
 }

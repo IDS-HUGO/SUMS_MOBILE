@@ -3,8 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
-import '../storage/database_helper.dart';
 import '../storage/token_storage.dart';
+import '../storage/local_database.dart';
 
 import '../../features/auth/data/datasources/remote/auth_remote_datasource.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -20,7 +20,6 @@ import '../../features/cedula_orquestador/data/repositories/cedula_repository_im
 import '../../features/cedula_orquestador/domain/repositories/cedula_repository.dart';
 import '../../features/cedula_orquestador/domain/usecases/load_catalogs_usecase.dart';
 import '../../features/cedula_orquestador/domain/usecases/submit_record_usecase.dart';
-import '../../features/cedula_orquestador/domain/usecases/local_storage_usecases.dart';
 import '../../features/cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
 
 import '../../features/familia/data/datasources/remote/familia_remote_datasource.dart';
@@ -50,6 +49,11 @@ import '../../features/admin/presentation/viewmodels/admin_users_viewmodel.dart'
 import '../../features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
 import '../../features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 
+import '../../features/estadisticas/data/datasources/remote/estadisticas_remote_datasource.dart';
+import '../../features/estadisticas/data/repositories/estadisticas_repository_impl.dart';
+import '../../features/estadisticas/domain/repositories/estadisticas_repository.dart';
+import '../../features/estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
+
 /// Contenedor de dependencias manual para toda la app.
 /// Se crea una única vez en [_AppState.initState] y se destruye en [dispose].
 class AppDependencies {
@@ -58,11 +62,12 @@ class AppDependencies {
     httpClient   = http.Client();
     tokenStorage = SecureTokenStorage();
     apiClient    = ApiClient(client: httpClient, baseUrl: ApiEndpoints.baseUrl);
-    dbHelper     = DatabaseHelper.instance;
 
     // ── feature: cedula_orquestador ───────────────────────────────────────────
     cedulaRemoteDataSource = CedulaRemoteDataSource(apiClient: apiClient);
-    cedulaLocalDataSource  = CedulaLocalDataSource(dbHelper: dbHelper);
+    // Cambiado para usar AppDatabase directamente en lugar de dbHelper que usa sqflite
+    final appDb = AppDatabase();
+    cedulaLocalDataSource  = CedulaLocalDataSource(appDb);
 
     cedulaRepository = CedulaRepositoryImpl(
       remoteDataSource: cedulaRemoteDataSource,
@@ -73,9 +78,6 @@ class AppDependencies {
     cedulaViewModel = CedulaViewModel(
       loadCatalogsUseCase:      LoadCatalogsUseCase(cedulaRepository),
       submitRecordUseCase:      SubmitRecordUseCase(cedulaRepository),
-      getPendingRecordsUseCase: GetPendingRecordsUseCase(cedulaRepository),
-      saveLocalRecordUseCase:   SaveLocalRecordUseCase(cedulaRepository),
-      deleteLocalRecordUseCase: DeleteLocalRecordUseCase(cedulaRepository),
       cedulaRepository:         cedulaRepository,
     );
 
@@ -138,13 +140,20 @@ class AppDependencies {
       repository: adminRepository,
       loadCatalogsUseCase: LoadCatalogsUseCase(cedulaRepository),
     );
+
+    // ── feature: estadisticas ────────────────────────────────────────────────
+    estadisticasRemoteDataSource = EstadisticasRemoteDataSource(apiClient: apiClient);
+    estadisticasRepository = EstadisticasRepositoryImpl(
+      remoteDataSource: estadisticasRemoteDataSource,
+      tokenStorage:     tokenStorage,
+    );
+    estadisticasViewModel = EstadisticasViewModel(repository: estadisticasRepository);
   }
 
   // ── infraestructura ───────────────────────────────────────────────────────
   late final http.Client          httpClient;
   late final TokenStorage         tokenStorage;
   late final ApiClient            apiClient;
-  late final DatabaseHelper       dbHelper;
 
   // ── auth ──────────────────────────────────────────────────────────────────
   late final AuthRemoteDataSource authRemoteDataSource;
@@ -181,6 +190,11 @@ class AppDependencies {
   late final AdminUnidadesViewModel      adminUnidadesViewModel;
   late final AdminCatalogosViewModel     adminCatalogosViewModel;
 
+  // ── estadisticas ──────────────────────────────────────────────────────────
+  late final EstadisticasRemoteDataSource estadisticasRemoteDataSource;
+  late final EstadisticasRepository       estadisticasRepository;
+  late final EstadisticasViewModel        estadisticasViewModel;
+
   /// Libera ViewModels y cierra el cliente HTTP y BD local.
   void dispose() {
     authViewModel.dispose();
@@ -192,7 +206,7 @@ class AppDependencies {
     adminUsersViewModel.dispose();
     adminUnidadesViewModel.dispose();
     adminCatalogosViewModel.dispose();
+    estadisticasViewModel.dispose();
     httpClient.close();
-    dbHelper.close();
   }
 }

@@ -13,6 +13,7 @@ import 'features/auth/presentation/pages/login_page.dart';
 import 'features/admin/presentation/pages/admin_users_list_page.dart';
 import 'features/admin/presentation/pages/admin_unidades_list_page.dart';
 import 'features/admin/presentation/pages/admin_catalogos_page.dart';
+import 'features/estadisticas/presentation/pages/productividad_admin_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 
 // Importaciones actualizadas a la nueva carpeta cedula_orquestador
@@ -28,6 +29,7 @@ import 'features/integrantes/presentation/viewmodels/integrantes_viewmodel.dart'
 import 'features/admin/presentation/viewmodels/admin_users_viewmodel.dart';
 import 'features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
 import 'features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
+import 'features/estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
 import 'shared/theme/app_theme.dart';
 
 class App extends StatefulWidget {
@@ -126,6 +128,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         ChangeNotifierProvider<AdminCatalogosViewModel>.value(
           value: _dependencies.adminCatalogosViewModel,
         ),
+        ChangeNotifierProvider<EstadisticasViewModel>.value(
+          value: _dependencies.estadisticasViewModel,
+        ),
       ],
       child: MaterialApp(
         navigatorKey: _navigatorKey,
@@ -147,6 +152,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
           AppRoutes.adminUsers:        (_) => const AdminUsersListPage(),
           AppRoutes.adminUnidades:     (_) => const AdminUnidadesListPage(),
           AppRoutes.adminCatalogos:    (_) => const AdminCatalogosPage(),
+          AppRoutes.productividadAdmin: (_) => const ProductividadAdminPage(),
         },
         // Guarda de ruta: si el usuario no está autenticado, va a login.
         onGenerateRoute: (settings) {
