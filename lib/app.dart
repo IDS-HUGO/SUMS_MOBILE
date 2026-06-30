@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/di/app_dependencies.dart';
 import 'core/routes/app_routes.dart';
@@ -13,9 +14,13 @@ import 'features/admin/presentation/pages/admin_users_list_page.dart';
 import 'features/admin/presentation/pages/admin_unidades_list_page.dart';
 import 'features/admin/presentation/pages/admin_catalogos_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
+
+// Importaciones actualizadas a la nueva carpeta cedula_orquestador
 import 'features/cedula_orquestador/presentation/pages/cedula_form_page.dart';
+import 'features/cedula_orquestador/presentation/pages/pending_captures_page.dart';
 import 'features/cedula_orquestador/presentation/pages/cedula_history_page.dart';
 import 'features/cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
+
 import 'features/familia/presentation/viewmodels/familia_viewmodel.dart';
 import 'features/vivienda/presentation/viewmodels/vivienda_viewmodel.dart';
 import 'features/vacunacion/presentation/viewmodels/vacunacion_viewmodel.dart';
@@ -25,12 +30,15 @@ import 'features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
 import 'features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 import 'shared/theme/app_theme.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
-
 class App extends StatefulWidget {
   final SharedPreferences prefs;
   final bool isSecureDevice;
-  const App({super.key, required this.prefs, this.isSecureDevice = true});
+
+  const App({
+    super.key,
+    required this.prefs,
+    this.isSecureDevice = true,
+  });
 
   @override
   State<App> createState() => _AppState();
@@ -77,7 +85,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     if (authViewModel.isAuthenticated) {
       authViewModel.logout();
       _navigatorKey.currentState?.pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
-      
+
       ScaffoldMessenger.of(_navigatorKey.currentContext!).showSnackBar(
         const SnackBar(
           content: Text('Sesión cerrada por inactividad (OWASP MASVS-PLATFORM-1)'),
@@ -134,6 +142,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
           AppRoutes.homeAnalista:      (_) => const HomeAnalistaPage(),
           // ── Features ────────────────────────────────────────────────────────────
           AppRoutes.cedula:            (_) => const CedulaFormPage(),
+          AppRoutes.pending:           (_) => const PendingCapturesPage(),
           AppRoutes.cedulaHistorial:   (_) => const CedulaHistoryPage(),
           AppRoutes.adminUsers:        (_) => const AdminUsersListPage(),
           AppRoutes.adminUnidades:     (_) => const AdminUnidadesListPage(),
