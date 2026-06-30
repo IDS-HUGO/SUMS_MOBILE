@@ -123,6 +123,13 @@ class HomeAdminPage extends StatelessWidget {
                     color:   AppColors.gold,
                     onTap: () => _showPendingFeatureMessage(context, 'Reportes'),
                   ),
+                  _AdminActionCard(
+                    icon:    Icons.trending_up_outlined,
+                    label:   'Productividad',
+                    detail:  'Métricas por entrevistador',
+                    color:   AppColors.rolMedico,
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.productividadAdmin),
+                  ),
                 ],
               ),
             ),

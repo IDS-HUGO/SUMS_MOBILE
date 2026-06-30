@@ -7,6 +7,7 @@ import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/brand_header.dart';
 import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
+import '../../../estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class HomeEncuestadorPage extends StatefulWidget {
@@ -17,10 +18,6 @@ class HomeEncuestadorPage extends StatefulWidget {
 }
 
 class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
-  final int _cedulasHoy = 0;
-  final int _cedulasSemana = 0;
-  final int _personasRegistradas = 0;
-
   // ── Connectivity banner ─────────────────────────────────────────────
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _wasOffline = false;
@@ -37,6 +34,7 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<CedulaViewModel>().refreshSyncCounts();
+        context.read<EstadisticasViewModel>().fetchResumen();
       }
     });
   }
@@ -92,6 +90,7 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
   @override
   Widget build(BuildContext context) {
     final auth     = context.watch<AuthViewModel>();
+    final estadisticas = context.watch<EstadisticasViewModel>();
     final userName = auth.session?.user.nombreUsuario ?? 'encuestador';
     final today    = _todayLabel();
 
@@ -100,103 +99,125 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
       appBar: _buildAppBar(context),
       body: Stack(
         children: [
-          SafeArea(
-            child: CustomScrollView(
-              slivers: [
-            // ── Cabecera con saludo ─────────────────────────────────────────
-            SliverToBoxAdapter(
-              child: _GreetingSection(userName: userName, date: today),
-            ),
+          RefreshIndicator(
+            onRefresh: () async {
+              if (mounted) {
+                await context.read<CedulaViewModel>().refreshSyncCounts();
+                if (context.mounted) {
+                  await context.read<EstadisticasViewModel>().fetchResumen();
+                }
+              }
+            },
+            child: SafeArea(
+              child: CustomScrollView(
+                slivers: [
+                  // ── Cabecera con saludo ─────────────────────────────────────────
+                  SliverToBoxAdapter(
+                    child: _GreetingSection(userName: userName, date: today),
+                  ),
 
-            // ── Métricas ────────────────────────────────────────────────────
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-              sliver: SliverToBoxAdapter(
-                child: _MetricsRow(
-                  cedulasHoy:         _cedulasHoy,
-                  cedulasSemana:      _cedulasSemana,
-                  personasRegistradas: _personasRegistradas,
-                ),
-              ),
-            ),
-
-            // ── Acción principal ─────────────────────────────────────────────
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: _MainActionCard(onTap: _goToCedula),
-              ),
-            ),
-            
-SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: Consumer<CedulaViewModel>(
-                  builder: (context, cvm, child) {
-                    if (cvm.pendingSyncCount == 0) return const SizedBox.shrink();
-                    return GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.cedulaHistorial),
-                      child: _SyncStatusCard(
-                        pendingCount: cvm.pendingSyncCount,
-                        isSyncing: cvm.isSyncing,
-                        isOnline: cvm.isOnline,
-                        onSyncTap: () async {
-                          final result = await cvm.syncNow();
-                          if (!context.mounted) return;
-                          if (result.error != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error: ${result.error}'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          } else if (result.synced > 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('✅ ${result.synced} cédula(s) sincronizadas correctamente'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          } else if (result.failed > 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('⚠ ${result.failed} cédula(s) fallaron. Verifica tu conexión.'),
-                                backgroundColor: Colors.orange,
-                              ),
-                            );
-                          }
-                        },
+                  // ── Métricas ────────────────────────────────────────────────────
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+                    sliver: SliverToBoxAdapter(
+                      child: _MetricsRow(
+                        cedulasHoy:         estadisticas.resumen?.hoy ?? 0,
+                        cedulasSemana:      estadisticas.resumen?.semana ?? 0,
+                        mes:                estadisticas.resumen?.mes ?? 0,
+                        total:              estadisticas.resumen?.total ?? 0,
+                        isLoading:          estadisticas.isResumenLoading,
                       ),
-                    );
-                  },
-                ),
-              ),
-            ),
-            // ── Flujo de captura ─────────────────────────────────────────────
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: SectionCard(
-                  title:       'Flujo de captura',
-                  subtitle:    '4 secciones · ~15 min por familia',
-                  icon:        Icons.route_outlined,
-                  accentColor: AppColors.terracota,
-                  children: const [_FlowSteps()],
-                ),
-              ),
-            ),
+                    ),
+                  ),
 
-            // ── Consejo de campo ─────────────────────────────────────────────
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
-              sliver: SliverToBoxAdapter(
-                child: _TipCard(),
-              ),
-            ),
-          ],
+                // ── Acción principal ─────────────────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: _MainActionCard(onTap: _goToCedula),
+                  ),
+                ),
+
+                // ── Sincronización y Capturas pendientes (Offline-first) ─────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Consumer<CedulaViewModel>(
+                      builder: (context, cvm, child) {
+                        if (cvm.pendingSyncCount == 0) return const SizedBox.shrink();
+                        return Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () => Navigator.pushNamed(context, AppRoutes.cedulaHistorial),
+                              child: _SyncStatusCard(
+                                pendingCount: cvm.pendingSyncCount,
+                                isSyncing: cvm.isSyncing,
+                                isOnline: cvm.isOnline,
+                                onSyncTap: () async {
+                                  final result = await cvm.syncNow();
+                                  if (!context.mounted) return;
+                                  if (result.error != null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error: ${result.error}'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  } else if (result.synced > 0) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('✅ ${result.synced} cédula(s) sincronizadas correctamente'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  } else if (result.failed > 0) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('⚠ ${result.failed} cédula(s) fallaron. Verifica tu conexión.'),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _PendingCapturesCard(
+                                onTap: () => Navigator.of(context).pushNamed(AppRoutes.pending)
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                // ── Flujo de captura ─────────────────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: SectionCard(
+                      title:       'Flujo de captura',
+                      subtitle:    '4 secciones · ~15 min por familia',
+                      icon:        Icons.route_outlined,
+                      accentColor: AppColors.terracota,
+                      children: const [_FlowSteps()],
+                    ),
+                  ),
+                ),
+
+                // ── Consejo de campo ─────────────────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
+                  sliver: SliverToBoxAdapter(
+                    child: _TipCard(),
+                  ),
+                ),
+              ],
             ),
           ),
-          // ── Banner de conectividad (tipo YouTube) ──────────────────────────
+        ),
+        // ── Banner de conectividad (tipo YouTube) ──────────────────────────
           Positioned(
             bottom: 0,
             left: 0,
@@ -257,33 +278,33 @@ SliverPadding(
   }
 
   AppBar _buildAppBar(BuildContext context) => AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 8, height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.rolEncuestador,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text('Encuestador'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip:  'Cerrar sesión',
-            icon:     const Icon(Icons.logout_outlined),
-            onPressed: () async {
-              await context.read<AuthViewModel>().logout();
-              if (!context.mounted) return;
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
-            },
+    title: Row(
+      children: [
+        Container(
+          width: 8, height: 8,
+          decoration: const BoxDecoration(
+            color: AppColors.rolEncuestador,
+            shape: BoxShape.circle,
           ),
-          const SizedBox(width: 4),
-        ],
-      );
+        ),
+        const SizedBox(width: 8),
+        const Text('Encuestador'),
+      ],
+    ),
+    actions: [
+      IconButton(
+        tooltip:  'Cerrar sesión',
+        icon:     const Icon(Icons.logout_outlined),
+        onPressed: () async {
+          await context.read<AuthViewModel>().logout();
+          if (!context.mounted) return;
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+        },
+      ),
+      const SizedBox(width: 4),
+    ],
+  );
 
   String _todayLabel() {
     final now = DateTime.now();
@@ -292,6 +313,58 @@ SliverPadding(
       'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
     ];
     return '${now.day} de ${meses[now.month]} ${now.year}';
+  }
+}
+
+// ── Capturas Pendientes ─────────────────────────────────────────────────────────
+
+class _PendingCapturesCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _PendingCapturesCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        onTap:        onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Row(
+            children: [
+              const CircleAvatar(
+                backgroundColor: AppColors.gold,
+                foregroundColor: Colors.white,
+                child:           Icon(Icons.sync_problem),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Capturas pendientes',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color:      AppColors.greenDark,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      'Sincroniza tus capturas guardadas offline.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.muted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  color: AppColors.muted, size: 14),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -315,7 +388,7 @@ class _GreetingSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
+                  color: Colors.white.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -339,7 +412,7 @@ class _GreetingSection extends StatelessWidget {
                     Text(
                       date,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12,
                       ),
                     ),
@@ -352,7 +425,7 @@ class _GreetingSection extends StatelessWidget {
           Text(
             'Captura cédulas de microdiagnóstico familiar',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.75),
+              color: Colors.white.withValues(alpha: 0.75),
               fontSize: 13,
             ),
           ),
@@ -367,44 +440,127 @@ class _GreetingSection extends StatelessWidget {
 class _MetricsRow extends StatelessWidget {
   final int cedulasHoy;
   final int cedulasSemana;
-  final int personasRegistradas;
+  final int mes;
+  final int total;
+  final bool isLoading;
 
   const _MetricsRow({
     required this.cedulasHoy,
     required this.cedulasSemana,
-    required this.personasRegistradas,
+    required this.mes,
+    required this.total,
+    required this.isLoading,
   });
 
   @override
   Widget build(BuildContext context) {
     return Transform.translate(
       offset: const Offset(0, -16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _MetricCard(
+                  value: isLoading ? '...' : '$cedulasHoy',
+                  label: 'Hoy',
+                  icon:  Icons.assignment_turned_in_outlined,
+                  color: AppColors.green,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MetricCard(
+                  value: isLoading ? '...' : '$cedulasSemana',
+                  label: 'Semana',
+                  icon:  Icons.calendar_view_week_outlined,
+                  color: AppColors.terracota,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MetricCard(
+                  value: isLoading ? '...' : '$mes',
+                  label: 'Mes',
+                  icon:  Icons.calendar_month_outlined,
+                  color: AppColors.gold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _MetricCardFullWidth(
+            value: isLoading ? '...' : '$total',
+            label: 'Total histórico desde su alta',
+            icon: Icons.history_edu_outlined,
+            color: AppColors.greenDark,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricCardFullWidth extends StatelessWidget {
+  final String value;
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _MetricCardFullWidth({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppDimens.radiusM),
+        border: Border.all(color: AppColors.line),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.greenDark.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          Expanded(
-            child: _MetricCard(
-              value: '$cedulasHoy',
-              label: 'Hoy',
-              icon:  Icons.assignment_turned_in_outlined,
-              color: AppColors.green,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 16),
           Expanded(
-            child: _MetricCard(
-              value: '$cedulasSemana',
-              label: 'Esta semana',
-              icon:  Icons.calendar_view_week_outlined,
-              color: AppColors.terracota,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _MetricCard(
-              value: '$personasRegistradas',
-              label: 'Personas',
-              icon:  Icons.people_outline,
-              color: AppColors.gold,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w500,
+                    color: AppColors.muted,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.w900,
+                    color: color,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -429,14 +585,14 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
         border: Border.all(color: AppColors.line),
         boxShadow: [
           BoxShadow(
-            color: AppColors.greenDark.withOpacity(0.06),
+            color: AppColors.greenDark.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -488,7 +644,7 @@ class _MainActionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -513,7 +669,7 @@ class _MainActionCard extends StatelessWidget {
                     Text(
                       'Familia · Vivienda · Integrantes · Vacunación',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 12,
                       ),
                     ),
@@ -596,16 +752,15 @@ class _FlowStepRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Número + línea vertical
         Column(
           children: [
             Container(
               width: 28, height: 28,
               decoration: BoxDecoration(
-                color: AppColors.terracota.withOpacity(0.1),
+                color: AppColors.terracota.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.terracota.withOpacity(0.3),
+                  color: AppColors.terracota.withValues(alpha: 0.3),
                 ),
               ),
               child: Center(
@@ -670,9 +825,9 @@ class _TipCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.gold.withOpacity(0.08),
+        color: AppColors.gold.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -694,8 +849,8 @@ class _TipCard extends StatelessWidget {
                 Text(
                   'Verifica la conectividad antes de iniciar. Los datos se sincronizan al guardar.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.muted,
-                      ),
+                    color: AppColors.muted,
+                  ),
                 ),
               ],
             ),
@@ -724,16 +879,16 @@ class _SyncStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isSyncing
-        ? const Color(0xFF2196F3)  // blue while syncing
+        ? const Color(0xFF2196F3)
         : isOnline
-            ? AppColors.terracota   // orange when online+pending
-            : const Color(0xFF757575); // grey when offline
+        ? AppColors.terracota
+        : const Color(0xFF757575);
 
     final subtitle = isSyncing
         ? 'Sincronizando… por favor espera.'
         : isOnline
-            ? 'Tienes conexión. Presiona sincronizar para enviar.'
-            : 'Sin conexión. La sincronización ocurrirá al volver online.';
+        ? 'Tienes conexión. Presiona sincronizar para enviar.'
+        : 'Sin conexión. La sincronización ocurrirá al volver online.';
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -747,18 +902,18 @@ class _SyncStatusCard extends StatelessWidget {
         children: [
           isSyncing
               ? SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: color,
-                  ),
-                )
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              color: color,
+            ),
+          )
               : Icon(
-                  isOnline ? Icons.sync_outlined : Icons.sync_disabled_outlined,
-                  color: color,
-                  size: 28,
-                ),
+            isOnline ? Icons.sync_outlined : Icons.sync_disabled_outlined,
+            color: color,
+            size: 28,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

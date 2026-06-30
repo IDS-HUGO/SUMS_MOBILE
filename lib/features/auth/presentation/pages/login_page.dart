@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
@@ -18,7 +20,32 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _initScreenProtector();
+  }
+
+  static const platform = MethodChannel('com.kazedev.sums/security');
+
+  void _initScreenProtector() async {
+    if (Platform.isAndroid) {
+      try {
+        await platform.invokeMethod('secureScreen');
+      } catch (e) {
+        // Ignore
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    if (Platform.isAndroid) {
+      try {
+        platform.invokeMethod('unsecureScreen');
+      } catch (e) {
+        // Ignore
+      }
+    }
     _userController.dispose();
     _passwordController.dispose();
     super.dispose();
