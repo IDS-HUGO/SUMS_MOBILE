@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:sums/shared/theme/app_theme.dart';
+
 enum UserRole {
   admin(1),
   medico(2),
@@ -24,6 +27,32 @@ enum UserRole {
         return 'Encuestador';
       case UserRole.analista:
         return 'Analista de datos';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case UserRole.admin:
+        return AppColors.rolAdmin;
+      case UserRole.medico:
+        return AppColors.rolMedico;
+      case UserRole.encuestador:
+        return AppColors.rolEncuestador;
+      case UserRole.analista:
+        return AppColors.rolAnalista;
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case UserRole.admin:
+        return Icons.admin_panel_settings;
+      case UserRole.medico:
+        return Icons.medical_services;
+      case UserRole.encuestador:
+        return Icons.assignment_ind;
+      case UserRole.analista:
+        return Icons.analytics;
     }
   }
 

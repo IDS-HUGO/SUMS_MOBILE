@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
 
 abstract class TokenStorage {
@@ -9,6 +10,55 @@ abstract class TokenStorage {
   
   Future<void> saveSession(AuthSession session);
   Future<AuthSession?> readSession();
+}
+
+class SecureTokenStorage implements TokenStorage {
+  final FlutterSecureStorage _secureStorage;
+  static const _tokenKey = 'auth_token';
+  static const _sessionKey = 'auth_session_data';
+
+  SecureTokenStorage([FlutterSecureStorage? secureStorage])
+      : _secureStorage = secureStorage ?? const FlutterSecureStorage(
+          aOptions: AndroidOptions(
+            encryptedSharedPreferences: true,
+          ),
+        );
+
+  @override
+  Future<void> saveToken(String token) async {
+    await _secureStorage.write(key: _tokenKey, value: token);
+  }
+
+  @override
+  Future<String?> readToken() async {
+    return await _secureStorage.read(key: _tokenKey);
+  }
+
+  @override
+  Future<void> deleteToken() async {
+    await _secureStorage.delete(key: _tokenKey);
+    await _secureStorage.delete(key: _sessionKey);
+  }
+
+  @override
+  Future<void> saveSession(AuthSession session) async {
+    await saveToken(session.token);
+    await _secureStorage.write(key: _sessionKey, value: jsonEncode(session.toJson()));
+  }
+
+  @override
+  Future<AuthSession?> readSession() async {
+    final sessionJson = await _secureStorage.read(key: _sessionKey);
+    if (sessionJson != null && sessionJson.isNotEmpty) {
+      try {
+        final data = jsonDecode(sessionJson) as Map<String, dynamic>;
+        return AuthSession.fromJson(data);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
 }
 
 class SharedPreferencesTokenStorage implements TokenStorage {
