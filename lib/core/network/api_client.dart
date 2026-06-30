@@ -10,6 +10,8 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// Cliente HTTP genérico para la API SUMS.
+/// Base URL: https://api-sums.troy.engineer/sums
 class ApiClient {
   final http.Client client;
   final String baseUrl;
@@ -81,9 +83,9 @@ class ApiClient {
     Future<http.Response> Function() request,
   ) async {
     try {
-      return await request().timeout(const Duration(seconds: 20));
+      return await request().timeout(const Duration(seconds: 30));
     } on TimeoutException {
-      throw const ApiException('El servidor tardo demasiado en responder.');
+      throw const ApiException('El servidor tardó demasiado en responder.');
     } on ApiException {
       rethrow;
     } catch (_) {
@@ -111,13 +113,20 @@ class ApiClient {
 
   dynamic _decodeBody(http.Response response) {
     if (response.body.isEmpty) return <String, dynamic>{};
-    return jsonDecode(response.body);
+    try {
+      return jsonDecode(response.body);
+    } catch (_) {
+      return response.body;
+    }
   }
 
   Never _throwError(http.Response response, dynamic body) {
     if (body is Map<String, dynamic>) {
       final error = body['error'] ?? body['message'] ?? body['detail'];
       if (error != null) throw ApiException(error.toString());
+    } else if (body is String && body.isNotEmpty) {
+      // Si la respuesta fue un texto plano en lugar de JSON
+      throw ApiException(body);
     }
     throw ApiException('Error HTTP ${response.statusCode}.');
   }

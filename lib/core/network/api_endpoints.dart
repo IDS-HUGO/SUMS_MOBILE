@@ -1,6 +1,7 @@
 class ApiEndpoints {
+  /// URL de producción. Cambiar a http://localhost:3000 para desarrollo local.
   static const baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:3000/sums',
+    defaultValue: 'https://api-sums.troy.engineer/sums',
   );
 }

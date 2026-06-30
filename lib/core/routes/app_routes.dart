@@ -6,4 +6,9 @@ class AppRoutes {
   static const homeAnalista = '/home/analista';
   static const cedula       = '/cedula';
   static const pending      = '/cedula/pending';
+  static const cedulaHistorial = '/cedula/historial';
+
+  static const adminUsers     = '/admin/users';
+  static const adminUnidades  = '/admin/unidades';
+  static const adminCatalogos = '/admin/catalogos';
 }

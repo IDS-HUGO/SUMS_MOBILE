@@ -8,10 +8,24 @@ import 'features/auth/presentation/pages/home_analista_page.dart';
 import 'features/auth/presentation/pages/home_encuestador_page.dart';
 import 'features/auth/presentation/pages/home_medico_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
+import 'features/admin/presentation/pages/admin_users_list_page.dart';
+import 'features/admin/presentation/pages/admin_unidades_list_page.dart';
+import 'features/admin/presentation/pages/admin_catalogos_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
-import 'features/cedula/presentation/pages/cedula_form_page.dart';
-import 'features/cedula/presentation/pages/pending_captures_page.dart';
-import 'features/cedula/presentation/viewmodels/cedula_viewmodel.dart';
+
+// Importaciones actualizadas a la nueva carpeta cedula_orquestador
+import 'features/cedula_orquestador/presentation/pages/cedula_form_page.dart';
+import 'features/cedula_orquestador/presentation/pages/pending_captures_page.dart';
+import 'features/cedula_orquestador/presentation/pages/cedula_history_page.dart';
+import 'features/cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
+
+import 'features/familia/presentation/viewmodels/familia_viewmodel.dart';
+import 'features/vivienda/presentation/viewmodels/vivienda_viewmodel.dart';
+import 'features/vacunacion/presentation/viewmodels/vacunacion_viewmodel.dart';
+import 'features/integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
+import 'features/admin/presentation/viewmodels/admin_users_viewmodel.dart';
+import 'features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
+import 'features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 import 'shared/theme/app_theme.dart';
 
 class App extends StatefulWidget {
@@ -46,6 +60,27 @@ class _AppState extends State<App> {
         ChangeNotifierProvider<CedulaViewModel>.value(
           value: _dependencies.cedulaViewModel,
         ),
+        ChangeNotifierProvider<FamiliaViewModel>.value(
+          value: _dependencies.familiaViewModel,
+        ),
+        ChangeNotifierProvider<ViviendaViewModel>.value(
+          value: _dependencies.viviendaViewModel,
+        ),
+        ChangeNotifierProvider<VacunacionViewModel>.value(
+          value: _dependencies.vacunacionViewModel,
+        ),
+        ChangeNotifierProvider<IntegrantesViewModel>.value(
+          value: _dependencies.integrantesViewModel,
+        ),
+        ChangeNotifierProvider<AdminUsersViewModel>.value(
+          value: _dependencies.adminUsersViewModel,
+        ),
+        ChangeNotifierProvider<AdminUnidadesViewModel>.value(
+          value: _dependencies.adminUnidadesViewModel,
+        ),
+        ChangeNotifierProvider<AdminCatalogosViewModel>.value(
+          value: _dependencies.adminCatalogosViewModel,
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -59,9 +94,13 @@ class _AppState extends State<App> {
           AppRoutes.homeMedico:        (_) => const HomeMedicoPage(),
           AppRoutes.homeEncuestador:   (_) => const HomeEncuestadorPage(),
           AppRoutes.homeAnalista:      (_) => const HomeAnalistaPage(),
-          // ── Features ──────────────────────────────────────────────────
+          // ── Features ────────────────────────────────────────────────────────────
           AppRoutes.cedula:            (_) => const CedulaFormPage(),
           AppRoutes.pending:           (_) => const PendingCapturesPage(),
+          AppRoutes.cedulaHistorial:   (_) => const CedulaHistoryPage(),
+          AppRoutes.adminUsers:        (_) => const AdminUsersListPage(),
+          AppRoutes.adminUnidades:     (_) => const AdminUnidadesListPage(),
+          AppRoutes.adminCatalogos:    (_) => const AdminCatalogosPage(),
         },
         // Guarda de ruta: si el usuario no está autenticado, va a login.
         onGenerateRoute: (settings) {
