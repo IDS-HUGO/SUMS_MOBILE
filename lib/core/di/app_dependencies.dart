@@ -1,4 +1,10 @@
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../network/api_client.dart';
+import '../network/api_endpoints.dart';
+import '../storage/token_storage.dart';
+import '../storage/local_database.dart';
 
 import '../../features/auth/data/datasources/remote/auth_remote_datasource.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -7,33 +13,34 @@ import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
 import '../../features/auth/presentation/viewmodels/auth_viewmodel.dart';
+
+import '../../features/cedula_orquestador/data/datasources/local/cedula_local_datasource.dart';
 import '../../features/cedula_orquestador/data/datasources/remote/cedula_remote_datasource.dart';
 import '../../features/cedula_orquestador/data/repositories/cedula_repository_impl.dart';
 import '../../features/cedula_orquestador/domain/repositories/cedula_repository.dart';
 import '../../features/cedula_orquestador/domain/usecases/load_catalogs_usecase.dart';
 import '../../features/cedula_orquestador/domain/usecases/submit_record_usecase.dart';
 import '../../features/cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
-import '../../features/cedula_orquestador/data/datasources/local/cedula_local_datasource.dart';
-import '../storage/local_database.dart';
+
 import '../../features/familia/data/datasources/remote/familia_remote_datasource.dart';
 import '../../features/familia/data/repositories/familia_repository_impl.dart';
 import '../../features/familia/domain/repositories/familia_repository.dart';
 import '../../features/familia/presentation/viewmodels/familia_viewmodel.dart';
+
 import '../../features/vivienda/data/datasources/remote/vivienda_remote_datasource.dart';
 import '../../features/vivienda/data/repositories/vivienda_repository_impl.dart';
 import '../../features/vivienda/domain/repositories/vivienda_repository.dart';
 import '../../features/vivienda/presentation/viewmodels/vivienda_viewmodel.dart';
+
 import '../../features/vacunacion/data/datasources/remote/vacunacion_remote_datasource.dart';
 import '../../features/vacunacion/data/repositories/vacunacion_repository_impl.dart';
 import '../../features/vacunacion/domain/repositories/vacunacion_repository.dart';
 import '../../features/vacunacion/presentation/viewmodels/vacunacion_viewmodel.dart';
+
 import '../../features/integrantes/data/datasources/remote/integrantes_remote_datasource.dart';
 import '../../features/integrantes/data/repositories/integrantes_repository_impl.dart';
 import '../../features/integrantes/domain/repositories/integrantes_repository.dart';
 import '../../features/integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
-import '../network/api_client.dart';
-import '../network/api_endpoints.dart';
-import '../storage/token_storage.dart';
 
 import '../../features/admin/data/datasources/remote/admin_remote_datasource.dart';
 import '../../features/admin/data/repositories/admin_repository_impl.dart';
@@ -42,14 +49,13 @@ import '../../features/admin/presentation/viewmodels/admin_users_viewmodel.dart'
 import '../../features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
 import '../../features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/estadisticas/data/datasources/remote/estadisticas_remote_datasource.dart';
+import '../../features/estadisticas/data/repositories/estadisticas_repository_impl.dart';
+import '../../features/estadisticas/domain/repositories/estadisticas_repository.dart';
+import '../../features/estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
 
 /// Contenedor de dependencias manual para toda la app.
 /// Se crea una única vez en [_AppState.initState] y se destruye en [dispose].
-///
-/// La pantalla de registro fue eliminada del flujo de usuario.
-/// [RegisterUseCase] se conserva para uso interno (el admin puede crear
-/// usuarios desde su propio panel cuando esté implementado).
 class AppDependencies {
   AppDependencies(SharedPreferences prefs) {
     // ── infraestructura compartida ────────────────────────────────────────
@@ -58,19 +64,21 @@ class AppDependencies {
     apiClient    = ApiClient(client: httpClient, baseUrl: ApiEndpoints.baseUrl);
 
     // ── feature: cedula_orquestador ───────────────────────────────────────────
-    final db = AppDatabase();
-    final cedulaLocalDataSource = CedulaLocalDataSource(db);
-
     cedulaRemoteDataSource = CedulaRemoteDataSource(apiClient: apiClient);
+    // Cambiado para usar AppDatabase directamente en lugar de dbHelper que usa sqflite
+    final appDb = AppDatabase();
+    cedulaLocalDataSource  = CedulaLocalDataSource(appDb);
+
     cedulaRepository = CedulaRepositoryImpl(
       remoteDataSource: cedulaRemoteDataSource,
-      localDataSource: cedulaLocalDataSource,
+      localDataSource:  cedulaLocalDataSource,
       tokenStorage:     tokenStorage,
     );
+
     cedulaViewModel = CedulaViewModel(
-      loadCatalogsUseCase: LoadCatalogsUseCase(cedulaRepository),
-      submitRecordUseCase: SubmitRecordUseCase(cedulaRepository),
-      cedulaRepository: cedulaRepository,
+      loadCatalogsUseCase:      LoadCatalogsUseCase(cedulaRepository),
+      submitRecordUseCase:      SubmitRecordUseCase(cedulaRepository),
+      cedulaRepository:         cedulaRepository,
     );
 
     // ── feature: auth ──────────────────────────────────────────────────────────
@@ -79,10 +87,11 @@ class AppDependencies {
       remoteDataSource: authRemoteDataSource,
       tokenStorage:     tokenStorage,
     );
+
     authViewModel = AuthViewModel(
-      loginUseCase:    LoginUseCase(authRepository),
-      registerUseCase: RegisterUseCase(authRepository),
-      logoutUseCase:   LogoutUseCase(authRepository),
+      loginUseCase:        LoginUseCase(authRepository),
+      registerUseCase:     RegisterUseCase(authRepository),
+      logoutUseCase:       LogoutUseCase(authRepository),
       loadCatalogsUseCase: LoadCatalogsUseCase(cedulaRepository),
     );
 
@@ -131,6 +140,14 @@ class AppDependencies {
       repository: adminRepository,
       loadCatalogsUseCase: LoadCatalogsUseCase(cedulaRepository),
     );
+
+    // ── feature: estadisticas ────────────────────────────────────────────────
+    estadisticasRemoteDataSource = EstadisticasRemoteDataSource(apiClient: apiClient);
+    estadisticasRepository = EstadisticasRepositoryImpl(
+      remoteDataSource: estadisticasRemoteDataSource,
+      tokenStorage:     tokenStorage,
+    );
+    estadisticasViewModel = EstadisticasViewModel(repository: estadisticasRepository);
   }
 
   // ── infraestructura ───────────────────────────────────────────────────────
@@ -145,6 +162,7 @@ class AppDependencies {
 
   // ── cedula_orquestador ────────────────────────────────────────────────────
   late final CedulaRemoteDataSource cedulaRemoteDataSource;
+  late final CedulaLocalDataSource  cedulaLocalDataSource;
   late final CedulaRepository       cedulaRepository;
   late final CedulaViewModel        cedulaViewModel;
 
@@ -172,7 +190,12 @@ class AppDependencies {
   late final AdminUnidadesViewModel      adminUnidadesViewModel;
   late final AdminCatalogosViewModel     adminCatalogosViewModel;
 
-  /// Libera ViewModels y cierra el cliente HTTP.
+  // ── estadisticas ──────────────────────────────────────────────────────────
+  late final EstadisticasRemoteDataSource estadisticasRemoteDataSource;
+  late final EstadisticasRepository       estadisticasRepository;
+  late final EstadisticasViewModel        estadisticasViewModel;
+
+  /// Libera ViewModels y cierra el cliente HTTP y BD local.
   void dispose() {
     authViewModel.dispose();
     cedulaViewModel.dispose();
@@ -183,6 +206,7 @@ class AppDependencies {
     adminUsersViewModel.dispose();
     adminUnidadesViewModel.dispose();
     adminCatalogosViewModel.dispose();
+    estadisticasViewModel.dispose();
     httpClient.close();
   }
 }
