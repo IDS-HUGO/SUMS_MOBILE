@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:screen_protector/screen_protector.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
@@ -18,7 +19,18 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _initScreenProtector();
+  }
+
+  void _initScreenProtector() async {
+    await ScreenProtector.preventScreenshotOn();
+  }
+
+  @override
   void dispose() {
+    ScreenProtector.preventScreenshotOff();
     _userController.dispose();
     _passwordController.dispose();
     super.dispose();

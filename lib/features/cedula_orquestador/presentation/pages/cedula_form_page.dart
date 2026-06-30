@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:screen_protector/screen_protector.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../familia/presentation/widgets/familia_step_widget.dart';
@@ -48,14 +49,20 @@ class _CedulaFormPageState extends State<CedulaFormPage> with TickerProviderStat
   @override
   void initState() {
     super.initState();
+    _initScreenProtector();
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 220),
     );
   }
 
+  void _initScreenProtector() async {
+    await ScreenProtector.preventScreenshotOn();
+  }
+
   @override
   void dispose() {
+    ScreenProtector.preventScreenshotOff();
     _animController.dispose();
     super.dispose();
   }
