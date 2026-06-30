@@ -76,7 +76,11 @@ class ApiClient {
     if (clean.isEmpty) throw const ApiException('Configura API_BASE_URL.');
     final normalized =
         clean.endsWith('/') ? clean.substring(0, clean.length - 1) : clean;
-    return Uri.parse('$normalized$path');
+    final uri = Uri.parse('$normalized$path');
+    if (uri.scheme != 'https') {
+      throw const ApiException('La comunicación no segura (HTTP) está bloqueada por políticas de seguridad (OWASP MASVS-NETWORK-1).');
+    }
+    return uri;
   }
 
   Future<http.Response> _sendRequest(
@@ -113,13 +117,20 @@ class ApiClient {
 
   dynamic _decodeBody(http.Response response) {
     if (response.body.isEmpty) return <String, dynamic>{};
-    return jsonDecode(response.body);
+    try {
+      return jsonDecode(response.body);
+    } catch (_) {
+      return response.body;
+    }
   }
 
   Never _throwError(http.Response response, dynamic body) {
     if (body is Map<String, dynamic>) {
       final error = body['error'] ?? body['message'] ?? body['detail'];
       if (error != null) throw ApiException(error.toString());
+    } else if (body is String && body.isNotEmpty) {
+      // Si la respuesta fue un texto plano en lugar de JSON
+      throw ApiException(body);
     }
     throw ApiException('Error HTTP ${response.statusCode}.');
   }

@@ -16,6 +16,9 @@ class SumsTextField extends StatelessWidget {
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
+  final bool enableSuggestions;
+  final bool autocorrect;
+  final bool enableInteractiveSelection;
 
   const SumsTextField({
     super.key,
@@ -33,6 +36,9 @@ class SumsTextField extends StatelessWidget {
     this.onTap,
     this.onChanged,
     this.inputFormatters,
+    this.enableSuggestions = true,
+    this.autocorrect = true,
+    this.enableInteractiveSelection = true,
   });
 
   @override
@@ -47,6 +53,9 @@ class SumsTextField extends StatelessWidget {
       onTap: onTap,
       onChanged: onChanged,
       inputFormatters: inputFormatters,
+      enableSuggestions: enableSuggestions,
+      autocorrect: autocorrect,
+      enableInteractiveSelection: enableInteractiveSelection,
       minLines: obscureText ? 1 : minLines,
       maxLines: obscureText ? 1 : maxLines,
       decoration: InputDecoration(

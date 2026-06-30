@@ -3,10 +3,61 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class HomeAdminPage extends StatelessWidget {
   const HomeAdminPage({super.key});
+
+  void _showPendingFeatureMessage(BuildContext context, String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('La función de $feature estará disponible en la próxima actualización.'),
+        backgroundColor: AppColors.muted,
+      ),
+    );
+  }
+
+  Future<void> _handleSync(BuildContext context) async {
+    final cedulaVm = context.read<CedulaViewModel>();
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 20, height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+            SizedBox(width: 16),
+            Text('Sincronizando datos con el servidor...'),
+          ],
+        ),
+        duration: Duration(days: 1), // Mantener abierto hasta completar
+      ),
+    );
+
+    final result = await cedulaVm.syncNow();
+    
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    if (result.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sincronización completada con éxito'),
+          backgroundColor: AppColors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error de sincronización: ${result.error}'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +121,7 @@ class HomeAdminPage extends StatelessWidget {
                     label:   'Reportes',
                     detail:  'Análisis y exportación de datos',
                     color:   AppColors.gold,
+                    onTap: () => _showPendingFeatureMessage(context, 'Reportes'),
                   ),
                 ],
               ),
@@ -86,23 +138,26 @@ class HomeAdminPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
               sliver: SliverToBoxAdapter(
                 child: Column(
-                  children: const [
+                  children: [
                     _QuickLinkRow(
                       icon:    Icons.assignment_outlined,
                       label:   'Ver cédulas recientes',
                       color:   AppColors.green,
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.cedulaHistorial),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     _QuickLinkRow(
                       icon:    Icons.sync_outlined,
                       label:   'Sincronización de datos',
                       color:   AppColors.greenDark,
+                      onTap: () => _handleSync(context),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     _QuickLinkRow(
                       icon:    Icons.tune_outlined,
                       label:   'Configuración del sistema',
                       color:   AppColors.muted,
+                      onTap: () => _showPendingFeatureMessage(context, 'Configuración del sistema'),
                     ),
                   ],
                 ),
@@ -302,11 +357,13 @@ class _QuickLinkRow extends StatelessWidget {
   final IconData icon;
   final String   label;
   final Color    color;
+  final VoidCallback? onTap;
 
   const _QuickLinkRow({
     required this.icon,
     required this.label,
     required this.color,
+    this.onTap,
   });
 
   @override
@@ -315,7 +372,7 @@ class _QuickLinkRow extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
-        onTap:        () {},
+        onTap:        onTap,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import '../../../../core/storage/token_storage.dart';
+import 'package:sums/core/network/app_logger.dart';
 import '../../domain/entities/catalog_item.dart';
 import '../../domain/repositories/cedula_repository.dart';
 import '../datasources/remote/cedula_remote_datasource.dart';
@@ -89,7 +90,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
       return await remoteDataSource.postCapturaCompleta(body, token: token);
     } catch (e) {
       // Si falla por red u otro error, hacer fallback a SQLite
-      print('Fallo red, guardando localmente. Error: $e');
+      AppLogger.warn('Fallo red, guardando localmente. (OWASP MASVS-STORAGE-3)');
       if (localDataSource != null) {
         final localId = await localDataSource!.saveCedula(body, 1); // 1 = PENDING_SYNC
         return {
@@ -138,6 +139,14 @@ class CedulaRepositoryImpl implements CedulaRepository {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getAllLocalCedulas() async {
+    if (localDataSource != null) {
+      return await localDataSource!.getAllCedulas();
+    }
+    return [];
+  }
+
+  @override
   Future<SyncResult> syncPendingCedulas() async {
     if (localDataSource == null) {
       return const SyncResult(error: 'Sin almacenamiento local');
@@ -159,6 +168,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
         synced++;
       } catch (e) {
         failed++;
+        await localDataSource!.updateSyncStatus(localId, 1, error: e.toString());
       }
     }
 
@@ -166,5 +176,33 @@ class CedulaRepositoryImpl implements CedulaRepository {
     await localDataSource!.deleteOldSynced(7);
 
     return SyncResult(synced: synced, failed: failed);
+  }
+
+  @override
+  Future<SyncResult> syncSingleCedula(int localId) async {
+    if (localDataSource == null) return const SyncResult(error: 'Sin almacenamiento local');
+    
+    // Obtener la cédula específica reconstruyendo el payload
+    final allPending = await localDataSource!.getCedulasByStatus(1);
+    final record = allPending.firstWhere((r) => r['_localId'] == localId, orElse: () => {});
+    
+    if (record.isEmpty) return const SyncResult(error: 'Registro no encontrado o no está pendiente');
+
+    final token = await tokenStorage.readToken();
+    final payload = Map<String, dynamic>.from(record)..remove('_localId');
+    
+    try {
+      await remoteDataSource.postCapturaCompleta(payload, token: token);
+      await localDataSource!.updateSyncStatus(localId, 2); // 2 = SYNCED
+      return const SyncResult(synced: 1);
+    } catch (e) {
+      String errorMsg = e.toString();
+      // Estrategia mínima para duplicados (409 Conflict o similar)
+      if (errorMsg.contains('409') || errorMsg.toLowerCase().contains('duplicado')) {
+        errorMsg = 'Conflicto: Este registro ya existe en el servidor o contiene datos duplicados.';
+      }
+      await localDataSource!.updateSyncStatus(localId, 1, error: errorMsg);
+      return SyncResult(failed: 1, error: errorMsg);
+    }
   }
 }

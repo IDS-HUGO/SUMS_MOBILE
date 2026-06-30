@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: _MobileLoginHeader(),
                 ),
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+                  padding: const EdgeInsets.fromLTRB(32, 24, 32, 40),
                   sliver: SliverToBoxAdapter(
                     child: _LoginCard(
                       formKey:            _formKey,
@@ -211,13 +211,12 @@ class _InfoBadge extends StatelessWidget {
 }
 
 // ── Header móvil ─────────────────────────────────────────────────────────────
-
 class _MobileLoginHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.greenDark,
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+      padding: const EdgeInsets.fromLTRB(40, 15, 40, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -334,6 +333,8 @@ class _LoginCard extends StatelessWidget {
               icon:            Icons.person_outline,
               textInputAction: TextInputAction.next,
               validator:       _required,
+              enableSuggestions: false,
+              autocorrect:      false,
             ),
             const SizedBox(height: 14),
             SumsTextField(
@@ -343,6 +344,9 @@ class _LoginCard extends StatelessWidget {
               obscureText:     true,
               textInputAction: TextInputAction.done,
               validator:       _required,
+              enableSuggestions: false,
+              autocorrect:      false,
+              enableInteractiveSelection: false,
             ),
             const SizedBox(height: 24),
 

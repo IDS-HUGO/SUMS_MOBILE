@@ -54,7 +54,7 @@ class AppDependencies {
   AppDependencies(SharedPreferences prefs) {
     // ── infraestructura compartida ────────────────────────────────────────
     httpClient   = http.Client();
-    tokenStorage = SharedPreferencesTokenStorage(prefs);
+    tokenStorage = SecureTokenStorage();
     apiClient    = ApiClient(client: httpClient, baseUrl: ApiEndpoints.baseUrl);
 
     // ── feature: cedula_orquestador ───────────────────────────────────────────
