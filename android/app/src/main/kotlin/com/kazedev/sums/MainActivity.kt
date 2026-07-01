@@ -3,32 +3,18 @@ package com.kazedev.sums
 import android.os.Bundle
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.kazedev.sums/security"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Control 16: Evitar ataques de Tapjacking / superposición
         window.decorView.filterTouchesWhenObscured = true
-    }
-
-    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "secureScreen" -> {
-                    window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                    result.success(null)
-                }
-                "unsecureScreen" -> {
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                    result.success(null)
-                }
-                else -> result.notImplemented()
-            }
-        }
+        // Bloquea capturas/grabación de pantalla en toda la app (datos médicos y
+        // familiares sensibles). Se fija una sola vez para toda la Activity: antes
+        // se activaba/desactivaba por pantalla (login, captura de cédula) vía un
+        // MethodChannel, pero al compartir una sola Activity el dispose() de una
+        // pantalla podía llegar después del initState() de la siguiente y apagar
+        // la protección justo al entrar a login.
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 }

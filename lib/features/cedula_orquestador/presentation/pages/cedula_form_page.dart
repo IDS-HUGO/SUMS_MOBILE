@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../familia/presentation/widgets/familia_step_widget.dart';
@@ -50,34 +48,14 @@ class _CedulaFormPageState extends State<CedulaFormPage> with TickerProviderStat
   @override
   void initState() {
     super.initState();
-    _initScreenProtector();
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 220),
     );
   }
 
-  static const platform = MethodChannel('com.kazedev.sums/security');
-
-  void _initScreenProtector() async {
-    if (Platform.isAndroid) {
-      try {
-        await platform.invokeMethod('secureScreen');
-      } catch (e) {
-        // Ignore
-      }
-    }
-  }
-
   @override
   void dispose() {
-    if (Platform.isAndroid) {
-      try {
-        platform.invokeMethod('unsecureScreen');
-      } catch (e) {
-        // Ignore
-      }
-    }
     _animController.dispose();
     super.dispose();
   }

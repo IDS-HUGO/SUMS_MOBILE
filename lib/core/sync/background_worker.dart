@@ -6,7 +6,7 @@ import '../storage/local_database.dart';
 import '../../features/cedula_orquestador/data/datasources/local/cedula_local_datasource.dart';
 import '../../features/cedula_orquestador/data/datasources/remote/cedula_remote_datasource.dart';
 import '../network/api_client.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../network/api_endpoints.dart';
 
 const syncTaskName = "syncPendingCedulasTask";
 
@@ -16,14 +16,10 @@ void callbackDispatcher() {
     print("Workmanager: Ejecutando tarea $task");
     if (task == syncTaskName) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        // Usamos una base URL por defecto o la guardada
-        final apiUrl = prefs.getString('api_url') ?? 'http://10.0.2.2:3000';
-
         final db = AppDatabase();
         final localDataSource = CedulaLocalDataSource(db);
         final httpClient = http.Client();
-        final apiClient = ApiClient(client: httpClient, baseUrl: apiUrl);
+        final apiClient = ApiClient(client: httpClient, baseUrl: ApiEndpoints.baseUrl);
         final remoteDataSource = CedulaRemoteDataSource(apiClient: apiClient);
         
         final syncEngine = SyncEngine(
