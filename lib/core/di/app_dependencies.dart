@@ -1,8 +1,10 @@
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
+import '../network/pinned_http_client.dart';
 import '../storage/token_storage.dart';
 import '../storage/local_database.dart';
 
@@ -57,9 +59,13 @@ import '../../features/estadisticas/presentation/viewmodels/estadisticas_viewmod
 /// Contenedor de dependencias manual para toda la app.
 /// Se crea una única vez en [_AppState.initState] y se destruye en [dispose].
 class AppDependencies {
-  AppDependencies(SharedPreferences prefs) {
+  AppDependencies(SharedPreferences prefs, {Uint8List? pinnedCertBytes}) {
     // ── infraestructura compartida ────────────────────────────────────────
-    httpClient   = http.Client();
+    // Certificate pinning: si no se cargaron los bytes del certificado
+    // anclado (ej. en tests), cae a un http.Client normal en vez de fallar.
+    httpClient   = pinnedCertBytes != null
+        ? createPinnedHttpClient(pinnedCertBytes)
+        : http.Client();
     tokenStorage = SecureTokenStorage();
     apiClient    = ApiClient(client: httpClient, baseUrl: ApiEndpoints.baseUrl);
 

@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../features/cedula_orquestador/data/datasources/local/cedula_local_datasource.dart';
 import '../../features/cedula_orquestador/data/datasources/remote/cedula_remote_datasource.dart';
+import '../network/app_logger.dart';
 
 class SyncEngine {
   final CedulaLocalDataSource localDataSource;
@@ -18,7 +19,7 @@ class SyncEngine {
     // 1. Verificar conectividad
     final result = await connectivity.checkConnectivity();
     if (result.contains(ConnectivityResult.none)) {
-      print('SyncEngine: Sin conexión a internet. Abortando sincronización.');
+      AppLogger.info('SyncEngine: Sin conexión a internet. Abortando sincronización.');
       return;
     }
 
@@ -26,13 +27,13 @@ class SyncEngine {
     final pendingRecords = await localDataSource.getCedulasByStatus(1);
     
     if (pendingRecords.isEmpty) {
-      print('SyncEngine: No hay registros pendientes por sincronizar.');
+      AppLogger.info('SyncEngine: No hay registros pendientes por sincronizar.');
       // Purgar antiguos por si acaso
       await localDataSource.deleteOldSynced(7);
       return;
     }
 
-    print('SyncEngine: Sincronizando ${pendingRecords.length} registros...');
+    AppLogger.info('SyncEngine: Sincronizando ${pendingRecords.length} registros...');
 
     try {
       // Remover _localId temporalmente para el request, pero guardarlo para actualizar el estado
@@ -49,7 +50,7 @@ class SyncEngine {
       await remoteDataSource.post('/sums/sync', {'payloads': payloadsForApi});
       
       // Si llegamos aquí, asumimos éxito HTTP 200/201.
-      print('SyncEngine: Sincronización exitosa.');
+      AppLogger.info('SyncEngine: Sincronización exitosa.');
 
       // 4. Actualizar estado local a SYNCED (2)
       for (final r in pendingRecords) {
@@ -61,7 +62,7 @@ class SyncEngine {
       await localDataSource.deleteOldSynced(7);
 
     } catch (e) {
-      print('SyncEngine: Error durante la sincronización: $e');
+      AppLogger.error('SyncEngine: Error durante la sincronización', e);
     }
   }
 }

@@ -23,13 +23,14 @@ dependencies:
   workmanager: ^0.9.0+3
   shared_preferences: ^2.5.5
 
-  # --- Database (Drift / SQLite) & Paths ---
+  # --- Database (Drift / SQLite, cifrada con SQLCipher) & Paths ---
   drift: ^2.34.0
-  sqlite3_flutter_libs: ^0.6.0+eol
+  sqlite3: ^3.3.3
   path_provider: ^2.1.6
   path: ^1.9.1
   flutter_secure_storage: ^10.3.1
   flutter_jailbreak_detection: ^1.10.0
+  crypto: ^3.0.6
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -46,6 +47,16 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/certs/
+
+# La BD local (Drift/SQLite) guarda cédulas completas (nombres, domicilios,
+# datos de salud) sin cifrado de campo. Se compila sqlite3 con soporte
+# SQLCipher en vez de la build estándar, para cifrar el archivo .sqlite
+# completo con una clave (ver lib/core/storage/local_database.dart).
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlcipher
 
 flutter_icons:
   android: "ic_launcher_imss"

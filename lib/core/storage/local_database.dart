@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'db_encryption_key.dart';
 
 part 'local_database.g.dart';
 
@@ -66,6 +67,15 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'sums_offline.sqlite'));
-    return NativeDatabase.createInBackground(file);
+    final key = await getOrCreateDbEncryptionKey();
+    // Cifra el archivo .sqlite completo con SQLCipher (ver hooks.user_defines
+    // en pubspec.yaml). Antes las cédulas (nombres, domicilios, datos de
+    // salud) quedaban en texto plano en el filesystem del dispositivo.
+    return NativeDatabase.createInBackground(
+      file,
+      setup: (rawDb) {
+        rawDb.execute("PRAGMA key = '${key.replaceAll("'", "''")}';");
+      },
+    );
   });
 }

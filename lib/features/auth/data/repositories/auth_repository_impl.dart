@@ -27,14 +27,23 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final session = _parseSession(response);
       await tokenStorage.saveSession(session);
+      // Guarda un verificador de esta contraseña para poder validar el
+      // fallback offline la próxima vez que no haya red.
+      await tokenStorage.saveOfflineCredentialCheck(nombreUsuario, contrasena);
       return session;
     } catch (e) {
-      // Intento de login offline
+      // Intento de login offline: solo se acepta si además de coincidir el
+      // usuario, la contraseña coincide con la del último login remoto
+      // exitoso (si no, cualquiera que supiera el nombre de usuario podría
+      // entrar sin conexión con cualquier contraseña).
       final localSession = await tokenStorage.readSession();
       if (localSession != null && localSession.user.nombreUsuario == nombreUsuario) {
-        return localSession;
+        final passwordValid = await tokenStorage.verifyOfflineCredential(nombreUsuario, contrasena);
+        if (passwordValid) {
+          return localSession;
+        }
       }
-      rethrow; // Si no hay sesión local o es otro usuario, relanzar el error
+      rethrow; // Sin sesión local, otro usuario, o contraseña incorrecta.
     }
   }
 

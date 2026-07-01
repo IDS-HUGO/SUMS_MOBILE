@@ -46,8 +46,16 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // Sin esto, el APK de release quedaba sin ofuscar: rutas de API,
+            // nombres de clase y lógica de negocio quedaban triviales de leer
+            // con un descompilador. Ver android/app/proguard-rules.pro para
+            // las excepciones necesarias (WorkManager, secure storage, etc.).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

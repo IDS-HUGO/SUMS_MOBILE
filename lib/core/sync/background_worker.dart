@@ -7,13 +7,14 @@ import '../../features/cedula_orquestador/data/datasources/local/cedula_local_da
 import '../../features/cedula_orquestador/data/datasources/remote/cedula_remote_datasource.dart';
 import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
+import '../network/app_logger.dart';
 
 const syncTaskName = "syncPendingCedulasTask";
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    print("Workmanager: Ejecutando tarea $task");
+    AppLogger.info('Workmanager: Ejecutando tarea $task');
     if (task == syncTaskName) {
       try {
         final db = AppDatabase();
@@ -31,7 +32,7 @@ void callbackDispatcher() {
         await syncEngine.syncPendingCedulas();
         return Future.value(true);
       } catch (e) {
-        print("Workmanager error: $e");
+        AppLogger.error('Workmanager error', e);
         return Future.value(false); // Retrying logic handled by OS if false
       }
     }

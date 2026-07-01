@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,11 +36,15 @@ import 'shared/theme/app_theme.dart';
 class App extends StatefulWidget {
   final SharedPreferences prefs;
   final bool isSecureDevice;
+  final bool isDebugModeActive;
+  final Uint8List? pinnedCertBytes;
 
   const App({
     super.key,
     required this.prefs,
     this.isSecureDevice = true,
+    this.isDebugModeActive = false,
+    this.pinnedCertBytes,
   });
 
   @override
@@ -55,7 +60,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _dependencies = AppDependencies(widget.prefs);
+    _dependencies = AppDependencies(widget.prefs, pinnedCertBytes: widget.pinnedCertBytes);
     WidgetsBinding.instance.addObserver(this);
     _resetIdleTimer();
   }
@@ -99,6 +104,16 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    // Modo desarrollador detectado: la app queda completamente bloqueada, sin
+    // importar la pantalla — no se construyen rutas, providers ni Navigator.
+    if (widget.isDebugModeActive) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'SUMS IMSS Bienestar',
+        home: _DebugModeBlockedScreen(),
+      );
+    }
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthViewModel>.value(
@@ -231,6 +246,60 @@ class _AppState extends State<App> with WidgetsBindingObserver {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Pantalla que reemplaza toda la app cuando se detecta modo desarrollador
+/// (USB debugging / Developer Options) activo en el dispositivo. No hay
+/// Navigator ni rutas detrás: no existe forma de llegar a ninguna pantalla
+/// de la app mientras el dispositivo esté en este estado.
+class _DebugModeBlockedScreen extends StatelessWidget {
+  const _DebugModeBlockedScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.greenDark,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.developer_mode, size: 72, color: AppColors.gold),
+                const SizedBox(height: 24),
+                const Text(
+                  'Acceso bloqueado',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Se detectó Modo Desarrollador / Depuración USB activo en este '
+                  'dispositivo. Por seguridad de los datos médicos y familiares '
+                  '(OWASP MASVS-RESILIENCE-2), SUMS no puede usarse mientras esta '
+                  'opción esté habilitada.\n\nDesactiva las Opciones de desarrollador '
+                  'en Ajustes y vuelve a abrir la aplicación.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.75),
+                    fontSize: 14,
+                    height: 1.5,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
