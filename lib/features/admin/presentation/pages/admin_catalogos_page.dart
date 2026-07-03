@@ -120,22 +120,37 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
             )
           : null,
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
             color: Colors.white,
-            child: DropdownButtonFormField<String>(
-              value: _selectedCatalog,
-              decoration: const InputDecoration(
-                labelText: 'Selecciona un catálogo',
-                border: OutlineInputBorder(),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: vm.catalogKeys.map((k) {
+                  final isSelected = _selectedCatalog == k;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(k.toUpperCase()),
+                      selected: isSelected,
+                      selectedColor: AppColors.terracota.withOpacity(0.2),
+                      labelStyle: TextStyle(
+                        color: isSelected ? AppColors.terracota : AppColors.ink,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      onSelected: (selected) {
+                        if (selected) setState(() => _selectedCatalog = k);
+                      },
+                    ),
+                  );
+                }).toList(),
               ),
-              items: vm.catalogKeys.map((k) {
-                return DropdownMenuItem(value: k, child: Text(k.toUpperCase()));
-              }).toList(),
-              onChanged: (v) => setState(() => _selectedCatalog = v),
             ),
           ),
+          const Divider(height: 1),
           Expanded(
             child: _buildList(vm),
           ),

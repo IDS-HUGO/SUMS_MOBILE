@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../shared/theme/app_theme.dart';
+import '../../domain/entities/user_entity.dart';
 import '../viewmodels/admin_users_viewmodel.dart';
 import '../viewmodels/admin_unidades_viewmodel.dart';
 
 class AdminUserFormPage extends StatefulWidget {
-  const AdminUserFormPage({super.key});
+  final AdminUserEntity? user;
+  
+  const AdminUserFormPage({super.key, this.user});
 
   @override
   State<AdminUserFormPage> createState() => _AdminUserFormPageState();
@@ -23,6 +26,11 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.user != null) {
+      _nombreController.text = widget.user!.nombreUsuario;
+      _selectedRol = widget.user!.rolId;
+      _selectedUnidadId = widget.user!.unidadSaludId;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AdminUnidadesViewModel>().fetchUnidades();
     });
@@ -40,12 +48,18 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
     
     final vm = context.read<AdminUsersViewModel>();
     
-    final body = {
+    final body = <String, dynamic>{
       'nombre_usuario': _nombreController.text.trim(),
-      'contrasena': _passwordController.text,
       'rol_id': _selectedRol,
-      'activo': true,
     };
+    
+    if (_passwordController.text.isNotEmpty) {
+      body['contrasena'] = _passwordController.text;
+    }
+    
+    if (widget.user == null) {
+      body['activo'] = true;
+    }
     
     if (_selectedUnidadId != null) {
       body['unidad_salud_id'] = _selectedUnidadId!;
@@ -58,19 +72,28 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    final success = await vm.createUser(body);
+    final isEditing = widget.user != null;
+    final success = isEditing
+        ? await vm.updateUser(widget.user!.id, body)
+        : await vm.createUser(body);
     
     if (!mounted) return;
     Navigator.pop(context); // Cerrar loader
     
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Usuario creado exitosamente'), backgroundColor: AppColors.green),
+        SnackBar(
+          content: Text(isEditing ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente'),
+          backgroundColor: AppColors.green,
+        ),
       );
       Navigator.pop(context); // Regresar a la lista
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.errorMessage ?? 'Error al crear usuario'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(vm.errorMessage ?? 'Error al guardar usuario'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -82,7 +105,7 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        title: const Text('Nuevo Usuario'),
+        title: Text(widget.user != null ? 'Editar Usuario' : 'Nuevo Usuario'),
         backgroundColor: AppColors.rolAdmin,
       ),
       body: SafeArea(
@@ -107,11 +130,15 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Contraseña (min 6 caracteres)',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: widget.user != null ? 'Contraseña (Opcional si no cambia)' : 'Contraseña (min 6 caracteres)',
+                    border: const OutlineInputBorder(),
                   ),
-                  validator: (v) => v!.length < 6 ? 'Minimo 6 caracteres' : null,
+                  validator: (v) {
+                    if (widget.user != null && (v == null || v.isEmpty)) return null;
+                    if (v == null || v.length < 6) return 'Minimo 6 caracteres';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 24),
                 
@@ -155,7 +182,10 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
                     backgroundColor: AppColors.rolAdmin,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Crear Usuario', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  child: Text(
+                    widget.user != null ? 'Actualizar Usuario' : 'Crear Usuario',
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
               ],
             ),

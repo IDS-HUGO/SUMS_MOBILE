@@ -87,9 +87,56 @@ class _AdminUsersListPageState extends State<AdminUsersListPage> {
               style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink),
             ),
             subtitle: Text('ID: ${user.id} | Rol: ${role.displayName}'),
-            trailing: user.activo
-                ? const Icon(Icons.check_circle, color: AppColors.green, size: 20)
-                : const Icon(Icons.cancel, color: Colors.red, size: 20),
+            trailing: PopupMenuButton<String>(
+              onSelected: (value) async {
+                if (value == 'edit') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AdminUserFormPage(user: user),
+                    ),
+                  );
+                } else if (value == 'toggle') {
+                  final success = await context
+                      .read<AdminUsersViewModel>()
+                      .toggleUserStatus(user.id, user.activo);
+                  if (success && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(user.activo ? 'Usuario desactivado' : 'Usuario activado'),
+                        backgroundColor: AppColors.green,
+                      ),
+                    );
+                  }
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, size: 20, color: AppColors.ink),
+                      SizedBox(width: 8),
+                      Text('Editar'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'toggle',
+                  child: Row(
+                    children: [
+                      Icon(
+                        user.activo ? Icons.block : Icons.check_circle_outline,
+                        size: 20,
+                        color: user.activo ? Colors.red : AppColors.green,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(user.activo ? 'Desactivar' : 'Activar'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

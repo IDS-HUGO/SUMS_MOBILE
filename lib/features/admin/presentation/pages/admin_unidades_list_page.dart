@@ -85,6 +85,63 @@ class _AdminUnidadesListPageState extends State<AdminUnidadesListPage> {
               style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink),
             ),
             subtitle: Text('CLUES: ${unidad.clues}'),
+            trailing: PopupMenuButton<String>(
+              onSelected: (value) async {
+                if (value == 'edit') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AdminUnidadFormPage(unidad: unidad),
+                    ),
+                  );
+                } else if (value == 'delete') {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Eliminar Unidad'),
+                      content: Text('¿Estás seguro de eliminar ${unidad.nombre}?'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true && context.mounted) {
+                    final success = await context.read<AdminUnidadesViewModel>().deleteUnidad(unidad.id);
+                    if (success && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Unidad eliminada'), backgroundColor: AppColors.green),
+                      );
+                    }
+                  }
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, size: 20, color: AppColors.ink),
+                      SizedBox(width: 8),
+                      Text('Editar'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, size: 20, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('Eliminar', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

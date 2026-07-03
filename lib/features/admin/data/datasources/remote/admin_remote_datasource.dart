@@ -17,6 +17,10 @@ class AdminRemoteDataSource {
     return apiClient.post('/users/admin/register', body: body, token: token);
   }
 
+  Future<Map<String, dynamic>> updateUser(int id, Map<String, dynamic> body, {String? token}) async {
+    return apiClient.put('/users/$id', body: body, token: token);
+  }
+
   // Unidades de Salud
   Future<List<dynamic>> getUnidadesSalud({String? token}) async {
     return apiClient.getList('/unidadSalud', token: token);
@@ -24,6 +28,14 @@ class AdminRemoteDataSource {
 
   Future<Map<String, dynamic>> createUnidadSalud(Map<String, dynamic> body, {String? token}) async {
     return apiClient.post('/unidadSalud', body: body, token: token);
+  }
+
+  Future<Map<String, dynamic>> updateUnidadSalud(int id, Map<String, dynamic> body, {String? token}) async {
+    return apiClient.put('/unidadSalud/$id', body: body, token: token);
+  }
+
+  Future<Map<String, dynamic>> deleteUnidadSalud(int id, {String? token}) async {
+    return apiClient.delete('/unidadSalud/$id', token: token);
   }
 
   // Catálogos

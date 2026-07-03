@@ -10,4 +10,7 @@ class AppRoutes {
   static const adminUsers     = '/admin/users';
   static const adminUnidades  = '/admin/unidades';
   static const adminCatalogos = '/admin/catalogos';
+  static const adminReportes  = '/admin/reportes';
+  static const adminProductividad = '/admin/productividad';
+  static const adminCedulas   = '/admin/cedulas';
 }

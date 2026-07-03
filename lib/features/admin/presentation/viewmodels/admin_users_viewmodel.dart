@@ -50,4 +50,31 @@ class AdminUsersViewModel extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> updateUser(int id, Map<String, dynamic> body) async {
+    _status = AdminUsersStatus.loading;
+    notifyListeners();
+
+    try {
+      final updatedUser = await repository.updateUser(id, body);
+      final index = _users.indexWhere((u) => u.id == id);
+      if (index != -1) {
+        _users[index] = updatedUser;
+      }
+      _status = AdminUsersStatus.loaded;
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _status = AdminUsersStatus.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> toggleUserStatus(int id, bool currentStatus) async {
+    // Si queremos usar updateUser para solo cambiar el status
+    return await updateUser(id, {'activo': !currentStatus});
+  }
 }

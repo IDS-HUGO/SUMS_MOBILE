@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../shared/theme/app_theme.dart';
+import '../../domain/entities/unidad_salud_entity.dart';
 import '../viewmodels/admin_unidades_viewmodel.dart';
 
 class AdminUnidadFormPage extends StatefulWidget {
-  const AdminUnidadFormPage({super.key});
+  final UnidadSaludEntity? unidad;
+  const AdminUnidadFormPage({super.key, this.unidad});
 
   @override
   State<AdminUnidadFormPage> createState() => _AdminUnidadFormPageState();
@@ -15,6 +17,15 @@ class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _cluesController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.unidad != null) {
+      _nombreController.text = widget.unidad!.nombre;
+      _cluesController.text = widget.unidad!.clues;
+    }
+  }
 
   @override
   void dispose() {
@@ -40,19 +51,28 @@ class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    final success = await vm.createUnidad(body);
+    final isEditing = widget.unidad != null;
+    final success = isEditing
+        ? await vm.updateUnidad(widget.unidad!.id, body)
+        : await vm.createUnidad(body);
     
     if (!mounted) return;
     Navigator.pop(context); // Cerrar loader
     
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unidad creada exitosamente'), backgroundColor: AppColors.green),
+        SnackBar(
+          content: Text(isEditing ? 'Unidad actualizada exitosamente' : 'Unidad creada exitosamente'),
+          backgroundColor: AppColors.green,
+        ),
       );
       Navigator.pop(context); // Regresar a la lista
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.errorMessage ?? 'Error al crear unidad'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(vm.errorMessage ?? 'Error al guardar unidad'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -62,7 +82,7 @@ class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        title: const Text('Nueva Unidad'),
+        title: Text(widget.unidad != null ? 'Editar Unidad' : 'Nueva Unidad'),
         backgroundColor: AppColors.green,
       ),
       body: SafeArea(
@@ -106,7 +126,10 @@ class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
                     backgroundColor: AppColors.green,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Crear Unidad de Salud', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  child: Text(
+                    widget.unidad != null ? 'Actualizar Unidad de Salud' : 'Crear Unidad de Salud',
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
               ],
             ),
