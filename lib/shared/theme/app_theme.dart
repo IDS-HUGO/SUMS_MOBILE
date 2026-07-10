@@ -56,15 +56,17 @@ class AppTheme {
       fontFamily:   'Arial',
 
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.greenDark,
+        backgroundColor: AppColors.green,
+        foregroundColor: Colors.white,
         elevation:       0,
         scrolledUnderElevation: 1,
         shadowColor:     AppColors.line,
         centerTitle:     false,
+        iconTheme:       IconThemeData(color: Colors.white),
+        actionsIconTheme: IconThemeData(color: Colors.white),
         titleTextStyle:  TextStyle(
           fontFamily: 'Arial', fontSize: 16, fontWeight: FontWeight.w700,
-          color: AppColors.greenDark,
+          color: Colors.white,
         ),
       ),
 
