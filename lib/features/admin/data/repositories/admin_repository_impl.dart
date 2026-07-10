@@ -29,6 +29,13 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
+  Future<AdminUserEntity> updateUser(int id, Map<String, dynamic> body) async {
+    final token = await tokenStorage.readToken();
+    final response = await remoteDataSource.updateUser(id, body, token: token);
+    return AdminUserEntity.fromJson(response['data'] ?? response);
+  }
+
+  @override
   Future<List<UnidadSaludEntity>> getUnidadesSalud() async {
     final token = await tokenStorage.readToken();
     final data = await remoteDataSource.getUnidadesSalud(token: token);
@@ -40,6 +47,24 @@ class AdminRepositoryImpl implements AdminRepository {
     final token = await tokenStorage.readToken();
     final response = await remoteDataSource.createUnidadSalud(body, token: token);
     return UnidadSaludEntity.fromJson(response['data'] ?? response);
+  }
+
+  @override
+  Future<UnidadSaludEntity> updateUnidadSalud(int id, Map<String, dynamic> body) async {
+    final token = await tokenStorage.readToken();
+    final response = await remoteDataSource.updateUnidadSalud(id, body, token: token);
+    return UnidadSaludEntity.fromJson(response['data'] ?? response);
+  }
+
+  @override
+  Future<bool> deleteUnidadSalud(int id) async {
+    final token = await tokenStorage.readToken();
+    try {
+      await remoteDataSource.deleteUnidadSalud(id, token: token);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override

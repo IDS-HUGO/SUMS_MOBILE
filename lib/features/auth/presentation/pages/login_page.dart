@@ -58,8 +58,64 @@ class _LoginPageState extends State<LoginPage> {
       nombreUsuario: _userController.text.trim(),
       contrasena:    _passwordController.text,
     );
-    if (!mounted || !success) return;
-    Navigator.of(context).pushReplacementNamed(viewModel.homeRoute);
+    if (!mounted) return;
+
+    if (success) {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.radiusL)),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle_outline, color: AppColors.success, size: 28),
+              SizedBox(width: 10),
+              Text('Éxito', style: TextStyle(color: AppColors.greenDark)),
+            ],
+          ),
+          content: const Text('Inicio de sesión exitoso. Bienvenido a SUMS.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Continuar', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(viewModel.homeRoute);
+    } else {
+      final errorMsg = viewModel.errorMessage?.toLowerCase() ?? '';
+      final isConnection = errorMsg.contains('conexión') || errorMsg.contains('network') || errorMsg.contains('socket') || errorMsg.contains('timeout');
+      
+      final title = isConnection ? 'Falla de conexión' : 'Contraseña incorrecta';
+      final msg = isConnection 
+          ? 'No pudimos conectarnos al servidor. Revisa tu conexión a internet.' 
+          : 'El usuario o contraseña ingresados no son correctos.';
+      final icon = isConnection ? Icons.wifi_off : Icons.lock_outline;
+      final iconColor = isConnection ? AppColors.warning : AppColors.error;
+      
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.radiusL)),
+          title: Row(
+            children: [
+              Icon(icon, color: iconColor, size: 28),
+              const SizedBox(width: 10),
+              Expanded(child: Text(title, style: const TextStyle(color: AppColors.greenDark))),
+            ],
+          ),
+          content: Text(msg),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Intentar de nuevo'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override

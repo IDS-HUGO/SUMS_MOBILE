@@ -13,6 +13,10 @@ import 'features/auth/presentation/pages/login_page.dart';
 import 'features/admin/presentation/pages/admin_users_list_page.dart';
 import 'features/admin/presentation/pages/admin_unidades_list_page.dart';
 import 'features/admin/presentation/pages/admin_catalogos_page.dart';
+import 'features/admin/presentation/pages/admin_reportes_page.dart';
+import 'features/admin/presentation/pages/admin_productividad_page.dart';
+import 'features/admin/presentation/pages/admin_cedulas_list_page.dart';
+
 import 'features/estadisticas/presentation/pages/productividad_admin_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 
@@ -152,7 +156,11 @@ class _AppState extends State<App> with WidgetsBindingObserver {
           AppRoutes.adminUsers:        (_) => const AdminUsersListPage(),
           AppRoutes.adminUnidades:     (_) => const AdminUnidadesListPage(),
           AppRoutes.adminCatalogos:    (_) => const AdminCatalogosPage(),
+          AppRoutes.adminReportes:     (_) => const AdminReportesPage(),
+          AppRoutes.adminProductividad:(_) => const AdminProductividadPage(),
+          AppRoutes.adminCedulas:      (_) => const AdminCedulasListPage(),
           AppRoutes.productividadAdmin: (_) => const ProductividadAdminPage(),
+
         },
         // Guarda de ruta: si el usuario no está autenticado, va a login.
         onGenerateRoute: (settings) {
