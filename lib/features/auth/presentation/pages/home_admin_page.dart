@@ -91,6 +91,13 @@ class HomeAdminPage extends StatelessWidget {
                     color:   AppColors.rolMedico,
                     onTap: () => Navigator.pushNamed(context, AppRoutes.productividadAdmin),
                   ),
+                  _AdminActionCard(
+                    icon:    Icons.analytics_outlined,
+                    label:   'Minería',
+                    detail:  'Motor de búsqueda y riesgo',
+                    color:   AppColors.rolAnalista,
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.mineriaMenu),
+                  ),
                 ],
               ),
             ),

@@ -54,6 +54,11 @@ import '../../features/estadisticas/data/repositories/estadisticas_repository_im
 import '../../features/estadisticas/domain/repositories/estadisticas_repository.dart';
 import '../../features/estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
 
+import '../../features/mineria/data/datasources/remote/mineria_remote_datasource.dart';
+import '../../features/mineria/data/repositories/mineria_repository_impl.dart';
+import '../../features/mineria/domain/repositories/mineria_repository.dart';
+import '../../features/mineria/presentation/viewmodels/mineria_viewmodel.dart';
+
 /// Contenedor de dependencias manual para toda la app.
 /// Se crea una única vez en [_AppState.initState] y se destruye en [dispose].
 class AppDependencies {
@@ -148,6 +153,11 @@ class AppDependencies {
       tokenStorage:     tokenStorage,
     );
     estadisticasViewModel = EstadisticasViewModel(repository: estadisticasRepository);
+
+    // ── feature: mineria ─────────────────────────────────────────────────────
+    mineriaRemoteDataSource = MineriaRemoteDataSourceImpl(client: httpClient);
+    mineriaRepository = MineriaRepositoryImpl(remoteDataSource: mineriaRemoteDataSource);
+    mineriaViewModel = MineriaViewModel(repository: mineriaRepository);
   }
 
   // ── infraestructura ───────────────────────────────────────────────────────
@@ -195,6 +205,11 @@ class AppDependencies {
   late final EstadisticasRepository       estadisticasRepository;
   late final EstadisticasViewModel        estadisticasViewModel;
 
+  // ── mineria ───────────────────────────────────────────────────────────────
+  late final MineriaRemoteDataSource      mineriaRemoteDataSource;
+  late final MineriaRepository            mineriaRepository;
+  late final MineriaViewModel             mineriaViewModel;
+
   /// Libera ViewModels y cierra el cliente HTTP y BD local.
   void dispose() {
     authViewModel.dispose();
@@ -207,6 +222,7 @@ class AppDependencies {
     adminUnidadesViewModel.dispose();
     adminCatalogosViewModel.dispose();
     estadisticasViewModel.dispose();
+    mineriaViewModel.dispose();
     httpClient.close();
   }
 }

@@ -57,6 +57,13 @@ class HomeAnalistaPage extends StatelessWidget {
                       title:   'Salud preventiva',
                       sub:     'Tamizajes, enfermedades crónicas y toxicomanías.',
                       color:   AppColors.gold),
+                  const SizedBox(height: 12),
+                  _card(context,
+                      icon:    Icons.analytics_outlined,
+                      title:   'Módulo de Minería',
+                      sub:     'Motor de búsqueda y análisis de riesgo familiar.',
+                      color:   AppColors.rolAnalista,
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.mineriaMenu)),
                 ],
               ),
             ),
@@ -72,10 +79,11 @@ class HomeAnalistaPage extends StatelessWidget {
     required String   title,
     required String   sub,
     required Color    color,
+    VoidCallback?    onTap,
   }) =>
       Card(
         child: InkWell(
-          onTap:        () {},
+          onTap:        onTap ?? () {},
           borderRadius: BorderRadius.circular(8),
           child: Padding(
             padding: const EdgeInsets.all(18),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sums/shared/theme/app_theme.dart';
 
 enum UserRole {
+  superAdmin(0),
   admin(1),
   medico(2),
   encuestador(4),
@@ -19,6 +20,8 @@ enum UserRole {
 
   String get displayName {
     switch (this) {
+      case UserRole.superAdmin:
+        return 'Super Administrador';
       case UserRole.admin:
         return 'Administrador';
       case UserRole.medico:
@@ -32,6 +35,8 @@ enum UserRole {
 
   Color get color {
     switch (this) {
+      case UserRole.superAdmin:
+        return const Color(0xff1a237e); // Azul muy oscuro para Super Admin
       case UserRole.admin:
         return AppColors.rolAdmin;
       case UserRole.medico:
@@ -45,6 +50,8 @@ enum UserRole {
 
   IconData get icon {
     switch (this) {
+      case UserRole.superAdmin:
+        return Icons.security;
       case UserRole.admin:
         return Icons.admin_panel_settings;
       case UserRole.medico:
@@ -58,6 +65,8 @@ enum UserRole {
 
   String get homeRoute {
     switch (this) {
+      case UserRole.superAdmin:
+        return '/home/super-admin';
       case UserRole.admin:
         return '/home/admin';
       case UserRole.medico:

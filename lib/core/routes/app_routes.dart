@@ -1,5 +1,6 @@
 class AppRoutes {
   static const login        = '/login';
+  static const homeSuperAdmin = '/home/super-admin';
   static const homeAdmin    = '/home/admin';
   static const homeMedico   = '/home/medico';
   static const homeEncuestador = '/home/encuestador';
@@ -13,5 +14,11 @@ class AppRoutes {
   static const adminCatalogos = '/admin/catalogos';
   static const adminReportes  = '/admin/reportes';
   static const adminProductividad = '/admin/productividad';
+  static const productividadAdmin = '/admin/productividad-admin';
   static const adminCedulas   = '/admin/cedulas';
+  
+  // ── Minería ────────────────────────────────────────────────────────────────
+  static const mineriaMenu     = '/mineria';
+  static const mineriaBuscador = '/mineria/buscador';
+  static const mineriaRiesgo   = '/mineria/riesgo';
 }

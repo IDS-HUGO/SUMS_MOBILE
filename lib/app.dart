@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/di/app_dependencies.dart';
 import 'core/routes/app_routes.dart';
 import 'features/auth/presentation/pages/home_admin_page.dart';
+import 'features/auth/presentation/pages/home_super_admin_page.dart';
 import 'features/auth/presentation/pages/home_analista_page.dart';
 import 'features/auth/presentation/pages/home_encuestador_page.dart';
 import 'features/auth/presentation/pages/home_medico_page.dart';
@@ -34,6 +35,10 @@ import 'features/admin/presentation/viewmodels/admin_users_viewmodel.dart';
 import 'features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
 import 'features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 import 'features/estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
+import 'features/mineria/presentation/viewmodels/mineria_viewmodel.dart';
+import 'features/mineria/presentation/pages/mineria_menu_page.dart';
+import 'features/mineria/presentation/pages/buscador_casos_page.dart';
+import 'features/mineria/presentation/pages/riesgo_familiar_page.dart';
 import 'shared/theme/app_theme.dart';
 
 class App extends StatefulWidget {
@@ -135,6 +140,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         ChangeNotifierProvider<EstadisticasViewModel>.value(
           value: _dependencies.estadisticasViewModel,
         ),
+        ChangeNotifierProvider<MineriaViewModel>.value(
+          value: _dependencies.mineriaViewModel,
+        ),
       ],
       child: MaterialApp(
         navigatorKey: _navigatorKey,
@@ -145,6 +153,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         routes: {
           AppRoutes.login:             (_) => const LoginPage(),
           // ── Homes por rol ──────────────────────────────────────────────
+          AppRoutes.homeSuperAdmin:    (_) => const HomeSuperAdminPage(),
           AppRoutes.homeAdmin:         (_) => const HomeAdminPage(),
           AppRoutes.homeMedico:        (_) => const HomeMedicoPage(),
           AppRoutes.homeEncuestador:   (_) => const HomeEncuestadorPage(),
@@ -160,6 +169,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
           AppRoutes.adminProductividad:(_) => const AdminProductividadPage(),
           AppRoutes.adminCedulas:      (_) => const AdminCedulasListPage(),
           AppRoutes.productividadAdmin: (_) => const ProductividadAdminPage(),
+          AppRoutes.mineriaMenu:       (_) => const MineriaMenuPage(),
+          AppRoutes.mineriaBuscador:   (_) => const BuscadorCasosPage(),
+          AppRoutes.mineriaRiesgo:     (_) => const RiesgoFamiliarPage(),
 
         },
         // Guarda de ruta: si el usuario no está autenticado, va a login.
