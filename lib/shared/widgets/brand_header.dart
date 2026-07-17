@@ -1,9 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 /// Header de marca SUMS/IMSS-Bienestar.
 /// La firma visual: franja verde izquierda + badge institucional.
-class BrandHeader extends StatelessWidget {
+class BrandHeader extends ConsumerWidget {
   final String title;
   final String subtitle;
   final bool compact;
@@ -18,7 +19,7 @@ class BrandHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final accent = accentColor ?? AppColors.green;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,12 +80,12 @@ class BrandHeader extends StatelessWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
+class _StatusBadge extends ConsumerWidget {
   final Color color;
   const _StatusBadge({required this.color});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -117,7 +118,7 @@ class _StatusBadge extends StatelessWidget {
 }
 
 /// Tarjeta de sección con borde izquierdo de color — firma del diseño.
-class SectionCard extends StatelessWidget {
+class SectionCard extends ConsumerWidget {
   final String title;
   final String? subtitle;
   final IconData icon;
@@ -136,7 +137,7 @@ class SectionCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,

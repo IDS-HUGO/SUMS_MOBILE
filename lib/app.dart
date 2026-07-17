@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'core/di/app_dependencies.dart';
+import 'core/di/injection.dart';
 import 'core/routes/app_routes.dart';
 import 'features/auth/presentation/pages/home_admin_page.dart';
 import 'features/auth/presentation/pages/home_analista_page.dart';
@@ -36,22 +37,19 @@ import 'features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 import 'features/estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
 import 'shared/theme/app_theme.dart';
 
-class App extends StatefulWidget {
-  final SharedPreferences prefs;
+class App extends ConsumerStatefulWidget {
   final bool isSecureDevice;
 
   const App({
     super.key,
-    required this.prefs,
     this.isSecureDevice = true,
   });
 
   @override
-  State<App> createState() => _AppState();
+  ConsumerState<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> with WidgetsBindingObserver {
-  late final AppDependencies _dependencies;
+class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   Timer? _idleTimer;
   bool _showOverlay = false;
@@ -59,7 +57,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _dependencies = AppDependencies(widget.prefs);
     WidgetsBinding.instance.addObserver(this);
     _resetIdleTimer();
   }
@@ -68,7 +65,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _idleTimer?.cancel();
-    _dependencies.dispose();
+    disposeInjection();
     super.dispose();
   }
 
@@ -87,7 +84,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   }
 
   void _onIdleTimeout() {
-    final authViewModel = _dependencies.authViewModel;
+    final authViewModel = sl<AuthViewModel>();
     if (authViewModel.isAuthenticated) {
       authViewModel.logout();
       _navigatorKey.currentState?.pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
@@ -103,44 +100,13 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<AuthViewModel>.value(
-          value: _dependencies.authViewModel,
-        ),
-        ChangeNotifierProvider<CedulaViewModel>.value(
-          value: _dependencies.cedulaViewModel,
-        ),
-        ChangeNotifierProvider<FamiliaViewModel>.value(
-          value: _dependencies.familiaViewModel,
-        ),
-        ChangeNotifierProvider<ViviendaViewModel>.value(
-          value: _dependencies.viviendaViewModel,
-        ),
-        ChangeNotifierProvider<VacunacionViewModel>.value(
-          value: _dependencies.vacunacionViewModel,
-        ),
-        ChangeNotifierProvider<IntegrantesViewModel>.value(
-          value: _dependencies.integrantesViewModel,
-        ),
-        ChangeNotifierProvider<AdminUsersViewModel>.value(
-          value: _dependencies.adminUsersViewModel,
-        ),
-        ChangeNotifierProvider<AdminUnidadesViewModel>.value(
-          value: _dependencies.adminUnidadesViewModel,
-        ),
-        ChangeNotifierProvider<AdminCatalogosViewModel>.value(
-          value: _dependencies.adminCatalogosViewModel,
-        ),
-        ChangeNotifierProvider<EstadisticasViewModel>.value(
-          value: _dependencies.estadisticasViewModel,
-        ),
-      ],
-      child: MaterialApp(
+    return MaterialApp(
         navigatorKey: _navigatorKey,
         debugShowCheckedModeBanner: false,
         title:        'SUMS IMSS Bienestar',
         theme:        AppTheme.light(),
+        darkTheme:    AppTheme.dark(),
+        themeMode:    ThemeMode.system,
         initialRoute: AppRoutes.login,
         routes: {
           AppRoutes.login:             (_) => const LoginPage(),
@@ -239,7 +205,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
             ),
           );
         },
-      ),
-    );
+      );
   }
 }

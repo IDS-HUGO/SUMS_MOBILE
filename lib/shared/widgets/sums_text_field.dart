@@ -1,7 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class SumsTextField extends StatelessWidget {
+class SumsTextField extends ConsumerWidget {
   final TextEditingController controller;
   final String label;
   final IconData icon;
@@ -42,7 +43,7 @@ class SumsTextField extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,

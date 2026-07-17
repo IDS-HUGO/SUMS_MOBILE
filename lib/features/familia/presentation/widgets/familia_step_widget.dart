@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
@@ -7,12 +8,12 @@ import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
 import '../viewmodels/familia_viewmodel.dart';
 import '../../../integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
 
-class FamiliaStepWidget extends StatelessWidget {
+class FamiliaStepWidget extends ConsumerWidget {
   const FamiliaStepWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final vm = context.watch<FamiliaViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vm = ref.watch(familiaViewModelProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -28,7 +29,7 @@ class FamiliaStepWidget extends StatelessWidget {
             icon: Icons.person_outline,
             validator: requiredText,
             onChanged: (v) {
-              final intVm = context.read<IntegrantesViewModel>();
+              final intVm = ref.read(integrantesViewModelProvider);
               if (intVm.integrantes.isNotEmpty) {
                 intVm.integrantes[0].nombre.text = v;
                 intVm.updateForm();
@@ -42,7 +43,7 @@ class FamiliaStepWidget extends StatelessWidget {
             options: const ['Masculino', 'Femenino'],
             onChanged: (v) {
               vm.setSexo(v);
-              final intVm = context.read<IntegrantesViewModel>();
+              final intVm = ref.read(integrantesViewModelProvider);
               if (intVm.integrantes.isNotEmpty) {
                 intVm.integrantes[0].sexo = v;
                 intVm.updateForm();
@@ -57,7 +58,7 @@ class FamiliaStepWidget extends StatelessWidget {
             options: vm.roles,
             onChanged: (v) {
               vm.setRol(v);
-              final intVm = context.read<IntegrantesViewModel>();
+              final intVm = ref.read(integrantesViewModelProvider);
               if (intVm.integrantes.isNotEmpty) {
                 intVm.integrantes[0].parentesco = v;
                 intVm.updateForm();
@@ -146,7 +147,7 @@ class FamiliaStepWidget extends StatelessWidget {
       );
 }
 
-class _StepPanel extends StatelessWidget {
+class _StepPanel extends ConsumerWidget {
   final String title;
   final IconData icon;
   final Color color;
@@ -160,7 +161,7 @@ class _StepPanel extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,

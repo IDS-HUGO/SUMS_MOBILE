@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../auth/domain/entities/user_role.dart';
 import '../viewmodels/admin_users_viewmodel.dart';
 import 'admin_user_form_page.dart';
 
-class AdminUsersListPage extends StatefulWidget {
+class AdminUsersListPage extends ConsumerStatefulWidget {
   const AdminUsersListPage({super.key});
 
   @override
-  State<AdminUsersListPage> createState() => _AdminUsersListPageState();
+  ConsumerState<AdminUsersListPage> createState() => _AdminUsersListPageState();
 }
 
-class _AdminUsersListPageState extends State<AdminUsersListPage> {
+class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminUsersViewModel>().fetchUsers();
+      ref.read(adminUsersViewModelProvider).fetchUsers();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AdminUsersViewModel>();
+    final vm = ref.watch(adminUsersViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
@@ -97,8 +98,8 @@ class _AdminUsersListPageState extends State<AdminUsersListPage> {
                     ),
                   );
                 } else if (value == 'toggle') {
-                  final success = await context
-                      .read<AdminUsersViewModel>()
+                  final success = await ref
+                      .read(adminUsersViewModelProvider)
                       .toggleUserStatus(user.id, user.activo);
                   if (success && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(

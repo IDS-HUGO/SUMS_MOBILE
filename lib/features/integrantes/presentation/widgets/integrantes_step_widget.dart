@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
@@ -7,12 +8,12 @@ import '../viewmodels/integrantes_viewmodel.dart';
 import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
 import '../../../familia/presentation/viewmodels/familia_viewmodel.dart';
 
-class IntegrantesStepWidget extends StatelessWidget {
+class IntegrantesStepWidget extends ConsumerWidget {
   const IntegrantesStepWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final vm = context.watch<IntegrantesViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vm = ref.watch(integrantesViewModelProvider);
 
     if (vm.isLoading) {
       return const Center(
@@ -71,7 +72,7 @@ class IntegrantesStepWidget extends StatelessWidget {
   }
 }
 
-class _MemberCard extends StatelessWidget {
+class _MemberCard extends ConsumerWidget {
   final int index;
   final MemberForm form;
   final bool canRemove;
@@ -96,7 +97,7 @@ class _MemberCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -149,7 +150,7 @@ class _MemberCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: LayoutBuilder(builder: (_, con) {
-              final familiaVm = context.read<FamiliaViewModel>();
+              final familiaVm = ref.read(familiaViewModelProvider);
               final w = con.maxWidth < 720 ? con.maxWidth : (con.maxWidth - 12) / 2;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -407,12 +408,12 @@ class _MemberCard extends StatelessWidget {
       );
 }
 
-class _SubLabel extends StatelessWidget {
+class _SubLabel extends ConsumerWidget {
   final String text;
   const _SubLabel({required this.text});
 
   @override
-  Widget build(BuildContext context) => Text(
+  Widget build(BuildContext context, WidgetRef ref) => Text(
     text.toUpperCase(),
     style: const TextStyle(
       fontSize: 10, fontWeight: FontWeight.w700,

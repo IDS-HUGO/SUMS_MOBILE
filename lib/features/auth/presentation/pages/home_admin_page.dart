@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
-class HomeAdminPage extends StatelessWidget {
+class HomeAdminPage extends ConsumerWidget {
   const HomeAdminPage({super.key});
 
   void _showPendingFeatureMessage(BuildContext context, String feature) {
@@ -21,13 +22,13 @@ class HomeAdminPage extends StatelessWidget {
 
 
   @override
-  Widget build(BuildContext context) {
-    final auth     = context.watch<AuthViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth     = ref.watch(authViewModelProvider);
     final userName = auth.session?.user.nombreUsuario ?? 'administrador';
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, ref),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -130,7 +131,7 @@ class HomeAdminPage extends StatelessWidget {
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) => AppBar(
+  AppBar _buildAppBar(BuildContext context, WidgetRef ref) => AppBar(
         title: Row(
           children: [
             Container(
@@ -148,7 +149,7 @@ class HomeAdminPage extends StatelessWidget {
             tooltip:  'Cerrar sesión',
             icon:     const Icon(Icons.logout_outlined),
             onPressed: () async {
-              await context.read<AuthViewModel>().logout();
+              await ref.read(authViewModelProvider).logout();
               if (!context.mounted) return;
               Navigator.of(context)
                   .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
@@ -161,7 +162,7 @@ class HomeAdminPage extends StatelessWidget {
 
 // ── Cabecera de rol (compartida) ──────────────────────────────────────────────
 
-class _RolHeader extends StatelessWidget {
+class _RolHeader extends ConsumerWidget {
   final String userName;
   final String rolLabel;
   final Color rolColor;
@@ -175,7 +176,7 @@ class _RolHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       color: AppColors.greenDark,
       padding: const EdgeInsets.all(20),
@@ -225,12 +226,12 @@ class _RolHeader extends StatelessWidget {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
+class _SectionLabel extends ConsumerWidget {
   final String text;
   const _SectionLabel({required this.text});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Text(
       text.toUpperCase(),
       style: const TextStyle(
@@ -245,7 +246,7 @@ class _SectionLabel extends StatelessWidget {
 
 // ── Tarjeta de acción admin ───────────────────────────────────────────────────
 
-class _AdminActionCard extends StatelessWidget {
+class _AdminActionCard extends ConsumerWidget {
   final IconData icon;
   final String   label;
   final String   detail;
@@ -261,7 +262,7 @@ class _AdminActionCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
@@ -314,7 +315,7 @@ class _AdminActionCard extends StatelessWidget {
   }
 }
 
-class _QuickLinkRow extends StatelessWidget {
+class _QuickLinkRow extends ConsumerWidget {
   final IconData icon;
   final String   label;
   final Color    color;
@@ -328,7 +329,7 @@ class _QuickLinkRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),

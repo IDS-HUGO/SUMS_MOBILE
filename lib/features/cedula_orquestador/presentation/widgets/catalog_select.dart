@@ -1,8 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/catalog_item.dart';
 
-class CatalogSelect extends StatelessWidget {
+class CatalogSelect extends ConsumerWidget {
   final String label;
   final String catalogKey;
   final int? value;
@@ -23,7 +24,7 @@ class CatalogSelect extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final items = catalogs[catalogKey] ?? const <CatalogItem>[];
     
     // Safety check to ensure the current value exists in the catalog items

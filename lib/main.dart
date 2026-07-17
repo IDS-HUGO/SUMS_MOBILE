@@ -1,6 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'app.dart';
+import 'core/di/injection.dart';
 import 'core/sync/background_worker.dart';
 import 'core/network/app_logger.dart';
 
@@ -26,5 +29,10 @@ void main() async {
   }
 
   final prefs = await SharedPreferences.getInstance();
-  runApp(App(prefs: prefs, isSecureDevice: isSecure));
+  await initInjection(prefs);
+  runApp(
+    ProviderScope(
+      child: App(isSecureDevice: isSecure),
+    ),
+  );
 }

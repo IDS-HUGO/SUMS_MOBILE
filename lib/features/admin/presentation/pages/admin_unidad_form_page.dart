@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../domain/entities/unidad_salud_entity.dart';
 import '../viewmodels/admin_unidades_viewmodel.dart';
 
-class AdminUnidadFormPage extends StatefulWidget {
+class AdminUnidadFormPage extends ConsumerStatefulWidget {
   final UnidadSaludEntity? unidad;
   const AdminUnidadFormPage({super.key, this.unidad});
 
   @override
-  State<AdminUnidadFormPage> createState() => _AdminUnidadFormPageState();
+  ConsumerState<AdminUnidadFormPage> createState() => _AdminUnidadFormPageState();
 }
 
-class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
+class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _cluesController = TextEditingController();
@@ -37,7 +38,7 @@ class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
-    final vm = context.read<AdminUnidadesViewModel>();
+    final vm = ref.read(adminUnidadesViewModelProvider);
     
     final body = {
       'nombre': _nombreController.text.trim(),

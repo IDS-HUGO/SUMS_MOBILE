@@ -1,14 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../../shared/theme/app_theme.dart';
 
-class AdminProductividadPage extends StatefulWidget {
+class AdminProductividadPage extends ConsumerStatefulWidget {
   const AdminProductividadPage({super.key});
 
   @override
-  State<AdminProductividadPage> createState() => _AdminProductividadPageState();
+  ConsumerState<AdminProductividadPage> createState() => _AdminProductividadPageState();
 }
 
-class _AdminProductividadPageState extends State<AdminProductividadPage> {
+class _AdminProductividadPageState extends ConsumerState<AdminProductividadPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   String _selectedEncuestador = 'Todos';
@@ -187,7 +188,7 @@ class _AdminProductividadPageState extends State<AdminProductividadPage> {
   }
 }
 
-class _SummaryBox extends StatelessWidget {
+class _SummaryBox extends ConsumerWidget {
   final String title;
   final String value;
   final IconData icon;
@@ -196,7 +197,7 @@ class _SummaryBox extends StatelessWidget {
   const _SummaryBox({required this.title, required this.value, required this.icon, required this.color});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -216,7 +217,7 @@ class _SummaryBox extends StatelessWidget {
   }
 }
 
-class _StatColumn extends StatelessWidget {
+class _StatColumn extends ConsumerWidget {
   final String label;
   final String value;
   final Color color;
@@ -224,7 +225,7 @@ class _StatColumn extends StatelessWidget {
   const _StatColumn({required this.label, required this.value, required this.color});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),

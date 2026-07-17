@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/estadisticas_viewmodel.dart';
 
-class ProductividadAdminPage extends StatefulWidget {
+class ProductividadAdminPage extends ConsumerStatefulWidget {
   const ProductividadAdminPage({super.key});
 
   @override
-  State<ProductividadAdminPage> createState() => _ProductividadAdminPageState();
+  ConsumerState<ProductividadAdminPage> createState() => _ProductividadAdminPageState();
 }
 
-class _ProductividadAdminPageState extends State<ProductividadAdminPage> {
+class _ProductividadAdminPageState extends ConsumerState<ProductividadAdminPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EstadisticasViewModel>().fetchProductividad();
+      ref.read(estadisticasViewModelProvider).fetchProductividad();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<EstadisticasViewModel>();
+    final vm = ref.watch(estadisticasViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.canvas,

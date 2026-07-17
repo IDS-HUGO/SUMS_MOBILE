@@ -3,22 +3,23 @@
 // ────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
-class HomeMedicoPage extends StatelessWidget {
+class HomeMedicoPage extends ConsumerWidget {
   const HomeMedicoPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final userName = context.watch<AuthViewModel>().session?.user.nombreUsuario ?? 'médico';
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userName = ref.watch(authViewModelProvider).session?.user.nombreUsuario ?? 'médico';
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, ref),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -64,7 +65,7 @@ class HomeMedicoPage extends StatelessWidget {
     _Module(Icons.monitor_heart_outlined, 'Enfermedades crónicas', 'Hipertensión, diabetes y seguimiento longitudinal.', AppColors.terracota),
   ];
 
-  AppBar _buildAppBar(BuildContext context) => AppBar(
+  AppBar _buildAppBar(BuildContext context, WidgetRef ref) => AppBar(
         title: Row(
           children: [
             Container(width: 8, height: 8,
@@ -78,7 +79,7 @@ class HomeMedicoPage extends StatelessWidget {
             tooltip: 'Cerrar sesión',
             icon: const Icon(Icons.logout_outlined),
             onPressed: () async {
-              await context.read<AuthViewModel>().logout();
+              await ref.read(authViewModelProvider).logout();
               if (!context.mounted) return;
               Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
             },
@@ -96,7 +97,7 @@ class _Module {
   const _Module(this.icon, this.title, this.subtitle, this.color);
 }
 
-class _ModuleRow extends StatelessWidget {
+class _ModuleRow extends ConsumerWidget {
   final IconData icon;
   final String   title;
   final String   subtitle;
@@ -104,7 +105,7 @@ class _ModuleRow extends StatelessWidget {
   const _ModuleRow({required this.icon, required this.title, required this.subtitle, required this.color});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
@@ -149,14 +150,14 @@ class _ModuleRow extends StatelessWidget {
 
 // Shared widgets reutilizados aquí también ────────────────────────────────────
 
-class _RolHeader extends StatelessWidget {
+class _RolHeader extends ConsumerWidget {
   final String userName, rolLabel;
   final Color  rolColor;
   final IconData icon;
   const _RolHeader({required this.userName, required this.rolLabel, required this.rolColor, required this.icon});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       color: AppColors.greenDark,
       padding: const EdgeInsets.all(20),
@@ -188,12 +189,12 @@ class _RolHeader extends StatelessWidget {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
+class _SectionLabel extends ConsumerWidget {
   final String text;
   const _SectionLabel({required this.text});
 
   @override
-  Widget build(BuildContext context) => Text(
+  Widget build(BuildContext context, WidgetRef ref) => Text(
         text.toUpperCase(),
         style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.muted, letterSpacing: 1.0),
       );

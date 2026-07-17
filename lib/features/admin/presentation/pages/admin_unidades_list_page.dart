@@ -1,29 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/admin_unidades_viewmodel.dart';
 import 'admin_unidad_form_page.dart';
 
-class AdminUnidadesListPage extends StatefulWidget {
+class AdminUnidadesListPage extends ConsumerStatefulWidget {
   const AdminUnidadesListPage({super.key});
 
   @override
-  State<AdminUnidadesListPage> createState() => _AdminUnidadesListPageState();
+  ConsumerState<AdminUnidadesListPage> createState() => _AdminUnidadesListPageState();
 }
 
-class _AdminUnidadesListPageState extends State<AdminUnidadesListPage> {
+class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminUnidadesViewModel>().fetchUnidades();
+      ref.read(adminUnidadesViewModelProvider).fetchUnidades();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AdminUnidadesViewModel>();
+    final vm = ref.watch(adminUnidadesViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
@@ -110,7 +111,7 @@ class _AdminUnidadesListPageState extends State<AdminUnidadesListPage> {
                     ),
                   );
                   if (confirm == true && context.mounted) {
-                    final success = await context.read<AdminUnidadesViewModel>().deleteUnidad(unidad.id);
+                    final success = await ref.read(adminUnidadesViewModelProvider).deleteUnidad(unidad.id);
                     if (success && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Unidad eliminada'), backgroundColor: AppColors.green),

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/cedula_viewmodel.dart';
 
-class CedulaHistoryPage extends StatefulWidget {
+class CedulaHistoryPage extends ConsumerStatefulWidget {
   const CedulaHistoryPage({super.key});
 
   @override
-  State<CedulaHistoryPage> createState() => _CedulaHistoryPageState();
+  ConsumerState<CedulaHistoryPage> createState() => _CedulaHistoryPageState();
 }
 
-class _CedulaHistoryPageState extends State<CedulaHistoryPage> {
+class _CedulaHistoryPageState extends ConsumerState<CedulaHistoryPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CedulaViewModel>().refreshSyncCounts();
+      ref.read(cedulaViewModelProvider).refreshSyncCounts();
     });
   }
 
@@ -27,12 +28,13 @@ class _CedulaHistoryPageState extends State<CedulaHistoryPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<CedulaViewModel>().refreshSyncCounts(),
+            onPressed: () => ref.read(cedulaViewModelProvider).refreshSyncCounts(),
           ),
         ],
       ),
-      body: Consumer<CedulaViewModel>(
-        builder: (context, vm, child) {
+      body: Consumer(
+        builder: (context, ref, child) {
+final vm = ref.watch(cedulaViewModelProvider);
           if (vm.allLocalRecords.isEmpty) {
             return const Center(
               child: Column(
@@ -61,13 +63,13 @@ class _CedulaHistoryPageState extends State<CedulaHistoryPage> {
   }
 }
 
-class _CedulaHistoryCard extends StatelessWidget {
+class _CedulaHistoryCard extends ConsumerWidget {
   final Map<String, dynamic> record;
 
   const _CedulaHistoryCard({required this.record});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final status = record['_syncStatus'] as int; // 0=DRAFT, 1=PENDING, 2=SYNCED
     final informante = record['_informante'] ?? 'Sin nombre';
     final fechaStr = record['_createdAt'] ?? '';
@@ -162,7 +164,7 @@ class _CedulaHistoryCard extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton.icon(
                   onPressed: () async {
-                    final vm = context.read<CedulaViewModel>();
+                    final vm = ref.read(cedulaViewModelProvider);
                     final result = await vm.retrySyncSingle(record['_localId']);
                     if (!context.mounted) return;
                     if (result.success) {

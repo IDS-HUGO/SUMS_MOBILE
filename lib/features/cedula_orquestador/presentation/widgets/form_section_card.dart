@@ -1,8 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 
-class FormSectionCard extends StatelessWidget {
+class FormSectionCard extends ConsumerWidget {
   final String title;
   final String subtitle;
   final IconData icon;
@@ -17,7 +18,7 @@ class FormSectionCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: ExpansionTile(

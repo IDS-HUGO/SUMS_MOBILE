@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/admin_catalogos_viewmodel.dart';
 
-class AdminCatalogosPage extends StatefulWidget {
+class AdminCatalogosPage extends ConsumerStatefulWidget {
   const AdminCatalogosPage({super.key});
 
   @override
-  State<AdminCatalogosPage> createState() => _AdminCatalogosPageState();
+  ConsumerState<AdminCatalogosPage> createState() => _AdminCatalogosPageState();
 }
 
-class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
+class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
   String? _selectedCatalog;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = context.read<AdminCatalogosViewModel>();
+      final vm = ref.read(adminCatalogosViewModelProvider);
       vm.fetchAllCatalogs();
       if (vm.catalogKeys.isNotEmpty) {
         setState(() {
@@ -97,7 +98,7 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AdminCatalogosViewModel>();
+    final vm = ref.watch(adminCatalogosViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.canvas,

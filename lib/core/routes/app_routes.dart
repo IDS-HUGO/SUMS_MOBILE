@@ -13,5 +13,6 @@ class AppRoutes {
   static const adminCatalogos = '/admin/catalogos';
   static const adminReportes  = '/admin/reportes';
   static const adminProductividad = '/admin/productividad';
+  static const productividadAdmin = '/admin/productividad_admin';
   static const adminCedulas   = '/admin/cedulas';
 }

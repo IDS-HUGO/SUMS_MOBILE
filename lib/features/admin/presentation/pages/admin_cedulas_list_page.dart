@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
 
-class AdminCedulasListPage extends StatefulWidget {
+class AdminCedulasListPage extends ConsumerStatefulWidget {
   const AdminCedulasListPage({super.key});
 
   @override
-  State<AdminCedulasListPage> createState() => _AdminCedulasListPageState();
+  ConsumerState<AdminCedulasListPage> createState() => _AdminCedulasListPageState();
 }
 
-class _AdminCedulasListPageState extends State<AdminCedulasListPage> {
+class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -19,7 +20,7 @@ class _AdminCedulasListPageState extends State<AdminCedulasListPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CedulaViewModel>().refreshSyncCounts();
+      ref.read(cedulaViewModelProvider).refreshSyncCounts();
     });
   }
 
@@ -72,8 +73,9 @@ class _AdminCedulasListPageState extends State<AdminCedulasListPage> {
           ),
           const Divider(height: 1),
           Expanded(
-            child: Consumer<CedulaViewModel>(
-              builder: (context, vm, child) {
+            child: Consumer(
+              builder: (context, ref, child) {
+final vm = ref.watch(cedulaViewModelProvider);
                 final records = vm.allLocalRecords.where((r) {
                   final informante = (r['_informante'] ?? '').toString().toLowerCase();
                   return informante.contains(_searchQuery);

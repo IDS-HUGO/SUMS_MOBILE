@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../domain/entities/user_entity.dart';
 import '../viewmodels/admin_users_viewmodel.dart';
 import '../viewmodels/admin_unidades_viewmodel.dart';
 
-class AdminUserFormPage extends StatefulWidget {
+class AdminUserFormPage extends ConsumerStatefulWidget {
   final AdminUserEntity? user;
   
   const AdminUserFormPage({super.key, this.user});
 
   @override
-  State<AdminUserFormPage> createState() => _AdminUserFormPageState();
+  ConsumerState<AdminUserFormPage> createState() => _AdminUserFormPageState();
 }
 
-class _AdminUserFormPageState extends State<AdminUserFormPage> {
+class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -32,7 +33,7 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
       _selectedUnidadId = widget.user!.unidadSaludId;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AdminUnidadesViewModel>().fetchUnidades();
+      ref.read(adminUnidadesViewModelProvider).fetchUnidades();
     });
   }
 
@@ -46,7 +47,7 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
-    final vm = context.read<AdminUsersViewModel>();
+    final vm = ref.read(adminUsersViewModelProvider);
     
     final body = <String, dynamic>{
       'nombre_usuario': _nombreController.text.trim(),
@@ -100,7 +101,7 @@ class _AdminUserFormPageState extends State<AdminUserFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final unidadesVm = context.watch<AdminUnidadesViewModel>();
+    final unidadesVm = ref.watch(adminUnidadesViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.canvas,

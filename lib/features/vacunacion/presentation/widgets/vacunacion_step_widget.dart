@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
@@ -7,13 +8,13 @@ import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
 import '../../../integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
 import '../viewmodels/vacunacion_viewmodel.dart';
 
-class VacunacionStepWidget extends StatelessWidget {
+class VacunacionStepWidget extends ConsumerWidget {
   const VacunacionStepWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final vm = context.watch<VacunacionViewModel>();
-    final intVm = context.watch<IntegrantesViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vm = ref.watch(vacunacionViewModelProvider);
+    final intVm = ref.watch(integrantesViewModelProvider);
     final pacientesOpts = intVm.integrantes.where((i) => i.nombre.text.isNotEmpty).toList();
 
     // Synchronize vaccine card fields with Integrantes step
@@ -110,7 +111,7 @@ class VacunacionStepWidget extends StatelessWidget {
       );
 }
 
-class _StepPanel extends StatelessWidget {
+class _StepPanel extends ConsumerWidget {
   final String        title;
   final IconData      icon;
   final Color         color;
@@ -122,7 +123,7 @@ class _StepPanel extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -172,7 +173,7 @@ class _StepPanel extends StatelessWidget {
   }
 }
 
-class _VaccineCard extends StatelessWidget {
+class _VaccineCard extends ConsumerWidget {
   final int index;
   final VaccineForm form;
   final bool canRemove;
@@ -189,7 +190,7 @@ class _VaccineCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,

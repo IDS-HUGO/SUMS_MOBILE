@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../../../core/routes/app_routes.dart';
@@ -10,14 +11,14 @@ import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dar
 import '../../../estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
-class HomeEncuestadorPage extends StatefulWidget {
+class HomeEncuestadorPage extends ConsumerStatefulWidget {
   const HomeEncuestadorPage({super.key});
 
   @override
-  State<HomeEncuestadorPage> createState() => _HomeEncuestadorPageState();
+  ConsumerState<HomeEncuestadorPage> createState() => _HomeEncuestadorPageState();
 }
 
-class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
+class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
   // ── Connectivity banner ─────────────────────────────────────────────
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _wasOffline = false;
@@ -33,8 +34,8 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
     // Refrescar el conteo de cédulas cada vez que se entra al Home
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<CedulaViewModel>().refreshSyncCounts();
-        context.read<EstadisticasViewModel>().fetchResumen();
+        ref.read(cedulaViewModelProvider).refreshSyncCounts();
+        ref.read(estadisticasViewModelProvider).fetchResumen();
       }
     });
   }
@@ -53,7 +54,7 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
         _showToast('Conexión restaurada', const Color(0xFF2E7D32));
         // Siempre refrescar el conteo al reconectar
         if (mounted) {
-          final cvm = context.read<CedulaViewModel>();
+          final cvm = ref.read(cedulaViewModelProvider);
           await cvm.refreshSyncCounts();
           await Future.delayed(const Duration(milliseconds: 600));
           if (mounted && cvm.pendingSyncCount > 0) {
@@ -89,22 +90,22 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
 
   @override
   Widget build(BuildContext context) {
-    final auth     = context.watch<AuthViewModel>();
-    final estadisticas = context.watch<EstadisticasViewModel>();
+    final auth     = ref.watch(authViewModelProvider);
+    final estadisticas = ref.watch(estadisticasViewModelProvider);
     final userName = auth.session?.user.nombreUsuario ?? 'encuestador';
     final today    = _todayLabel();
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, ref),
       body: Stack(
         children: [
           RefreshIndicator(
             onRefresh: () async {
               if (mounted) {
-                await context.read<CedulaViewModel>().refreshSyncCounts();
+                await ref.read(cedulaViewModelProvider).refreshSyncCounts();
                 if (context.mounted) {
-                  await context.read<EstadisticasViewModel>().fetchResumen();
+                  await ref.read(estadisticasViewModelProvider).fetchResumen();
                 }
               }
             },
@@ -142,19 +143,20 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
                   sliver: SliverToBoxAdapter(
-                    child: Consumer<CedulaViewModel>(
-                      builder: (context, cvm, child) {
-                        if (cvm.pendingSyncCount == 0) return const SizedBox.shrink();
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final vm = ref.watch(cedulaViewModelProvider);
+                        if (vm.pendingSyncCount == 0) return const SizedBox.shrink();
                         return Column(
                           children: [
                             GestureDetector(
                               onTap: () => Navigator.pushNamed(context, AppRoutes.cedulaHistorial),
                               child: _SyncStatusCard(
-                                pendingCount: cvm.pendingSyncCount,
-                                isSyncing: cvm.isSyncing,
-                                isOnline: cvm.isOnline,
+                                pendingCount: vm.pendingSyncCount,
+                                isSyncing: vm.isSyncing,
+                                isOnline: vm.isOnline,
                                 onSyncTap: () async {
-                                  final result = await cvm.syncNow();
+                                  final result = await vm.syncNow();
                                   if (!context.mounted) return;
                                   if (result.error != null) {
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -273,11 +275,11 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
   }
 
   void _goToCedula() {
-    context.read<CedulaViewModel>().clearMessages();
+    ref.read(cedulaViewModelProvider).clearMessages();
     Navigator.of(context).pushNamed(AppRoutes.cedula);
   }
 
-  AppBar _buildAppBar(BuildContext context) => AppBar(
+  AppBar _buildAppBar(BuildContext context, WidgetRef ref) => AppBar(
     title: Row(
       children: [
         Container(
@@ -296,7 +298,7 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
         tooltip:  'Cerrar sesión',
         icon:     const Icon(Icons.logout_outlined),
         onPressed: () async {
-          await context.read<AuthViewModel>().logout();
+          await ref.read(authViewModelProvider).logout();
           if (!context.mounted) return;
           Navigator.of(context)
               .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
@@ -318,12 +320,12 @@ class _HomeEncuestadorPageState extends State<HomeEncuestadorPage> {
 
 // ── Capturas Pendientes ─────────────────────────────────────────────────────────
 
-class _PendingCapturesCard extends StatelessWidget {
+class _PendingCapturesCard extends ConsumerWidget {
   final VoidCallback onTap;
   const _PendingCapturesCard({required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       child: InkWell(
         onTap:        onTap,
@@ -370,13 +372,13 @@ class _PendingCapturesCard extends StatelessWidget {
 
 // ── Sección de saludo ─────────────────────────────────────────────────────────
 
-class _GreetingSection extends StatelessWidget {
+class _GreetingSection extends ConsumerWidget {
   final String userName;
   final String date;
   const _GreetingSection({required this.userName, required this.date});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       color: AppColors.greenDark,
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
@@ -437,7 +439,7 @@ class _GreetingSection extends StatelessWidget {
 
 // ── Métricas ──────────────────────────────────────────────────────────────────
 
-class _MetricsRow extends StatelessWidget {
+class _MetricsRow extends ConsumerWidget {
   final int cedulasHoy;
   final int cedulasSemana;
   final int mes;
@@ -453,7 +455,7 @@ class _MetricsRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Transform.translate(
       offset: const Offset(0, -16),
       child: Column(
@@ -501,7 +503,7 @@ class _MetricsRow extends StatelessWidget {
   }
 }
 
-class _MetricCardFullWidth extends StatelessWidget {
+class _MetricCardFullWidth extends ConsumerWidget {
   final String value;
   final String label;
   final IconData icon;
@@ -515,7 +517,7 @@ class _MetricCardFullWidth extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -569,7 +571,7 @@ class _MetricCardFullWidth extends StatelessWidget {
   }
 }
 
-class _MetricCard extends StatelessWidget {
+class _MetricCard extends ConsumerWidget {
   final String value;
   final String label;
   final IconData icon;
@@ -583,7 +585,7 @@ class _MetricCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -625,12 +627,12 @@ class _MetricCard extends StatelessWidget {
 
 // ── Acción principal ──────────────────────────────────────────────────────────
 
-class _MainActionCard extends StatelessWidget {
+class _MainActionCard extends ConsumerWidget {
   final VoidCallback onTap;
   const _MainActionCard({required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Material(
       color: AppColors.green,
       borderRadius: BorderRadius.circular(AppDimens.radiusL),
@@ -691,7 +693,7 @@ class _MainActionCard extends StatelessWidget {
 
 // ── Pasos del flujo ───────────────────────────────────────────────────────────
 
-class _FlowSteps extends StatelessWidget {
+class _FlowSteps extends ConsumerWidget {
   const _FlowSteps();
 
   static const _steps = [
@@ -718,7 +720,7 @@ class _FlowSteps extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         for (var i = 0; i < _steps.length; i++) ...[
@@ -742,13 +744,13 @@ class _FlowStep {
   });
 }
 
-class _FlowStepRow extends StatelessWidget {
+class _FlowStepRow extends ConsumerWidget {
   final _FlowStep step;
   final bool isLast;
   const _FlowStepRow({required this.step, required this.isLast});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -819,9 +821,9 @@ class _FlowStepRow extends StatelessWidget {
 
 // ── Consejo de campo ──────────────────────────────────────────────────────────
 
-class _TipCard extends StatelessWidget {
+class _TipCard extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -863,7 +865,7 @@ class _TipCard extends StatelessWidget {
 
 // ── Tarjeta de Estado de Sincronización ──────────────────────────────────────────
 
-class _SyncStatusCard extends StatelessWidget {
+class _SyncStatusCard extends ConsumerWidget {
   final int pendingCount;
   final bool isSyncing;
   final bool isOnline;
@@ -877,7 +879,7 @@ class _SyncStatusCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final color = isSyncing
         ? const Color(0xFF2196F3)
         : isOnline

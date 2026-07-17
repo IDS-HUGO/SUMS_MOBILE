@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/brand_header.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
-class HomeAnalistaPage extends StatelessWidget {
+class HomeAnalistaPage extends ConsumerWidget {
   const HomeAnalistaPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final userName =
-        context.watch<AuthViewModel>().session?.user.nombreUsuario ?? 'analista';
+        ref.watch(authViewModelProvider).session?.user.nombreUsuario ?? 'analista';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('SUMS · Analista'),
-        actions: [_logoutButton(context)],
+        actions: [_logoutButton(context, ref)],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -111,11 +112,11 @@ class HomeAnalistaPage extends StatelessWidget {
         ),
       );
 
-  Widget _logoutButton(BuildContext context) => IconButton(
+  Widget _logoutButton(BuildContext context, WidgetRef ref) => IconButton(
         tooltip:  'Cerrar sesión',
         icon:     const Icon(Icons.logout_outlined),
         onPressed: () async {
-          await context.read<AuthViewModel>().logout();
+          await ref.read(authViewModelProvider).logout();
           if (!context.mounted) return;
           Navigator.of(context)
               .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);

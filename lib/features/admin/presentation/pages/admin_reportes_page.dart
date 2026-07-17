@@ -1,12 +1,13 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 
-class AdminReportesPage extends StatelessWidget {
+class AdminReportesPage extends ConsumerWidget {
   const AdminReportesPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
@@ -34,7 +35,7 @@ class AdminReportesPage extends StatelessWidget {
   }
 }
 
-class _ReportCard extends StatelessWidget {
+class _ReportCard extends ConsumerWidget {
   final IconData icon;
   final String title;
   final String description;
@@ -50,7 +51,7 @@ class _ReportCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
