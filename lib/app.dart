@@ -39,6 +39,7 @@ import 'features/mineria/presentation/viewmodels/mineria_viewmodel.dart';
 import 'features/mineria/presentation/pages/mineria_menu_page.dart';
 import 'features/mineria/presentation/pages/buscador_casos_page.dart';
 import 'features/mineria/presentation/pages/riesgo_familiar_page.dart';
+import 'features/evaluacion_riesgo/cedula_screen.dart';
 import 'shared/theme/app_theme.dart';
 
 class App extends StatefulWidget {
@@ -172,6 +173,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
           AppRoutes.mineriaMenu:       (_) => const MineriaMenuPage(),
           AppRoutes.mineriaBuscador:   (_) => const BuscadorCasosPage(),
           AppRoutes.mineriaRiesgo:     (_) => const RiesgoFamiliarPage(),
+          AppRoutes.mineriaOCR:        (_) => const CedulaScreen(),
 
         },
         // Guarda de ruta: si el usuario no está autenticado, va a login.

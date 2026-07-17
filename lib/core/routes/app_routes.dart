@@ -21,4 +21,5 @@ class AppRoutes {
   static const mineriaMenu     = '/mineria';
   static const mineriaBuscador = '/mineria/buscador';
   static const mineriaRiesgo   = '/mineria/riesgo';
+  static const mineriaOCR      = '/mineria/ocr';
 }

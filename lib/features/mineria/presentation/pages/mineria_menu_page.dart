@@ -41,7 +41,17 @@ class MineriaMenuPage extends StatelessWidget {
                 subtitle: 'Identificación de familias con alta probabilidad de vulnerabilidad.',
                 icon: Icons.priority_high_rounded,
                 color: AppColors.terracota,
-                onTap: () => Navigator.pushNamed(context, '/mineria/riesgo'),
+                onTap: () => Navigator.pushNamed(context, AppRoutes.mineriaRiesgo),
+              ),
+
+              const SizedBox(height: 16),
+
+              _MenuCard(
+                title: 'Carga de Cédula (OCR)',
+                subtitle: 'Extracción automática de datos desde archivos PDF.',
+                icon: Icons.document_scanner_rounded,
+                color: AppColors.green,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.mineriaOCR),
               ),
             ],
           ),
@@ -79,7 +89,7 @@ class _MenuCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 28),

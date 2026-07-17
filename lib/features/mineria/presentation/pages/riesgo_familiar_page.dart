@@ -84,7 +84,7 @@ class _RiesgoFamiliarPageState extends State<RiesgoFamiliarPage> {
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: CircleAvatar(
-              backgroundColor: riskColor.withOpacity(0.1),
+              backgroundColor: riskColor.withValues(alpha: 0.1),
               child: Icon(Icons.family_restroom, color: riskColor),
             ),
             title: Text(

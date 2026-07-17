@@ -2,7 +2,7 @@ import '../../domain/entities/riesgo_familiar.dart';
 
 class RiesgoFamiliarModel extends RiesgoFamiliar {
   const RiesgoFamiliarModel({
-    required super.index,
+    required super.prioridad,
     required super.informanteNombre,
     required super.colonia,
     required super.probabilidadAlto,
@@ -10,17 +10,17 @@ class RiesgoFamiliarModel extends RiesgoFamiliar {
 
   factory RiesgoFamiliarModel.fromJson(Map<String, dynamic> json) {
     return RiesgoFamiliarModel(
-      index: json['index'] as int,
-      informanteNombre: json['informante_nombre']?.toString() ?? 'Sin nombre',
+      prioridad: json['prioridad'] as int? ?? 0,
+      informanteNombre: json['nombre_informante']?.toString() ?? 'Sin nombre',
       colonia: json['colonia']?.toString() ?? 'Sin colonia',
-      probabilidadAlto: (json['probabilidad_alto'] as num).toDouble(),
+      probabilidadAlto: (json['probabilidad_alto'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'index': index,
-      'informante_nombre': informanteNombre,
+      'prioridad': prioridad,
+      'nombre_informante': informanteNombre,
       'colonia': colonia,
       'probabilidad_alto': probabilidadAlto,
     };
