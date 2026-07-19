@@ -25,7 +25,7 @@ void callbackDispatcher() {
         final httpClient = http.Client();
         final apiClient = ApiClient(client: httpClient, baseUrl: apiUrl);
         final remoteDataSource = CedulaRemoteDataSource(apiClient: apiClient);
-        
+
         final syncEngine = SyncEngine(
           localDataSource: localDataSource,
           remoteDataSource: remoteDataSource,
@@ -59,13 +59,15 @@ void initializeBackgroundSync() {
   );
 
   // Escuchar activamente cuando la app esta abierta
-  Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> result) async {
+  Connectivity().onConnectivityChanged.listen((
+    List<ConnectivityResult> result,
+  ) async {
     if (!result.contains(ConnectivityResult.none)) {
       // Intentar sincronizar cuando vuelve el internet estando la app abierta
       // NOTA: Para producción, ideal no inicializar la base de datos tantas veces,
       // pero para este alcance, lanzaremos un workmanager request inmediato.
       Workmanager().registerOneOffTask(
-        "sync_now", 
+        "sync_now",
         syncTaskName,
         constraints: Constraints(networkType: NetworkType.connected),
       );

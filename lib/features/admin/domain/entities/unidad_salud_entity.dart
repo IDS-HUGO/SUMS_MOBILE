@@ -27,10 +27,10 @@ class UnidadSaludEntity {
   }
 
   Map<String, dynamic> toJson() => {
-        'clues': clues,
-        'nombre': nombre,
-        'distrito': distrito,
-        'municipio_id': municipioId,
-        'numero_nucleos': numeroNucleos,
-      };
+    'clues': clues,
+    'nombre': nombre,
+    'distrito': distrito,
+    'municipio_id': municipioId,
+    'numero_nucleos': numeroNucleos,
+  };
 }

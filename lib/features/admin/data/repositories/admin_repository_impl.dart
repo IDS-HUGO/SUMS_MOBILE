@@ -18,7 +18,9 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<List<AdminUserEntity>> getUsers() async {
     final token = await tokenStorage.readToken();
     final data = await remoteDataSource.getUsers(token: token);
-    return data.map((json) => AdminUserEntity.fromJson(json as Map<String, dynamic>)).toList();
+    return data
+        .map((json) => AdminUserEntity.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   @override
@@ -39,20 +41,32 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<List<UnidadSaludEntity>> getUnidadesSalud() async {
     final token = await tokenStorage.readToken();
     final data = await remoteDataSource.getUnidadesSalud(token: token);
-    return data.map((json) => UnidadSaludEntity.fromJson(json as Map<String, dynamic>)).toList();
+    return data
+        .map((json) => UnidadSaludEntity.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   @override
   Future<UnidadSaludEntity> createUnidadSalud(Map<String, dynamic> body) async {
     final token = await tokenStorage.readToken();
-    final response = await remoteDataSource.createUnidadSalud(body, token: token);
+    final response = await remoteDataSource.createUnidadSalud(
+      body,
+      token: token,
+    );
     return UnidadSaludEntity.fromJson(response['data'] ?? response);
   }
 
   @override
-  Future<UnidadSaludEntity> updateUnidadSalud(int id, Map<String, dynamic> body) async {
+  Future<UnidadSaludEntity> updateUnidadSalud(
+    int id,
+    Map<String, dynamic> body,
+  ) async {
     final token = await tokenStorage.readToken();
-    final response = await remoteDataSource.updateUnidadSalud(id, body, token: token);
+    final response = await remoteDataSource.updateUnidadSalud(
+      id,
+      body,
+      token: token,
+    );
     return UnidadSaludEntity.fromJson(response['data'] ?? response);
   }
 
@@ -71,11 +85,16 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<List<CatalogItem>> getCatalog(String key) async {
     final token = await tokenStorage.readToken();
     final data = await remoteDataSource.getCatalog(key, token: token);
-    return data.map((json) => CatalogItem.fromJson(json as Map<String, dynamic>)).toList();
+    return data
+        .map((json) => CatalogItem.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   @override
-  Future<bool> createCatalogItem(String catalogName, Map<String, dynamic> body) async {
+  Future<bool> createCatalogItem(
+    String catalogName,
+    Map<String, dynamic> body,
+  ) async {
     final token = await tokenStorage.readToken();
     try {
       await remoteDataSource.createCatalogItem(catalogName, body, token: token);

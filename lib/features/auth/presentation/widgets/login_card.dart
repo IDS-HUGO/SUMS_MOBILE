@@ -62,16 +62,16 @@ class LoginCard extends ConsumerWidget {
               'Iniciar sesión',
               textAlign: TextAlign.center,
               style: theme.textTheme.headlineSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
+                color: theme.colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               'Usa el usuario asignado por tu unidad de salud.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 28),
 
@@ -109,7 +109,8 @@ class LoginCard extends ConsumerWidget {
                   ? const SizedBox.square(
                       dimension: 18,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white,
+                        strokeWidth: 2,
+                        color: Colors.white,
                       ),
                     )
                   : const Icon(Icons.login_outlined, size: 18),
@@ -121,15 +122,18 @@ class LoginCard extends ConsumerWidget {
             const SizedBox(height: 14),
             Row(
               children: [
-                Icon(Icons.info_outline,
-                    size: 14, color: theme.colorScheme.onSurfaceVariant),
+                Icon(
+                  Icons.info_outline,
+                  size: 14,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Sin acceso, contacta al administrador de tu unidad de salud.',
                     style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ],
@@ -162,16 +166,19 @@ class _ErrorBanner extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.warning_amber_outlined,
-              color: theme.colorScheme.error, size: 18),
+          Icon(
+            Icons.warning_amber_outlined,
+            color: theme.colorScheme.error,
+            size: 18,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
               style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.error,
-                    fontWeight: FontWeight.w500,
-                  ),
+                color: theme.colorScheme.error,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

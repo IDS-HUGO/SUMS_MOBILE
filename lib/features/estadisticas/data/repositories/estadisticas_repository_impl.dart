@@ -17,18 +17,28 @@ class EstadisticasRepositoryImpl implements EstadisticasRepository {
   Future<ResumenEstadisticas> getMisCedulasResumen() async {
     final token = await tokenStorage.readToken();
     final response = await remoteDataSource.getMisCedulasResumen(token: token);
-    
+
     // Si el endpoint devuelve el objeto directamente
     if (response.containsKey('data')) {
-      return ResumenEstadisticas.fromJson(response['data'] as Map<String, dynamic>);
+      return ResumenEstadisticas.fromJson(
+        response['data'] as Map<String, dynamic>,
+      );
     }
     return ResumenEstadisticas.fromJson(response);
   }
 
   @override
-  Future<List<ProductividadEntrevistador>> getProductividadEntrevistadores() async {
+  Future<List<ProductividadEntrevistador>>
+  getProductividadEntrevistadores() async {
     final token = await tokenStorage.readToken();
-    final data = await remoteDataSource.getProductividadEntrevistadores(token: token);
-    return data.map((json) => ProductividadEntrevistador.fromJson(json as Map<String, dynamic>)).toList();
+    final data = await remoteDataSource.getProductividadEntrevistadores(
+      token: token,
+    );
+    return data
+        .map(
+          (json) =>
+              ProductividadEntrevistador.fromJson(json as Map<String, dynamic>),
+        )
+        .toList();
   }
 }

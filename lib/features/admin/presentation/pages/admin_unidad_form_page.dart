@@ -11,7 +11,8 @@ class AdminUnidadFormPage extends ConsumerStatefulWidget {
   const AdminUnidadFormPage({super.key, this.unidad});
 
   @override
-  ConsumerState<AdminUnidadFormPage> createState() => _AdminUnidadFormPageState();
+  ConsumerState<AdminUnidadFormPage> createState() =>
+      _AdminUnidadFormPageState();
 }
 
 class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
@@ -37,9 +38,9 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final vm = ref.read(adminUnidadesViewModelProvider);
-    
+
     final body = {
       'nombre': _nombreController.text.trim(),
       'clues': _cluesController.text.trim().toUpperCase(),
@@ -56,14 +57,18 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
     final success = isEditing
         ? await vm.updateUnidad(widget.unidad!.id, body)
         : await vm.createUnidad(body);
-    
+
     if (!mounted) return;
     Navigator.pop(context); // Cerrar loader
-    
+
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isEditing ? 'Unidad actualizada exitosamente' : 'Unidad creada exitosamente'),
+          content: Text(
+            isEditing
+                ? 'Unidad actualizada exitosamente'
+                : 'Unidad creada exitosamente',
+          ),
           backgroundColor: AppColors.green,
         ),
       );
@@ -94,7 +99,10 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Datos de la Institución', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Datos de la Institución',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _nombreController,
@@ -115,12 +123,13 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
                   validator: (v) {
                     if (v!.isEmpty) return 'Requerido';
                     // Validación básica de clues
-                    if (v.length < 11) return 'Debe tener 11 caracteres (ej. CSSMA000001)';
+                    if (v.length < 11)
+                      return 'Debe tener 11 caracteres (ej. CSSMA000001)';
                     return null;
                   },
                 ),
                 const SizedBox(height: 32),
-                
+
                 ElevatedButton(
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
@@ -128,7 +137,9 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: Text(
-                    widget.unidad != null ? 'Actualizar Unidad de Salud' : 'Crear Unidad de Salud',
+                    widget.unidad != null
+                        ? 'Actualizar Unidad de Salud'
+                        : 'Crear Unidad de Salud',
                     style: const TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),

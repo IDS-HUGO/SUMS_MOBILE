@@ -14,10 +14,7 @@ class AuthSession {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'token': token,
-      'user': user.toJson(),
-    };
+    return {'token': token, 'user': user.toJson()};
   }
 
   bool get isAuthenticated => token.isNotEmpty;

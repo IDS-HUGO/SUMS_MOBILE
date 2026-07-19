@@ -55,6 +55,13 @@ import '../../features/estadisticas/data/repositories/estadisticas_repository_im
 import '../../features/estadisticas/domain/repositories/estadisticas_repository.dart';
 import '../../features/estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
 
+import '../../features/mineria/data/datasources/remote/mineria_remote_datasource.dart';
+import '../../features/mineria/data/repositories/mineria_repository_impl.dart';
+import '../../features/mineria/domain/repositories/mineria_repository.dart';
+import '../../features/mineria/domain/usecases/check_salud_usecase.dart';
+import '../../features/mineria/domain/usecases/procesar_pdf_usecase.dart';
+import '../../features/mineria/presentation/viewmodels/mineria_viewmodel.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initInjection(SharedPreferences prefs) async {
@@ -95,6 +102,9 @@ Future<void> initInjection(SharedPreferences prefs) async {
   sl.registerLazySingleton<EstadisticasRemoteDataSource>(
     () => EstadisticasRemoteDataSource(apiClient: sl()),
   );
+  sl.registerLazySingleton<MineriaRemoteDataSource>(
+    () => MineriaRemoteDataSource(baseUrl: ApiEndpoints.mineriaBaseUrl),
+  );
 
   // ── Repositories ──────────────────────────────────────────────────
   sl.registerLazySingleton<CedulaRepository>(
@@ -105,10 +115,7 @@ Future<void> initInjection(SharedPreferences prefs) async {
     ),
   );
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(
-      remoteDataSource: sl(),
-      tokenStorage: sl(),
-    ),
+    () => AuthRepositoryImpl(remoteDataSource: sl(), tokenStorage: sl()),
   );
   sl.registerLazySingleton<FamiliaRepository>(
     () => FamiliaRepositoryImpl(
@@ -139,16 +146,14 @@ Future<void> initInjection(SharedPreferences prefs) async {
     ),
   );
   sl.registerLazySingleton<AdminRepository>(
-    () => AdminRepositoryImpl(
-      remoteDataSource: sl(),
-      tokenStorage: sl(),
-    ),
+    () => AdminRepositoryImpl(remoteDataSource: sl(), tokenStorage: sl()),
   );
   sl.registerLazySingleton<EstadisticasRepository>(
-    () => EstadisticasRepositoryImpl(
-      remoteDataSource: sl(),
-      tokenStorage: sl(),
-    ),
+    () =>
+        EstadisticasRepositoryImpl(remoteDataSource: sl(), tokenStorage: sl()),
+  );
+  sl.registerLazySingleton<MineriaRepository>(
+    () => MineriaRepositoryImpl(remoteDataSource: sl()),
   );
 
   // ── Use Cases ─────────────────────────────────────────────────────
@@ -158,15 +163,11 @@ Future<void> initInjection(SharedPreferences prefs) async {
   sl.registerLazySingleton<SubmitRecordUseCase>(
     () => SubmitRecordUseCase(sl()),
   );
-  sl.registerLazySingleton<LoginUseCase>(
-    () => LoginUseCase(sl()),
-  );
-  sl.registerLazySingleton<RegisterUseCase>(
-    () => RegisterUseCase(sl()),
-  );
-  sl.registerLazySingleton<LogoutUseCase>(
-    () => LogoutUseCase(sl()),
-  );
+  sl.registerLazySingleton<LoginUseCase>(() => LoginUseCase(sl()));
+  sl.registerLazySingleton<RegisterUseCase>(() => RegisterUseCase(sl()));
+  sl.registerLazySingleton<LogoutUseCase>(() => LogoutUseCase(sl()));
+  sl.registerLazySingleton<ProcesarPdfUseCase>(() => ProcesarPdfUseCase(sl()));
+  sl.registerLazySingleton<CheckSaludUseCase>(() => CheckSaludUseCase(sl()));
 
   // ── ViewModels (Factory) ──────────────────────────────────────────
   // Usamos factory para ViewModels si se necesitan instancias nuevas o lazy singleton si se quiere mantener el estado global
@@ -205,13 +206,13 @@ Future<void> initInjection(SharedPreferences prefs) async {
     () => AdminUnidadesViewModel(repository: sl()),
   );
   sl.registerFactory<AdminCatalogosViewModel>(
-    () => AdminCatalogosViewModel(
-      repository: sl(),
-      loadCatalogsUseCase: sl(),
-    ),
+    () => AdminCatalogosViewModel(repository: sl(), loadCatalogsUseCase: sl()),
   );
   sl.registerFactory<EstadisticasViewModel>(
     () => EstadisticasViewModel(repository: sl()),
+  );
+  sl.registerFactory<MineriaViewModel>(
+    () => MineriaViewModel(procesarPdfUseCase: sl(), checkSaludUseCase: sl()),
   );
 }
 

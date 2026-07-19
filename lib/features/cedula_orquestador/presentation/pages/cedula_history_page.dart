@@ -28,21 +28,29 @@ class _CedulaHistoryPageState extends ConsumerState<CedulaHistoryPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.read(cedulaViewModelProvider).refreshSyncCounts(),
+            onPressed: () =>
+                ref.read(cedulaViewModelProvider).refreshSyncCounts(),
           ),
         ],
       ),
       body: Consumer(
         builder: (context, ref, child) {
-final vm = ref.watch(cedulaViewModelProvider);
+          final vm = ref.watch(cedulaViewModelProvider);
           if (vm.allLocalRecords.isEmpty) {
             return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.history_edu_outlined, size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.history_edu_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   SizedBox(height: 16),
-                  Text('No hay registros locales aún', style: TextStyle(color: Colors.grey)),
+                  Text(
+                    'No hay registros locales aún',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             );
@@ -74,7 +82,7 @@ class _CedulaHistoryCard extends ConsumerWidget {
     final informante = record['_informante'] ?? 'Sin nombre';
     final fechaStr = record['_createdAt'] ?? '';
     final error = record['_lastSyncError'] as String?;
-    
+
     Color statusColor;
     String statusText;
     IconData statusIcon;
@@ -115,7 +123,10 @@ class _CedulaHistoryCard extends ConsumerWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -126,7 +137,11 @@ class _CedulaHistoryCard extends ConsumerWidget {
                       const SizedBox(width: 4),
                       Text(
                         statusText,
-                        style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -169,11 +184,17 @@ class _CedulaHistoryCard extends ConsumerWidget {
                     if (!context.mounted) return;
                     if (result.success) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Sincronizado correctamente'), backgroundColor: Colors.green),
+                        const SnackBar(
+                          content: Text('Sincronizado correctamente'),
+                          backgroundColor: Colors.green,
+                        ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: ${result.error}'), backgroundColor: Colors.red),
+                        SnackBar(
+                          content: Text('Error: ${result.error}'),
+                          backgroundColor: Colors.red,
+                        ),
                       );
                     }
                   },

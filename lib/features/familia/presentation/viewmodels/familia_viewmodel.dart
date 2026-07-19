@@ -38,8 +38,6 @@ class FamiliaViewModel extends ChangeNotifier {
     }
   }
 
-
-
   void setRol(String? rol) {
     rolInformante = rol;
     notifyListeners();

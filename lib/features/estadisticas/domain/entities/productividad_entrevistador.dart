@@ -22,8 +22,8 @@ class ProductividadEntrevistador {
       semana: json['semana'] as int? ?? 0,
       mes: json['mes'] as int? ?? 0,
       total: json['total'] as int? ?? 0,
-      ultimaActividad: json['ultima_actividad'] != null 
-          ? DateTime.tryParse(json['ultima_actividad'].toString()) 
+      ultimaActividad: json['ultima_actividad'] != null
+          ? DateTime.tryParse(json['ultima_actividad'].toString())
           : null,
     );
   }

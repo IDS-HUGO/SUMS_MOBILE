@@ -85,7 +85,10 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
             ),
             title: Text(
               user.nombreUsuario,
-              style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppColors.ink,
+              ),
             ),
             subtitle: Text('ID: ${user.id} | Rol: ${role.displayName}'),
             trailing: PopupMenuButton<String>(
@@ -104,7 +107,11 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
                   if (success && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(user.activo ? 'Usuario desactivado' : 'Usuario activado'),
+                        content: Text(
+                          user.activo
+                              ? 'Usuario desactivado'
+                              : 'Usuario activado',
+                        ),
                         backgroundColor: AppColors.green,
                       ),
                     );

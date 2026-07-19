@@ -29,10 +29,6 @@ class CedulaLocalDataSource {
 
   Future<int> delete(int id) async {
     final db = await dbHelper.database;
-    return await db.delete(
-      'pending_cedulas',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('pending_cedulas', where: 'id = ?', whereArgs: [id]);
   }
 }

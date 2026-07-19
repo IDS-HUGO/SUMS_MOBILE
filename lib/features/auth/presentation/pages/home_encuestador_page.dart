@@ -15,7 +15,8 @@ class HomeEncuestadorPage extends ConsumerStatefulWidget {
   const HomeEncuestadorPage({super.key});
 
   @override
-  ConsumerState<HomeEncuestadorPage> createState() => _HomeEncuestadorPageState();
+  ConsumerState<HomeEncuestadorPage> createState() =>
+      _HomeEncuestadorPageState();
 }
 
 class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
@@ -41,7 +42,9 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
   }
 
   void _setupConnectivityListener() {
-    _connectivitySub = Connectivity().onConnectivityChanged.listen((results) async {
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((
+      results,
+    ) async {
       final isOnline = !results.contains(ConnectivityResult.none);
 
       if (!isOnline && !_wasOffline) {
@@ -90,10 +93,10 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
 
   @override
   Widget build(BuildContext context) {
-    final auth     = ref.watch(authViewModelProvider);
+    final auth = ref.watch(authViewModelProvider);
     final estadisticas = ref.watch(estadisticasViewModelProvider);
     final userName = auth.session?.user.nombreUsuario ?? 'encuestador';
-    final today    = _todayLabel();
+    final today = _todayLabel();
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
@@ -122,104 +125,120 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
                     sliver: SliverToBoxAdapter(
                       child: _MetricsRow(
-                        cedulasHoy:         estadisticas.resumen?.hoy ?? 0,
-                        cedulasSemana:      estadisticas.resumen?.semana ?? 0,
-                        mes:                estadisticas.resumen?.mes ?? 0,
-                        total:              estadisticas.resumen?.total ?? 0,
-                        isLoading:          estadisticas.isResumenLoading,
+                        cedulasHoy: estadisticas.resumen?.hoy ?? 0,
+                        cedulasSemana: estadisticas.resumen?.semana ?? 0,
+                        mes: estadisticas.resumen?.mes ?? 0,
+                        total: estadisticas.resumen?.total ?? 0,
+                        isLoading: estadisticas.isResumenLoading,
                       ),
                     ),
                   ),
 
-                // ── Acción principal ─────────────────────────────────────────────
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: _MainActionCard(onTap: _goToCedula),
+                  // ── Acción principal ─────────────────────────────────────────────
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: _MainActionCard(onTap: _goToCedula),
+                    ),
                   ),
-                ),
 
-                // ── Sincronización y Capturas pendientes (Offline-first) ─────────
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: Consumer(
-                      builder: (context, ref, child) {
-                        final vm = ref.watch(cedulaViewModelProvider);
-                        if (vm.pendingSyncCount == 0) return const SizedBox.shrink();
-                        return Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () => Navigator.pushNamed(context, AppRoutes.cedulaHistorial),
-                              child: _SyncStatusCard(
-                                pendingCount: vm.pendingSyncCount,
-                                isSyncing: vm.isSyncing,
-                                isOnline: vm.isOnline,
-                                onSyncTap: () async {
-                                  final result = await vm.syncNow();
-                                  if (!context.mounted) return;
-                                  if (result.error != null) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error: ${result.error}'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  } else if (result.synced > 0) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('✅ ${result.synced} cédula(s) sincronizadas correctamente'),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                  } else if (result.failed > 0) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('⚠ ${result.failed} cédula(s) fallaron. Verifica tu conexión.'),
-                                        backgroundColor: Colors.orange,
-                                      ),
-                                    );
-                                  }
-                                },
+                  // ── Sincronización y Capturas pendientes (Offline-first) ─────────
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: Consumer(
+                        builder: (context, ref, child) {
+                          final vm = ref.watch(cedulaViewModelProvider);
+                          if (vm.pendingSyncCount == 0)
+                            return const SizedBox.shrink();
+                          return Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.cedulaHistorial,
+                                ),
+                                child: _SyncStatusCard(
+                                  pendingCount: vm.pendingSyncCount,
+                                  isSyncing: vm.isSyncing,
+                                  isOnline: vm.isOnline,
+                                  onSyncTap: () async {
+                                    final result = await vm.syncNow();
+                                    if (!context.mounted) return;
+                                    if (result.error != null) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Error: ${result.error}',
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    } else if (result.synced > 0) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            '✅ ${result.synced} cédula(s) sincronizadas correctamente',
+                                          ),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    } else if (result.failed > 0) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            '⚠ ${result.failed} cédula(s) fallaron. Verifica tu conexión.',
+                                          ),
+                                          backgroundColor: Colors.orange,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            _PendingCapturesCard(
-                                onTap: () => Navigator.of(context).pushNamed(AppRoutes.pending)
-                            ),
-                          ],
-                        );
-                      },
+                              const SizedBox(height: 16),
+                              _PendingCapturesCard(
+                                onTap: () => Navigator.of(
+                                  context,
+                                ).pushNamed(AppRoutes.pending),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
 
-                // ── Flujo de captura ─────────────────────────────────────────────
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: SectionCard(
-                      title:       'Flujo de captura',
-                      subtitle:    '4 secciones · ~15 min por familia',
-                      icon:        Icons.route_outlined,
-                      accentColor: AppColors.terracota,
-                      children: const [_FlowSteps()],
+                  // ── Flujo de captura ─────────────────────────────────────────────
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: SectionCard(
+                        title: 'Flujo de captura',
+                        subtitle: '4 secciones · ~15 min por familia',
+                        icon: Icons.route_outlined,
+                        accentColor: AppColors.terracota,
+                        children: const [_FlowSteps()],
+                      ),
                     ),
                   ),
-                ),
 
-                // ── Consejo de campo ─────────────────────────────────────────────
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
-                  sliver: SliverToBoxAdapter(
-                    child: _TipCard(),
+                  // ── Consejo de campo ─────────────────────────────────────────────
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
+                    sliver: SliverToBoxAdapter(child: _TipCard()),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-        // ── Banner de conectividad (tipo YouTube) ──────────────────────────
+          // ── Banner de conectividad (tipo YouTube) ──────────────────────────
           Positioned(
             bottom: 0,
             left: 0,
@@ -233,7 +252,10 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                 duration: const Duration(milliseconds: 250),
                 child: Container(
                   margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: _bannerColor,
                     borderRadius: BorderRadius.circular(12),
@@ -264,12 +286,12 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed:       _goToCedula,
-        icon:            const Icon(Icons.assignment_add),
-        label:           const Text('Nueva cédula'),
+        onPressed: _goToCedula,
+        icon: const Icon(Icons.assignment_add),
+        label: const Text('Nueva cédula'),
         backgroundColor: AppColors.green,
         foregroundColor: Colors.white,
-        elevation:       2,
+        elevation: 2,
       ),
     );
   }
@@ -283,7 +305,8 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
     title: Row(
       children: [
         Container(
-          width: 8, height: 8,
+          width: 8,
+          height: 8,
           decoration: const BoxDecoration(
             color: AppColors.rolEncuestador,
             shape: BoxShape.circle,
@@ -295,13 +318,14 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
     ),
     actions: [
       IconButton(
-        tooltip:  'Cerrar sesión',
-        icon:     const Icon(Icons.logout_outlined),
+        tooltip: 'Cerrar sesión',
+        icon: const Icon(Icons.logout_outlined),
         onPressed: () async {
           await ref.read(authViewModelProvider).logout();
           if (!context.mounted) return;
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
         },
       ),
       const SizedBox(width: 4),
@@ -311,8 +335,19 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
   String _todayLabel() {
     final now = DateTime.now();
     const meses = [
-      '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+      '',
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre',
     ];
     return '${now.day} de ${meses[now.month]} ${now.year}';
   }
@@ -328,7 +363,7 @@ class _PendingCapturesCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       child: InkWell(
-        onTap:        onTap,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.all(22),
@@ -337,7 +372,7 @@ class _PendingCapturesCard extends ConsumerWidget {
               const CircleAvatar(
                 backgroundColor: AppColors.gold,
                 foregroundColor: Colors.white,
-                child:           Icon(Icons.sync_problem),
+                child: Icon(Icons.sync_problem),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -347,21 +382,24 @@ class _PendingCapturesCard extends ConsumerWidget {
                     Text(
                       'Capturas pendientes',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color:      AppColors.greenDark,
+                        color: AppColors.greenDark,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     Text(
                       'Sincroniza tus capturas guardadas offline.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.muted,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: AppColors.muted),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios_rounded,
-                  color: AppColors.muted, size: 14),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: AppColors.muted,
+                size: 14,
+              ),
             ],
           ),
         ),
@@ -408,7 +446,8 @@ class _GreetingSection extends ConsumerWidget {
                       'Hola, $userName',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 18, fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(
@@ -466,7 +505,7 @@ class _MetricsRow extends ConsumerWidget {
                 child: _MetricCard(
                   value: isLoading ? '...' : '$cedulasHoy',
                   label: 'Hoy',
-                  icon:  Icons.assignment_turned_in_outlined,
+                  icon: Icons.assignment_turned_in_outlined,
                   color: AppColors.green,
                 ),
               ),
@@ -475,7 +514,7 @@ class _MetricsRow extends ConsumerWidget {
                 child: _MetricCard(
                   value: isLoading ? '...' : '$cedulasSemana',
                   label: 'Semana',
-                  icon:  Icons.calendar_view_week_outlined,
+                  icon: Icons.calendar_view_week_outlined,
                   color: AppColors.terracota,
                 ),
               ),
@@ -484,7 +523,7 @@ class _MetricsRow extends ConsumerWidget {
                 child: _MetricCard(
                   value: isLoading ? '...' : '$mes',
                   label: 'Mes',
-                  icon:  Icons.calendar_month_outlined,
+                  icon: Icons.calendar_month_outlined,
                   color: AppColors.gold,
                 ),
               ),
@@ -551,14 +590,16 @@ class _MetricCardFullWidth extends ConsumerWidget {
                 Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                     color: AppColors.muted,
                   ),
                 ),
                 Text(
                   value,
                   style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
                     color: color,
                   ),
                 ),
@@ -608,14 +649,16 @@ class _MetricCard extends ConsumerWidget {
           Text(
             value,
             style: TextStyle(
-              fontSize: 26, fontWeight: FontWeight.w900,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
               color: color,
             ),
           ),
           Text(
             label,
             style: const TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w500,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
               color: AppColors.muted,
             ),
           ),
@@ -664,7 +707,8 @@ class _MainActionCard extends ConsumerWidget {
                       'Iniciar nueva cédula',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 17, fontWeight: FontWeight.w900,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -698,22 +742,26 @@ class _FlowSteps extends ConsumerWidget {
 
   static const _steps = [
     _FlowStep(
-      num: '1', title: 'Familia',
+      num: '1',
+      title: 'Familia',
       detail: 'Informante, domicilio, localidad',
       icon: Icons.groups_outlined,
     ),
     _FlowStep(
-      num: '2', title: 'Vivienda',
+      num: '2',
+      title: 'Vivienda',
       detail: 'Materiales, servicios y saneamiento',
       icon: Icons.home_outlined,
     ),
     _FlowStep(
-      num: '3', title: 'Integrantes',
+      num: '3',
+      title: 'Integrantes',
       detail: 'Salud, alimentación y datos de cada miembro',
       icon: Icons.people_alt_outlined,
     ),
     _FlowStep(
-      num: '4', title: 'Vacunación',
+      num: '4',
+      title: 'Vacunación',
       detail: 'Esquema aplicado durante la visita',
       icon: Icons.vaccines_outlined,
     ),
@@ -757,7 +805,8 @@ class _FlowStepRow extends ConsumerWidget {
         Column(
           children: [
             Container(
-              width: 28, height: 28,
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
                 color: AppColors.terracota.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
@@ -769,17 +818,15 @@ class _FlowStepRow extends ConsumerWidget {
                 child: Text(
                   step.num,
                   style: const TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
                     color: AppColors.terracota,
                   ),
                 ),
               ),
             ),
             if (!isLast)
-              Container(
-                width: 1.5, height: 36,
-                color: AppColors.line,
-              ),
+              Container(width: 1.5, height: 36, color: AppColors.line),
           ],
         ),
         const SizedBox(width: 14),
@@ -797,14 +844,16 @@ class _FlowStepRow extends ConsumerWidget {
                       Text(
                         step.title,
                         style: const TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
                           color: AppColors.ink,
                         ),
                       ),
                       Text(
                         step.detail,
                         style: const TextStyle(
-                          fontSize: 12, color: AppColors.muted,
+                          fontSize: 12,
+                          color: AppColors.muted,
                         ),
                       ),
                     ],
@@ -833,8 +882,11 @@ class _TipCard extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.tips_and_updates_outlined,
-              color: AppColors.gold, size: 20),
+          const Icon(
+            Icons.tips_and_updates_outlined,
+            color: AppColors.gold,
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -843,16 +895,17 @@ class _TipCard extends ConsumerWidget {
                 const Text(
                   'Consejo de campo',
                   style: TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
                     color: AppColors.greenDark,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   'Verifica la conectividad antes de iniciar. Los datos se sincronizan al guardar.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.muted,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.muted),
                 ),
               ],
             ),
@@ -904,18 +957,18 @@ class _SyncStatusCard extends ConsumerWidget {
         children: [
           isSyncing
               ? SizedBox(
-            width: 28,
-            height: 28,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              color: color,
-            ),
-          )
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: color,
+                  ),
+                )
               : Icon(
-            isOnline ? Icons.sync_outlined : Icons.sync_disabled_outlined,
-            color: color,
-            size: 28,
-          ),
+                  isOnline ? Icons.sync_outlined : Icons.sync_disabled_outlined,
+                  color: color,
+                  size: 28,
+                ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

@@ -26,15 +26,33 @@ class CedulaSuccessSheet extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_outline, color: theme.colorScheme.primary, size: 64),
+          Icon(
+            Icons.check_circle_outline,
+            color: theme.colorScheme.primary,
+            size: 64,
+          ),
           const SizedBox(height: 16),
-          Text('¿Guardar Cédula?', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            '¿Guardar Cédula?',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('Revisa que todos los datos estén correctos antes de enviarlos.', textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
+          Text(
+            'Revisa que todos los datos estén correctos antes de enviarlos.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium,
+          ),
           const SizedBox(height: 32),
           Row(
             children: [
-              Expanded(child: OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('Revisar'))),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Revisar'),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton.icon(
@@ -53,11 +71,15 @@ class CedulaSuccessSheet extends ConsumerWidget {
   Future<void> _submitCedula(BuildContext context, WidgetRef ref) async {
     final authVm = ref.read(authViewModelProvider);
     final user = authVm.session?.user;
-    if (user == null || user.entrevistadorId == null || user.entrevistadorId! <= 0) {
+    if (user == null ||
+        user.entrevistadorId == null ||
+        user.entrevistadorId! <= 0) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('ID de entrevistador inválido. No se puede guardar la cédula.'),
+          content: const Text(
+            'ID de entrevistador inválido. No se puede guardar la cédula.',
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -72,9 +94,11 @@ class CedulaSuccessSheet extends ConsumerWidget {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Revisa los errores en las diferentes secciones antes de guardar'), 
-          backgroundColor: Theme.of(context).colorScheme.error
-        )
+          content: const Text(
+            'Revisa los errores en las diferentes secciones antes de guardar',
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
       return;
     }
@@ -84,7 +108,7 @@ class CedulaSuccessSheet extends ConsumerWidget {
     final viviendaVm = ref.read(viviendaViewModelProvider);
     final vacunasVm = ref.read(vacunacionViewModelProvider);
     final integrantesVm = ref.read(integrantesViewModelProvider);
-    
+
     // Construir el JSON consolidado
     final payload = {
       "unidad_salud_id": user.unidadSaludId ?? 1,
@@ -92,8 +116,8 @@ class CedulaSuccessSheet extends ConsumerWidget {
       "familia": familiaVm.toPayload(),
       "vivienda": viviendaVm.toPayload(),
       "vacunacion": vacunasVm.toPayload(),
-      "integrantes": integrantesVm.toPayload()
-    }; 
+      "integrantes": integrantesVm.toPayload(),
+    };
 
     showDialog(
       context: context,
@@ -110,9 +134,16 @@ class CedulaSuccessSheet extends ConsumerWidget {
     if (success) {
       Navigator.pop(context); // Cierra modal
       Navigator.pop(context); // Regresa
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vm.successMessage ?? 'Cédula guardada')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(vm.successMessage ?? 'Cédula guardada')),
+      );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vm.errorMessage ?? 'Error al guardar la cédula'), backgroundColor: Theme.of(context).colorScheme.error));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(vm.errorMessage ?? 'Error al guardar la cédula'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 }

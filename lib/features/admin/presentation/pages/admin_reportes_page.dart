@@ -21,7 +21,8 @@ class AdminReportesPage extends ConsumerWidget {
             _ReportCard(
               icon: Icons.trending_up,
               title: 'Productividad de Entrevistador',
-              description: 'Análisis del rendimiento de los encuestadores y cédulas completadas',
+              description:
+                  'Análisis del rendimiento de los encuestadores y cédulas completadas',
               color: AppColors.rolEncuestador,
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.adminProductividad);

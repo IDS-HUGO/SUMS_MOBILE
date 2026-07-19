@@ -33,8 +33,7 @@ class BrandHeader extends ConsumerWidget {
               fit: BoxFit.contain,
             ),
             const Spacer(),
-            if (!compact)
-              _StatusBadge(color: accent),
+            if (!compact) _StatusBadge(color: accent),
           ],
         ),
         SizedBox(height: compact ? 16 : 24),
@@ -57,17 +56,18 @@ class BrandHeader extends ConsumerWidget {
                   children: [
                     Text(
                       title,
-                      style: (compact
-                              ? Theme.of(context).textTheme.headlineSmall
-                              : Theme.of(context).textTheme.headlineMedium)
-                          ?.copyWith(color: AppColors.greenDark),
+                      style:
+                          (compact
+                                  ? Theme.of(context).textTheme.headlineSmall
+                                  : Theme.of(context).textTheme.headlineMedium)
+                              ?.copyWith(color: AppColors.greenDark),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       subtitle,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.muted,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: AppColors.muted),
                     ),
                   ],
                 ),
@@ -97,17 +97,16 @@ class _StatusBadge extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 7, height: 7,
-            decoration: BoxDecoration(
-              color:  color,
-              shape:  BoxShape.circle,
-            ),
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
           Text(
             'En línea',
             style: TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w600,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
               color: color,
             ),
           ),
@@ -172,21 +171,21 @@ class SectionCard extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(title,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        color: AppColors.greenDark,
-                                        fontWeight: FontWeight.w800,
-                                      )),
+                              Text(
+                                title,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: AppColors.greenDark,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
                               if (subtitle != null) ...[
                                 const SizedBox(height: 2),
-                                Text(subtitle!,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(color: AppColors.muted)),
+                                Text(
+                                  subtitle!,
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(color: AppColors.muted),
+                                ),
                               ],
                             ],
                           ),

@@ -21,6 +21,7 @@ dependencies:
   connectivity_plus: ^7.1.1
   workmanager: ^0.9.0+3
   shared_preferences: ^2.5.5
+  file_picker: ^9.0.3
 
   # --- Database (Drift / SQLite) & Paths ---
   drift: ^2.34.0

@@ -10,7 +10,8 @@ class AdminUnidadesListPage extends ConsumerStatefulWidget {
   const AdminUnidadesListPage({super.key});
 
   @override
-  ConsumerState<AdminUnidadesListPage> createState() => _AdminUnidadesListPageState();
+  ConsumerState<AdminUnidadesListPage> createState() =>
+      _AdminUnidadesListPageState();
 }
 
 class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
@@ -79,11 +80,18 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
           child: ListTile(
             leading: const CircleAvatar(
               backgroundColor: AppColors.greenLight,
-              child: Icon(Icons.local_hospital, color: AppColors.greenDark, size: 20),
+              child: Icon(
+                Icons.local_hospital,
+                color: AppColors.greenDark,
+                size: 20,
+              ),
             ),
             title: Text(
               unidad.nombre,
-              style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppColors.ink,
+              ),
             ),
             subtitle: Text('CLUES: ${unidad.clues}'),
             trailing: PopupMenuButton<String>(
@@ -100,21 +108,34 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
                     context: context,
                     builder: (ctx) => AlertDialog(
                       title: const Text('Eliminar Unidad'),
-                      content: Text('¿Estás seguro de eliminar ${unidad.nombre}?'),
+                      content: Text(
+                        '¿Estás seguro de eliminar ${unidad.nombre}?',
+                      ),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Cancelar'),
+                        ),
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                          child: const Text(
+                            'Eliminar',
+                            style: TextStyle(color: Colors.red),
+                          ),
                         ),
                       ],
                     ),
                   );
                   if (confirm == true && context.mounted) {
-                    final success = await ref.read(adminUnidadesViewModelProvider).deleteUnidad(unidad.id);
+                    final success = await ref
+                        .read(adminUnidadesViewModelProvider)
+                        .deleteUnidad(unidad.id);
                     if (success && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Unidad eliminada'), backgroundColor: AppColors.green),
+                        const SnackBar(
+                          content: Text('Unidad eliminada'),
+                          backgroundColor: AppColors.green,
+                        ),
                       );
                     }
                   }

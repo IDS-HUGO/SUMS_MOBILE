@@ -17,16 +17,24 @@ class MemberForm {
   final TextEditingController fechaMama = TextEditingController();
   final TextEditingController motivoSalud = TextEditingController();
 
-  String? sexo, estadoCivil, lengua, parentesco, escolaridad,
-          ingreso, embarazo, tamizajeCervico, tamizajeMama, frecuenciaSalud;
+  String? sexo,
+      estadoCivil,
+      lengua,
+      parentesco,
+      escolaridad,
+      ingreso,
+      embarazo,
+      tamizajeCervico,
+      tamizajeMama,
+      frecuenciaSalud;
 
   bool alfabetizacion = false;
   bool seguridadSocial = false;
-  bool higiene  = false;
+  bool higiene = false;
   bool discapacidad = false;
 
   final toxicomanias = <String>{};
-  final cronicas     = <String>{};
+  final cronicas = <String>{};
 
   void dispose() {
     nombre.dispose();
@@ -105,7 +113,6 @@ class IntegrantesViewModel extends ChangeNotifier {
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
-
     } catch (e) {
       _errorMessage = e.toString();
       // Fallback for UI if error occurs
@@ -120,7 +127,7 @@ class IntegrantesViewModel extends ChangeNotifier {
       freqSaludOpts = ['Nunca', 'Anual'];
       toxicomaniasOpts = ['Ninguna', 'Alcohol'];
       cronicasOpts = ['Ninguna', 'Diabetes'];
-      
+
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
@@ -129,8 +136,6 @@ class IntegrantesViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-
 
   void addMemberForm() {
     _integrantes.add(MemberForm());
@@ -193,7 +198,9 @@ class IntegrantesViewModel extends ChangeNotifier {
         "estado_civil": i.estadoCivil,
         "parentesco": i.parentesco,
         "lengua": i.lengua,
-        "lenguaEspecificar": i.lengua == 'Lengua indígena' ? (i.lenguaEsp.text.isEmpty ? null : i.lenguaEsp.text) : null,
+        "lenguaEspecificar": i.lengua == 'Lengua indígena'
+            ? (i.lenguaEsp.text.isEmpty ? null : i.lenguaEsp.text)
+            : null,
         "escolaridad": i.escolaridad,
         "ocupacion": i.ocupacion.text,
         "ingreso": i.ingreso,
@@ -201,18 +208,26 @@ class IntegrantesViewModel extends ChangeNotifier {
         "seguridad_social": i.seguridadSocial,
         "higiene": i.higiene,
         "discapacidad": i.discapacidad,
-        "tipoDiscapacidad": i.discapacidad ? (i.tipoDisc.text.isEmpty ? null : i.tipoDisc.text) : null,
+        "tipoDiscapacidad": i.discapacidad
+            ? (i.tipoDisc.text.isEmpty ? null : i.tipoDisc.text)
+            : null,
         "proteina": int.tryParse(i.proteina.text),
         "frutasVerduras": int.tryParse(i.frutasVerd.text),
         "cereales": int.tryParse(i.cereales.text),
         "toxicomanias": i.toxicomanias.toList(),
-        "otraSustancia": i.toxicomanias.contains('Otras sustancias') ? (i.otraSust.text.isEmpty ? null : i.otraSust.text) : null,
+        "otraSustancia": i.toxicomanias.contains('Otras sustancias')
+            ? (i.otraSust.text.isEmpty ? null : i.otraSust.text)
+            : null,
         "cronicas": i.cronicas.toList(),
         "embarazo": isFem ? i.embarazo : null,
         "tamizajeCervico": isFem ? i.tamizajeCervico : null,
-        "fechaCervico": (isFem && i.tamizajeCervico == 'Sí') ? (i.fechaCervico.text.isEmpty ? null : i.fechaCervico.text) : null,
+        "fechaCervico": (isFem && i.tamizajeCervico == 'Sí')
+            ? (i.fechaCervico.text.isEmpty ? null : i.fechaCervico.text)
+            : null,
         "tamizajeMama": isFem ? i.tamizajeMama : null,
-        "fechaMama": (isFem && i.tamizajeMama == 'Sí') ? (i.fechaMama.text.isEmpty ? null : i.fechaMama.text) : null,
+        "fechaMama": (isFem && i.tamizajeMama == 'Sí')
+            ? (i.fechaMama.text.isEmpty ? null : i.fechaMama.text)
+            : null,
         "frecuenciaSalud": i.frecuenciaSalud,
         "motivoSalud": i.motivoSalud.text,
       };
