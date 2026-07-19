@@ -12,12 +12,11 @@ class RegisterUseCase {
     required int rolId,
     int? unidadSaludId,
     int? datosLaboralesId,
-  }) =>
-      repository.register(
-        nombreUsuario:    nombreUsuario,
-        contrasena:       contrasena,
-        rolId:            rolId,
-        unidadSaludId:    unidadSaludId,
-        datosLaboralesId: datosLaboralesId,
-      );
+  }) => repository.register(
+    nombreUsuario: nombreUsuario,
+    contrasena: contrasena,
+    rolId: rolId,
+    unidadSaludId: unidadSaludId,
+    datosLaboralesId: datosLaboralesId,
+  );
 }

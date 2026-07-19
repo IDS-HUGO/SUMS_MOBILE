@@ -63,12 +63,11 @@ class VacunacionViewModel extends ChangeNotifier {
       if (_vacunas.isEmpty) {
         addVaccineForm();
       }
-
     } catch (e) {
       _errorMessage = e.toString();
       _vacunasOpts = ['Influenza estacional', 'COVID-19', 'Otra'];
       _dosisOpts = ['Única', '1era', '2da', '3era', 'Refuerzo'];
-      
+
       if (_vacunas.isEmpty) {
         addVaccineForm();
       }
@@ -77,8 +76,6 @@ class VacunacionViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-
 
   void addVaccineForm() {
     _vacunas.add(VaccineForm());
@@ -92,7 +89,7 @@ class VacunacionViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   void updateForm() {
     notifyListeners();
   }
@@ -117,14 +114,22 @@ class VacunacionViewModel extends ChangeNotifier {
   Map<String, dynamic> toPayload() {
     return {
       "se_aplico_vacuna": _seAplicoVacuna,
-      "vacunas": _seAplicoVacuna ? _vacunas.map((v) => {
-        "paciente": v.paciente.text,
-        "fecha_nacimiento": v.fechaNacimiento.text,
-        "edad": _parseEdad(v.edad.text),
-        "vacuna": v.tipo,
-        "otraVacuna": v.tipo == 'Otra' ? (v.otraVacuna.text.isEmpty ? null : v.otraVacuna.text) : null,
-        "dosis": v.dosis,
-      }).toList() : [],
+      "vacunas": _seAplicoVacuna
+          ? _vacunas
+                .map(
+                  (v) => {
+                    "paciente": v.paciente.text,
+                    "fecha_nacimiento": v.fechaNacimiento.text,
+                    "edad": _parseEdad(v.edad.text),
+                    "vacuna": v.tipo,
+                    "otraVacuna": v.tipo == 'Otra'
+                        ? (v.otraVacuna.text.isEmpty ? null : v.otraVacuna.text)
+                        : null,
+                    "dosis": v.dosis,
+                  },
+                )
+                .toList()
+          : [],
     };
   }
 

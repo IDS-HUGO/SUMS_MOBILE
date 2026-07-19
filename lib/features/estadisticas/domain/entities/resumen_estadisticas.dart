@@ -21,9 +21,9 @@ class ResumenEstadisticas {
   }
 
   Map<String, dynamic> toJson() => {
-        'hoy': hoy,
-        'semana': semana,
-        'mes': mes,
-        'total': total,
-      };
+    'hoy': hoy,
+    'semana': semana,
+    'mes': mes,
+    'total': total,
+  };
 }

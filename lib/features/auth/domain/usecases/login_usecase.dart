@@ -10,9 +10,5 @@ class LoginUseCase {
   Future<AuthSession> call({
     required String nombreUsuario,
     required String contrasena,
-  }) =>
-      repository.login(
-        nombreUsuario: nombreUsuario,
-        contrasena: contrasena,
-      );
+  }) => repository.login(nombreUsuario: nombreUsuario, contrasena: contrasena);
 }

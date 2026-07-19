@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/cedula_viewmodel.dart';
 
-class PendingCapturesPage extends StatefulWidget {
+class PendingCapturesPage extends ConsumerStatefulWidget {
   const PendingCapturesPage({super.key});
 
   @override
-  State<PendingCapturesPage> createState() => _PendingCapturesPageState();
+  ConsumerState<PendingCapturesPage> createState() =>
+      _PendingCapturesPageState();
 }
 
-class _PendingCapturesPageState extends State<PendingCapturesPage> {
+class _PendingCapturesPageState extends ConsumerState<PendingCapturesPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CedulaViewModel>().refreshSyncCounts();
+      ref.read(cedulaViewModelProvider).refreshSyncCounts();
     });
   }
 
@@ -24,10 +26,13 @@ class _PendingCapturesPageState extends State<PendingCapturesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Capturas pendientes')),
-      body: Consumer<CedulaViewModel>(
-        builder: (context, vm, child) {
-          final pending = vm.allLocalRecords.where((r) => r['_syncStatus'] == 1).toList();
-          
+      body: Consumer(
+        builder: (context, ref, child) {
+          final vm = ref.watch(cedulaViewModelProvider);
+          final pending = vm.allLocalRecords
+              .where((r) => r['_syncStatus'] == 1)
+              .toList();
+
           if (pending.isEmpty) {
             return const Center(
               child: Text('No hay capturas pendientes por sincronizar.'),
@@ -43,9 +48,7 @@ class _PendingCapturesPageState extends State<PendingCapturesPage> {
               return Card(
                 child: ListTile(
                   title: Text(record['_informante'] ?? 'Sin nombre'),
-                  subtitle: Text(
-                    'Guardado el: ${record['_createdAt']}',
-                  ),
+                  subtitle: Text('Guardado el: ${record['_createdAt']}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

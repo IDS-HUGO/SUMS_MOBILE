@@ -28,7 +28,8 @@ class EstadisticasViewModel extends ChangeNotifier {
   EstadisticasStatus get productividadStatus => _productividadStatus;
   List<ProductividadEntrevistador> get productividad => _productividad;
   String? get productividadError => _productividadError;
-  bool get isProductividadLoading => _productividadStatus == EstadisticasStatus.loading;
+  bool get isProductividadLoading =>
+      _productividadStatus == EstadisticasStatus.loading;
 
   Future<void> fetchResumen() async {
     _resumenStatus = EstadisticasStatus.loading;

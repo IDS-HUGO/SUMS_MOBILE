@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -48,12 +49,13 @@ String? Function(String?) intRange(int min, int max) {
   return (String? value) {
     if (value == null || value.trim().isEmpty) return null;
     final parsed = int.tryParse(value);
-    if (parsed == null || parsed < min || parsed > max) return 'Debe estar entre $min y $max';
+    if (parsed == null || parsed < min || parsed > max)
+      return 'Debe estar entre $min y $max';
     return null;
   };
 }
 
-class BooleanSwitch extends StatelessWidget {
+class BooleanSwitch extends ConsumerWidget {
   final String label;
   final bool value;
   final ValueChanged<bool> onChanged;
@@ -66,7 +68,7 @@ class BooleanSwitch extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SwitchListTile.adaptive(
       contentPadding: EdgeInsets.zero,
       title: Text(label),

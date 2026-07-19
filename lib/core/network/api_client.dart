@@ -38,7 +38,11 @@ class ApiClient {
     String? token,
   }) async {
     final response = await _sendRequest(
-      () => client.post(_uri(path), headers: _headers(token), body: jsonEncode(body)),
+      () => client.post(
+        _uri(path),
+        headers: _headers(token),
+        body: jsonEncode(body),
+      ),
     );
     return _decodeMap(response);
   }
@@ -49,7 +53,11 @@ class ApiClient {
     String? token,
   }) async {
     final response = await _sendRequest(
-      () => client.put(_uri(path), headers: _headers(token), body: jsonEncode(body)),
+      () => client.put(
+        _uri(path),
+        headers: _headers(token),
+        body: jsonEncode(body),
+      ),
     );
     return _decodeMap(response);
   }
@@ -60,25 +68,39 @@ class ApiClient {
     String? token,
   }) async {
     final response = await _sendRequest(
-      () => client.patch(_uri(path), headers: _headers(token), body: jsonEncode(body)),
+      () => client.patch(
+        _uri(path),
+        headers: _headers(token),
+        body: jsonEncode(body),
+      ),
+    );
+    return _decodeMap(response);
+  }
+
+  Future<Map<String, dynamic>> delete(String path, {String? token}) async {
+    final response = await _sendRequest(
+      () => client.delete(_uri(path), headers: _headers(token)),
     );
     return _decodeMap(response);
   }
 
   Map<String, String> _headers(String? token) => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-      };
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+  };
 
   Uri _uri(String path) {
     final clean = baseUrl.trim();
     if (clean.isEmpty) throw const ApiException('Configura API_BASE_URL.');
-    final normalized =
-        clean.endsWith('/') ? clean.substring(0, clean.length - 1) : clean;
+    final normalized = clean.endsWith('/')
+        ? clean.substring(0, clean.length - 1)
+        : clean;
     final uri = Uri.parse('$normalized$path');
     if (uri.scheme != 'https') {
-      throw const ApiException('La comunicación no segura (HTTP) está bloqueada por políticas de seguridad (OWASP MASVS-NETWORK-1).');
+      throw const ApiException(
+        'La comunicación no segura (HTTP) está bloqueada por políticas de seguridad (OWASP MASVS-NETWORK-1).',
+      );
     }
     return uri;
   }

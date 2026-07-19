@@ -24,7 +24,7 @@ class SyncEngine {
 
     // 2. Obtener registros pendientes (sync_status = 1)
     final pendingRecords = await localDataSource.getCedulasByStatus(1);
-    
+
     if (pendingRecords.isEmpty) {
       print('SyncEngine: No hay registros pendientes por sincronizar.');
       // Purgar antiguos por si acaso
@@ -47,7 +47,7 @@ class SyncEngine {
       // En la API recién creada, el endpoint es POST /sums/sync
       // Como CedulaRemoteDataSource tiene un mētodo post genérico:
       await remoteDataSource.post('/sums/sync', {'payloads': payloadsForApi});
-      
+
       // Si llegamos aquí, asumimos éxito HTTP 200/201.
       print('SyncEngine: Sincronización exitosa.');
 
@@ -59,7 +59,6 @@ class SyncEngine {
 
       // 5. Purgar registros antiguos ya sincronizados (> 7 días)
       await localDataSource.deleteOldSynced(7);
-
     } catch (e) {
       print('SyncEngine: Error durante la sincronización: $e');
     }

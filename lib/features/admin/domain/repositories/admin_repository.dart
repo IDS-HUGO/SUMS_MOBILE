@@ -6,10 +6,16 @@ abstract class AdminRepository {
   // Users
   Future<List<AdminUserEntity>> getUsers();
   Future<AdminUserEntity> createUser(Map<String, dynamic> body);
+  Future<AdminUserEntity> updateUser(int id, Map<String, dynamic> body);
 
   // Unidades de Salud
   Future<List<UnidadSaludEntity>> getUnidadesSalud();
   Future<UnidadSaludEntity> createUnidadSalud(Map<String, dynamic> body);
+  Future<UnidadSaludEntity> updateUnidadSalud(
+    int id,
+    Map<String, dynamic> body,
+  );
+  Future<bool> deleteUnidadSalud(int id);
 
   // Catálogos
   Future<List<CatalogItem>> getCatalog(String key);

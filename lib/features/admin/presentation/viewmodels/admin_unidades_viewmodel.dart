@@ -50,4 +50,47 @@ class AdminUnidadesViewModel extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> updateUnidad(int id, Map<String, dynamic> body) async {
+    _status = AdminUnidadesStatus.loading;
+    notifyListeners();
+
+    try {
+      final updatedUnidad = await repository.updateUnidadSalud(id, body);
+      final index = _unidades.indexWhere((u) => u.id == id);
+      if (index != -1) {
+        _unidades[index] = updatedUnidad;
+      }
+      _status = AdminUnidadesStatus.loaded;
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _status = AdminUnidadesStatus.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteUnidad(int id) async {
+    _status = AdminUnidadesStatus.loading;
+    notifyListeners();
+
+    try {
+      final success = await repository.deleteUnidadSalud(id);
+      if (success) {
+        _unidades.removeWhere((u) => u.id == id);
+      }
+      _status = AdminUnidadesStatus.loaded;
+      _errorMessage = null;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _status = AdminUnidadesStatus.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
 }

@@ -27,15 +27,16 @@ class CedulaRemoteDataSource {
     Map<String, dynamic> body, {
     String? token,
   }) {
-    return apiClient.post('/cedulas/captura-completa', body: body, token: token);
+    return apiClient.post(
+      '/cedulas/captura-completa',
+      body: body,
+      token: token,
+    );
   }
 
   /// POST /sums/sync
   /// Sincroniza multiples cedulas en lote
-  Future<dynamic> postSync(
-    List<Map<String, dynamic>> body, {
-    String? token,
-  }) {
+  Future<dynamic> postSync(List<Map<String, dynamic>> body, {String? token}) {
     // Necesitamos que ApiClient soporte enviar listas. Si no lo soporta,
     // podemos enviar un Map con llave "payloads" y adaptar el backend.
     // Como el backend espera un Array en req.body, y si ApiClient falla con List,

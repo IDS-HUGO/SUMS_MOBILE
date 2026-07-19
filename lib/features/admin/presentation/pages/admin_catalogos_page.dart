@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/admin_catalogos_viewmodel.dart';
 
-class AdminCatalogosPage extends StatefulWidget {
+class AdminCatalogosPage extends ConsumerStatefulWidget {
   const AdminCatalogosPage({super.key});
 
   @override
-  State<AdminCatalogosPage> createState() => _AdminCatalogosPageState();
+  ConsumerState<AdminCatalogosPage> createState() => _AdminCatalogosPageState();
 }
 
-class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
+class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
   String? _selectedCatalog;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = context.read<AdminCatalogosViewModel>();
+      final vm = ref.read(adminCatalogosViewModelProvider);
       vm.fetchAllCatalogs();
       if (vm.catalogKeys.isNotEmpty) {
         setState(() {
@@ -30,7 +31,7 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
 
   void _showAddDialog(BuildContext context, AdminCatalogosViewModel vm) {
     if (_selectedCatalog == null) return;
-    
+
     final nombreController = TextEditingController();
     final descController = TextEditingController();
 
@@ -49,7 +50,9 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
               const SizedBox(height: 10),
               TextField(
                 controller: descController,
-                decoration: const InputDecoration(labelText: 'Descripción (Opcional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Descripción (Opcional)',
+                ),
               ),
             ],
           ),
@@ -62,13 +65,14 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
               onPressed: () async {
                 final nombre = nombreController.text.trim();
                 if (nombre.isEmpty) return;
-                
+
                 Navigator.pop(ctx); // close dialog
-                
+
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (_) => const Center(child: CircularProgressIndicator()),
+                  builder: (_) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
 
                 final success = await vm.createCatalogItem(
@@ -76,13 +80,17 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
                   nombre,
                   descController.text.trim(),
                 );
-                
+
                 if (!mounted) return;
                 Navigator.pop(context); // close loader
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(success ? 'Añadido exitosamente' : (vm.errorMessage ?? 'Error')),
+                    content: Text(
+                      success
+                          ? 'Añadido exitosamente'
+                          : (vm.errorMessage ?? 'Error'),
+                    ),
                     backgroundColor: success ? AppColors.green : Colors.red,
                   ),
                 );
@@ -97,7 +105,7 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AdminCatalogosViewModel>();
+    final vm = ref.watch(adminCatalogosViewModelProvider);
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
@@ -120,25 +128,40 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
             )
           : null,
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
             color: Colors.white,
-            child: DropdownButtonFormField<String>(
-              value: _selectedCatalog,
-              decoration: const InputDecoration(
-                labelText: 'Selecciona un catálogo',
-                border: OutlineInputBorder(),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: vm.catalogKeys.map((k) {
+                  final isSelected = _selectedCatalog == k;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(k.toUpperCase()),
+                      selected: isSelected,
+                      selectedColor: AppColors.terracota.withOpacity(0.2),
+                      labelStyle: TextStyle(
+                        color: isSelected ? AppColors.terracota : AppColors.ink,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                      onSelected: (selected) {
+                        if (selected) setState(() => _selectedCatalog = k);
+                      },
+                    ),
+                  );
+                }).toList(),
               ),
-              items: vm.catalogKeys.map((k) {
-                return DropdownMenuItem(value: k, child: Text(k.toUpperCase()));
-              }).toList(),
-              onChanged: (v) => setState(() => _selectedCatalog = v),
             ),
           ),
-          Expanded(
-            child: _buildList(vm),
-          ),
+          const Divider(height: 1),
+          Expanded(child: _buildList(vm)),
         ],
       ),
     );
@@ -172,7 +195,10 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
             side: const BorderSide(color: AppColors.line),
           ),
           child: ListTile(
-            leading: const Icon(Icons.label_important, color: AppColors.terracota),
+            leading: const Icon(
+              Icons.label_important,
+              color: AppColors.terracota,
+            ),
             title: Text(item.nombre),
             subtitle: Text('ID: ${item.id}'),
           ),
