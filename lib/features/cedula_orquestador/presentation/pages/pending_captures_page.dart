@@ -9,7 +9,8 @@ class PendingCapturesPage extends ConsumerStatefulWidget {
   const PendingCapturesPage({super.key});
 
   @override
-  ConsumerState<PendingCapturesPage> createState() => _PendingCapturesPageState();
+  ConsumerState<PendingCapturesPage> createState() =>
+      _PendingCapturesPageState();
 }
 
 class _PendingCapturesPageState extends ConsumerState<PendingCapturesPage> {
@@ -27,9 +28,11 @@ class _PendingCapturesPageState extends ConsumerState<PendingCapturesPage> {
       appBar: AppBar(title: const Text('Capturas pendientes')),
       body: Consumer(
         builder: (context, ref, child) {
-final vm = ref.watch(cedulaViewModelProvider);
-          final pending = vm.allLocalRecords.where((r) => r['_syncStatus'] == 1).toList();
-          
+          final vm = ref.watch(cedulaViewModelProvider);
+          final pending = vm.allLocalRecords
+              .where((r) => r['_syncStatus'] == 1)
+              .toList();
+
           if (pending.isEmpty) {
             return const Center(
               child: Text('No hay capturas pendientes por sincronizar.'),
@@ -45,9 +48,7 @@ final vm = ref.watch(cedulaViewModelProvider);
               return Card(
                 child: ListTile(
                   title: Text(record['_informante'] ?? 'Sin nombre'),
-                  subtitle: Text(
-                    'Guardado el: ${record['_createdAt']}',
-                  ),
+                  subtitle: Text('Guardado el: ${record['_createdAt']}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

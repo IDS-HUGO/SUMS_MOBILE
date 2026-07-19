@@ -31,7 +31,7 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
 
   void _showAddDialog(BuildContext context, AdminCatalogosViewModel vm) {
     if (_selectedCatalog == null) return;
-    
+
     final nombreController = TextEditingController();
     final descController = TextEditingController();
 
@@ -50,7 +50,9 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
               const SizedBox(height: 10),
               TextField(
                 controller: descController,
-                decoration: const InputDecoration(labelText: 'Descripción (Opcional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Descripción (Opcional)',
+                ),
               ),
             ],
           ),
@@ -63,13 +65,14 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
               onPressed: () async {
                 final nombre = nombreController.text.trim();
                 if (nombre.isEmpty) return;
-                
+
                 Navigator.pop(ctx); // close dialog
-                
+
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (_) => const Center(child: CircularProgressIndicator()),
+                  builder: (_) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
 
                 final success = await vm.createCatalogItem(
@@ -77,13 +80,17 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
                   nombre,
                   descController.text.trim(),
                 );
-                
+
                 if (!mounted) return;
                 Navigator.pop(context); // close loader
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(success ? 'Añadido exitosamente' : (vm.errorMessage ?? 'Error')),
+                    content: Text(
+                      success
+                          ? 'Añadido exitosamente'
+                          : (vm.errorMessage ?? 'Error'),
+                    ),
                     backgroundColor: success ? AppColors.green : Colors.red,
                   ),
                 );
@@ -140,7 +147,9 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
                       selectedColor: AppColors.terracota.withOpacity(0.2),
                       labelStyle: TextStyle(
                         color: isSelected ? AppColors.terracota : AppColors.ink,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                       onSelected: (selected) {
                         if (selected) setState(() => _selectedCatalog = k);
@@ -152,9 +161,7 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
             ),
           ),
           const Divider(height: 1),
-          Expanded(
-            child: _buildList(vm),
-          ),
+          Expanded(child: _buildList(vm)),
         ],
       ),
     );
@@ -188,7 +195,10 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
             side: const BorderSide(color: AppColors.line),
           ),
           child: ListTile(
-            leading: const Icon(Icons.label_important, color: AppColors.terracota),
+            leading: const Icon(
+              Icons.label_important,
+              color: AppColors.terracota,
+            ),
             title: Text(item.nombre),
             subtitle: Text('ID: ${item.id}'),
           ),

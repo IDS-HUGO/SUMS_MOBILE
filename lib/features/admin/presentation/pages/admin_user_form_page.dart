@@ -9,7 +9,7 @@ import '../viewmodels/admin_unidades_viewmodel.dart';
 
 class AdminUserFormPage extends ConsumerStatefulWidget {
   final AdminUserEntity? user;
-  
+
   const AdminUserFormPage({super.key, this.user});
 
   @override
@@ -20,7 +20,7 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   int _selectedRol = 3; // Encuestador por defecto
   int? _selectedUnidadId;
 
@@ -46,22 +46,22 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final vm = ref.read(adminUsersViewModelProvider);
-    
+
     final body = <String, dynamic>{
       'nombre_usuario': _nombreController.text.trim(),
       'rol_id': _selectedRol,
     };
-    
+
     if (_passwordController.text.isNotEmpty) {
       body['contrasena'] = _passwordController.text;
     }
-    
+
     if (widget.user == null) {
       body['activo'] = true;
     }
-    
+
     if (_selectedUnidadId != null) {
       body['unidad_salud_id'] = _selectedUnidadId!;
     }
@@ -77,14 +77,18 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
     final success = isEditing
         ? await vm.updateUser(widget.user!.id, body)
         : await vm.createUser(body);
-    
+
     if (!mounted) return;
     Navigator.pop(context); // Cerrar loader
-    
+
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isEditing ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente'),
+          content: Text(
+            isEditing
+                ? 'Usuario actualizado exitosamente'
+                : 'Usuario creado exitosamente',
+          ),
           backgroundColor: AppColors.green,
         ),
       );
@@ -117,7 +121,10 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Datos de Acceso', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Datos de Acceso',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _nombreController,
@@ -132,18 +139,24 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   controller: _passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: widget.user != null ? 'Contraseña (Opcional si no cambia)' : 'Contraseña (min 6 caracteres)',
+                    labelText: widget.user != null
+                        ? 'Contraseña (Opcional si no cambia)'
+                        : 'Contraseña (min 6 caracteres)',
                     border: const OutlineInputBorder(),
                   ),
                   validator: (v) {
-                    if (widget.user != null && (v == null || v.isEmpty)) return null;
+                    if (widget.user != null && (v == null || v.isEmpty))
+                      return null;
                     if (v == null || v.length < 6) return 'Minimo 6 caracteres';
                     return null;
                   },
                 ),
                 const SizedBox(height: 24),
-                
-                const Text('Perfil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+
+                const Text(
+                  'Perfil',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
                   value: _selectedRol,
@@ -160,7 +173,7 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   onChanged: (v) => setState(() => _selectedRol = v!),
                 ),
                 const SizedBox(height: 16),
-                
+
                 DropdownButtonFormField<int>(
                   value: _selectedUnidadId,
                   decoration: const InputDecoration(
@@ -176,7 +189,7 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   onChanged: (v) => setState(() => _selectedUnidadId = v),
                 ),
                 const SizedBox(height: 32),
-                
+
                 ElevatedButton(
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
@@ -184,7 +197,9 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: Text(
-                    widget.user != null ? 'Actualizar Usuario' : 'Crear Usuario',
+                    widget.user != null
+                        ? 'Actualizar Usuario'
+                        : 'Crear Usuario',
                     style: const TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),

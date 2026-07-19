@@ -19,7 +19,9 @@ void main() async {
     final developerMode = await FlutterJailbreakDetection.developerMode;
     if (jailbroken) {
       isSecure = false;
-      AppLogger.warn('Dispositivo con Jailbreak/Root detectado (OWASP MASVS-RESILIENCE-1).');
+      AppLogger.warn(
+        'Dispositivo con Jailbreak/Root detectado (OWASP MASVS-RESILIENCE-1).',
+      );
     }
     if (developerMode) {
       AppLogger.warn('Modo desarrollador activo (OWASP MASVS-RESILIENCE-2).');
@@ -30,9 +32,5 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   await initInjection(prefs);
-  runApp(
-    ProviderScope(
-      child: App(isSecureDevice: isSecure),
-    ),
-  );
+  runApp(ProviderScope(child: App(isSecureDevice: isSecure)));
 }

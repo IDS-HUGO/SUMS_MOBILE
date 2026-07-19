@@ -30,7 +30,7 @@ class AdminCatalogosViewModel extends ChangeNotifier {
     'material_piso',
     'estado_civil',
     'enfermedades_cronicas',
-    'padecimientos_detectados'
+    'padecimientos_detectados',
   ];
 
   Future<void> fetchAllCatalogs() async {
@@ -52,16 +52,21 @@ class AdminCatalogosViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> createCatalogItem(String catalogName, String nombre, String? descripcion) async {
+  Future<bool> createCatalogItem(
+    String catalogName,
+    String nombre,
+    String? descripcion,
+  ) async {
     _status = AdminCatalogosStatus.loading;
     notifyListeners();
 
     try {
       final body = {
         'nombre': nombre,
-        if (descripcion != null && descripcion.isNotEmpty) 'descripcion': descripcion
+        if (descripcion != null && descripcion.isNotEmpty)
+          'descripcion': descripcion,
       };
-      
+
       final success = await repository.createCatalogItem(catalogName, body);
       if (success) {
         // Refrescar el catalogo localmente mandando llamar fetch

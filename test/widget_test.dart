@@ -8,8 +8,12 @@ void main() {
   testWidgets('muestra la pantalla inicial de captura', (
     WidgetTester tester,
   ) async {
-    const channel = MethodChannel('plugins.itrix.com.br/flutter_secure_storage');
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+    const channel = MethodChannel(
+      'plugins.itrix.com.br/flutter_secure_storage',
+    );
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
+      MethodCall methodCall,
+    ) async {
       if (methodCall.method == 'read') {
         return null;
       }
@@ -18,13 +22,19 @@ void main() {
 
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    
+
     // Configurar dependencias
     await initInjection(prefs);
 
     await tester.pumpWidget(const App());
 
-    expect(find.text('Cédula de Microdiagnóstico Familiar'), findsAtLeastNWidgets(1));
-    expect(find.text('Captura comunitaria IMSS-BIENESTAR'), findsAtLeastNWidgets(1));
+    expect(
+      find.text('Cédula de Microdiagnóstico Familiar'),
+      findsAtLeastNWidgets(1),
+    );
+    expect(
+      find.text('Captura comunitaria IMSS-BIENESTAR'),
+      findsAtLeastNWidgets(1),
+    );
   });
 }

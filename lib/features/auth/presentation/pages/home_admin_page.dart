@@ -4,8 +4,6 @@ import 'package:sums/core/di/providers.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
-import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
-import '../viewmodels/auth_viewmodel.dart';
 
 class HomeAdminPage extends ConsumerWidget {
   const HomeAdminPage({super.key});
@@ -13,17 +11,17 @@ class HomeAdminPage extends ConsumerWidget {
   void _showPendingFeatureMessage(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('La función de $feature estará disponible en la próxima actualización.'),
+        content: Text(
+          'La función de $feature estará disponible en la próxima actualización.',
+        ),
         backgroundColor: AppColors.muted,
       ),
     );
   }
 
-
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final auth     = ref.watch(authViewModelProvider);
+    final auth = ref.watch(authViewModelProvider);
     final userName = auth.session?.user.nombreUsuario ?? 'administrador';
 
     return Scaffold(
@@ -35,10 +33,10 @@ class HomeAdminPage extends ConsumerWidget {
             // Cabecera de rol
             SliverToBoxAdapter(
               child: _RolHeader(
-                userName:  userName,
-                rolLabel:  'Administrador del sistema',
-                rolColor:  AppColors.rolAdmin,
-                icon:      Icons.admin_panel_settings_outlined,
+                userName: userName,
+                rolLabel: 'Administrador del sistema',
+                rolColor: AppColors.rolAdmin,
+                icon: Icons.admin_panel_settings_outlined,
               ),
             ),
 
@@ -58,39 +56,54 @@ class HomeAdminPage extends ConsumerWidget {
                 childAspectRatio: 1.4,
                 children: [
                   _AdminActionCard(
-                    icon:    Icons.people_outline,
-                    label:   'Usuarios',
-                    detail:  'Gestión de cuentas y roles',
-                    color:   AppColors.rolAdmin,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminUsers),
+                    icon: Icons.people_outline,
+                    label: 'Usuarios',
+                    detail: 'Gestión de cuentas y roles',
+                    color: AppColors.rolAdmin,
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.adminUsers),
                   ),
                   _AdminActionCard(
-                    icon:    Icons.local_hospital_outlined,
-                    label:   'Unidades',
-                    detail:  'Unidades de salud registradas',
-                    color:   AppColors.green,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminUnidades),
+                    icon: Icons.local_hospital_outlined,
+                    label: 'Unidades',
+                    detail: 'Unidades de salud registradas',
+                    color: AppColors.green,
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.adminUnidades),
                   ),
                   _AdminActionCard(
-                    icon:    Icons.dataset_outlined,
-                    label:   'Catálogos',
-                    detail:  'Tablas y valores de referencia',
-                    color:   AppColors.terracota,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminCatalogos),
+                    icon: Icons.dataset_outlined,
+                    label: 'Catálogos',
+                    detail: 'Tablas y valores de referencia',
+                    color: AppColors.terracota,
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.adminCatalogos),
                   ),
                   _AdminActionCard(
-                    icon:    Icons.bar_chart_outlined,
-                    label:   'Reportes',
-                    detail:  'Análisis y exportación de datos',
-                    color:   AppColors.gold,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminReportes),
+                    icon: Icons.bar_chart_outlined,
+                    label: 'Reportes',
+                    detail: 'Análisis y exportación de datos',
+                    color: AppColors.gold,
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.adminReportes),
                   ),
                   _AdminActionCard(
-                    icon:    Icons.trending_up_outlined,
-                    label:   'Productividad',
-                    detail:  'Métricas por entrevistador',
-                    color:   AppColors.rolMedico,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.productividadAdmin),
+                    icon: Icons.trending_up_outlined,
+                    label: 'Productividad',
+                    detail: 'Métricas por entrevistador',
+                    color: AppColors.rolMedico,
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.productividadAdmin,
+                    ),
+                  ),
+                  _AdminActionCard(
+                    icon: Icons.document_scanner_outlined,
+                    label: 'Minería OCR',
+                    detail: 'Procesamiento de cédulas PDF',
+                    color: AppColors.ink,
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.adminMineria),
                   ),
                 ],
               ),
@@ -109,17 +122,21 @@ class HomeAdminPage extends ConsumerWidget {
                 child: Column(
                   children: [
                     _QuickLinkRow(
-                      icon:    Icons.assignment_outlined,
-                      label:   'Cédulas',
-                      color:   AppColors.green,
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.adminCedulas),
+                      icon: Icons.assignment_outlined,
+                      label: 'Cédulas',
+                      color: AppColors.green,
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.adminCedulas),
                     ),
                     const SizedBox(height: 8),
                     _QuickLinkRow(
-                      icon:    Icons.tune_outlined,
-                      label:   'Configuración del sistema',
-                      color:   AppColors.muted,
-                      onTap: () => _showPendingFeatureMessage(context, 'Configuración del sistema'),
+                      icon: Icons.tune_outlined,
+                      label: 'Configuración del sistema',
+                      color: AppColors.muted,
+                      onTap: () => _showPendingFeatureMessage(
+                        context,
+                        'Configuración del sistema',
+                      ),
                     ),
                   ],
                 ),
@@ -132,32 +149,35 @@ class HomeAdminPage extends ConsumerWidget {
   }
 
   AppBar _buildAppBar(BuildContext context, WidgetRef ref) => AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 8, height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.rolAdmin, shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text('Administrador'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip:  'Cerrar sesión',
-            icon:     const Icon(Icons.logout_outlined),
-            onPressed: () async {
-              await ref.read(authViewModelProvider).logout();
-              if (!context.mounted) return;
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
-            },
+    title: Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: AppColors.rolAdmin,
+            shape: BoxShape.circle,
           ),
-          const SizedBox(width: 4),
-        ],
-      );
+        ),
+        const SizedBox(width: 8),
+        const Text('Administrador'),
+      ],
+    ),
+    actions: [
+      IconButton(
+        tooltip: 'Cerrar sesión',
+        icon: const Icon(Icons.logout_outlined),
+        onPressed: () async {
+          await ref.read(authViewModelProvider).logout();
+          if (!context.mounted) return;
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+        },
+      ),
+      const SizedBox(width: 4),
+    ],
+  );
 }
 
 // ── Cabecera de rol (compartida) ──────────────────────────────────────────────
@@ -199,12 +219,16 @@ class _RolHeader extends ConsumerWidget {
                   'Hola, $userName',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18, fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: rolColor.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(20),
@@ -213,7 +237,8 @@ class _RolHeader extends ConsumerWidget {
                     rolLabel,
                     style: const TextStyle(
                       color: Colors.white70,
-                      fontSize: 11, fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -235,9 +260,9 @@ class _SectionLabel extends ConsumerWidget {
     return Text(
       text.toUpperCase(),
       style: const TextStyle(
-        fontSize:      11,
-        fontWeight:    FontWeight.w700,
-        color:         AppColors.muted,
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: AppColors.muted,
         letterSpacing: 1.0,
       ),
     );
@@ -248,9 +273,9 @@ class _SectionLabel extends ConsumerWidget {
 
 class _AdminActionCard extends ConsumerWidget {
   final IconData icon;
-  final String   label;
-  final String   detail;
-  final Color    color;
+  final String label;
+  final String detail;
+  final Color color;
   final VoidCallback? onTap;
 
   const _AdminActionCard({
@@ -267,7 +292,7 @@ class _AdminActionCard extends ConsumerWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
-        onTap:        onTap,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
         child: Container(
           decoration: BoxDecoration(
@@ -293,14 +318,16 @@ class _AdminActionCard extends ConsumerWidget {
                   Text(
                     label,
                     style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
                       color: AppColors.greenDark,
                     ),
                   ),
                   Text(
                     detail,
                     style: const TextStyle(
-                      fontSize: 11, color: AppColors.muted,
+                      fontSize: 11,
+                      color: AppColors.muted,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -317,8 +344,8 @@ class _AdminActionCard extends ConsumerWidget {
 
 class _QuickLinkRow extends ConsumerWidget {
   final IconData icon;
-  final String   label;
-  final Color    color;
+  final String label;
+  final Color color;
   final VoidCallback? onTap;
 
   const _QuickLinkRow({
@@ -334,7 +361,7 @@ class _QuickLinkRow extends ConsumerWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
-        onTap:        onTap,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -350,13 +377,17 @@ class _QuickLinkRow extends ConsumerWidget {
                 child: Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.ink,
                   ),
                 ),
               ),
-              const Icon(Icons.chevron_right,
-                  color: AppColors.subtle, size: 18),
+              const Icon(
+                Icons.chevron_right,
+                color: AppColors.subtle,
+                size: 18,
+              ),
             ],
           ),
         ),

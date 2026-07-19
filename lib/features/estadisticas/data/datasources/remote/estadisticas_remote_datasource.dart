@@ -11,6 +11,9 @@ class EstadisticasRemoteDataSource {
   }
 
   Future<List<dynamic>> getProductividadEntrevistadores({String? token}) async {
-    return apiClient.getList(EstadisticasEndpoints.productividadEntrevistadores, token: token);
+    return apiClient.getList(
+      EstadisticasEndpoints.productividadEntrevistadores,
+      token: token,
+    );
   }
 }

@@ -49,7 +49,8 @@ String? Function(String?) intRange(int min, int max) {
   return (String? value) {
     if (value == null || value.trim().isEmpty) return null;
     final parsed = int.tryParse(value);
-    if (parsed == null || parsed < min || parsed > max) return 'Debe estar entre $min y $max';
+    if (parsed == null || parsed < min || parsed > max)
+      return 'Debe estar entre $min y $max';
     return null;
   };
 }

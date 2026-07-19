@@ -34,7 +34,8 @@ class BrandPanel extends ConsumerWidget {
                   children: [
                     Text(
                       'Cédula de Microdiagnóstico Familiar',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
                           ),
@@ -43,9 +44,9 @@ class BrandPanel extends ConsumerWidget {
                     Text(
                       'Sistema de captura comunitaria alineado al modelo IMSS-BIENESTAR para zonas rurales de Chiapas.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.7),
-                            height: 1.6,
-                          ),
+                        color: Colors.white.withOpacity(0.7),
+                        height: 1.6,
+                      ),
                     ),
                   ],
                 ),
@@ -55,7 +56,8 @@ class BrandPanel extends ConsumerWidget {
         ),
         const Spacer(),
         Wrap(
-          spacing: 10, runSpacing: 10,
+          spacing: 10,
+          runSpacing: 10,
           children: const [
             _InfoBadge(icon: Icons.location_on_outlined, text: 'Chiapas'),
             _InfoBadge(icon: Icons.people_outline, text: 'Zona Maya'),
@@ -78,7 +80,7 @@ class BrandPanel extends ConsumerWidget {
 
 class MobileLoginHeader extends ConsumerWidget {
   const MobileLoginHeader({super.key});
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
@@ -98,9 +100,9 @@ class MobileLoginHeader extends ConsumerWidget {
           Text(
             'Cédula de Microdiagnóstico Familiar',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                ),
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -137,7 +139,8 @@ class _InfoBadge extends ConsumerWidget {
           Text(
             text,
             style: TextStyle(
-              fontSize: 12, fontWeight: FontWeight.w500,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
               color: Colors.white.withOpacity(0.7),
             ),
           ),

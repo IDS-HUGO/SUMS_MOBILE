@@ -30,10 +30,7 @@ class FormSectionCard extends ConsumerWidget {
           foregroundColor: Colors.white,
           child: Icon(icon),
         ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w900),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
         subtitle: Text(subtitle),
         children: children,
       ),

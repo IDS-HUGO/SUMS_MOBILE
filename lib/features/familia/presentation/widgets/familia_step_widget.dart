@@ -18,103 +18,106 @@ class FamiliaStepWidget extends ConsumerWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: _StepPanel(
-      title: 'III. Identificación de la familia',
-      icon: Icons.groups_outlined,
-      color: AppColors.green,
-      children: [
-        _fieldGrid([
-          SumsTextField(
-            controller: vm.informanteNombre,
-            label: 'Nombre del informante',
-            icon: Icons.person_outline,
-            validator: requiredText,
-            onChanged: (v) {
-              final intVm = ref.read(integrantesViewModelProvider);
-              if (intVm.integrantes.isNotEmpty) {
-                intVm.integrantes[0].nombre.text = v;
-                intVm.updateForm();
-              }
-            },
-          ),
-          _select(
-            label: 'Sexo del informante',
-            icon: Icons.wc_outlined,
-            value: vm.informanteSexo,
-            options: const ['Masculino', 'Femenino'],
-            onChanged: (v) {
-              vm.setSexo(v);
-              final intVm = ref.read(integrantesViewModelProvider);
-              if (intVm.integrantes.isNotEmpty) {
-                intVm.integrantes[0].sexo = v;
-                intVm.updateForm();
-              }
-            },
-            validator: requiredText,
-          ),
-          _select(
-            label: 'Rol familiar',
-            icon: Icons.diversity_3_outlined,
-            value: vm.rolInformante,
-            options: vm.roles,
-            onChanged: (v) {
-              vm.setRol(v);
-              final intVm = ref.read(integrantesViewModelProvider);
-              if (intVm.integrantes.isNotEmpty) {
-                intVm.integrantes[0].parentesco = v;
-                intVm.updateForm();
-              }
-            },
-            isLoading: vm.isLoadingRoles,
-            validator: requiredText,
-          ),
-          SumsTextField(
-            controller: vm.domicilio,
-            label: 'Domicilio',
-            icon: Icons.location_on_outlined,
-            validator: requiredText,
-          ),
-          SumsTextField(
-            controller: vm.localidad,
-            label: 'Localidad',
-            icon: Icons.location_city_outlined,
-          ),
-          SumsTextField(
-            controller: vm.manzana,
-            label: 'Manzana',
-            icon: Icons.grid_view_outlined,
-          ),
-          SumsTextField(
-            controller: vm.viviendaRef,
-            label: 'Vivienda',
-            icon: Icons.home_work_outlined,
-          ),
-        ]),
-      ],
-    ));
+        title: 'III. Identificación de la familia',
+        icon: Icons.groups_outlined,
+        color: AppColors.green,
+        children: [
+          _fieldGrid([
+            SumsTextField(
+              controller: vm.informanteNombre,
+              label: 'Nombre del informante',
+              icon: Icons.person_outline,
+              validator: requiredText,
+              onChanged: (v) {
+                final intVm = ref.read(integrantesViewModelProvider);
+                if (intVm.integrantes.isNotEmpty) {
+                  intVm.integrantes[0].nombre.text = v;
+                  intVm.updateForm();
+                }
+              },
+            ),
+            _select(
+              label: 'Sexo del informante',
+              icon: Icons.wc_outlined,
+              value: vm.informanteSexo,
+              options: const ['Masculino', 'Femenino'],
+              onChanged: (v) {
+                vm.setSexo(v);
+                final intVm = ref.read(integrantesViewModelProvider);
+                if (intVm.integrantes.isNotEmpty) {
+                  intVm.integrantes[0].sexo = v;
+                  intVm.updateForm();
+                }
+              },
+              validator: requiredText,
+            ),
+            _select(
+              label: 'Rol familiar',
+              icon: Icons.diversity_3_outlined,
+              value: vm.rolInformante,
+              options: vm.roles,
+              onChanged: (v) {
+                vm.setRol(v);
+                final intVm = ref.read(integrantesViewModelProvider);
+                if (intVm.integrantes.isNotEmpty) {
+                  intVm.integrantes[0].parentesco = v;
+                  intVm.updateForm();
+                }
+              },
+              isLoading: vm.isLoadingRoles,
+              validator: requiredText,
+            ),
+            SumsTextField(
+              controller: vm.domicilio,
+              label: 'Domicilio',
+              icon: Icons.location_on_outlined,
+              validator: requiredText,
+            ),
+            SumsTextField(
+              controller: vm.localidad,
+              label: 'Localidad',
+              icon: Icons.location_city_outlined,
+            ),
+            SumsTextField(
+              controller: vm.manzana,
+              label: 'Manzana',
+              icon: Icons.grid_view_outlined,
+            ),
+            SumsTextField(
+              controller: vm.viviendaRef,
+              label: 'Vivienda',
+              icon: Icons.home_work_outlined,
+            ),
+          ]),
+        ],
+      ),
+    );
   }
 
   Widget _fieldGrid(List<Widget> children) {
-    return LayoutBuilder(builder: (_, c) {
-      if (c.maxWidth < 720) {
-        return Column(
-          children: [
-            for (var i = 0; i < children.length; i++) ...[
-              children[i],
-              if (i != children.length - 1) const SizedBox(height: 12),
+    return LayoutBuilder(
+      builder: (_, c) {
+        if (c.maxWidth < 720) {
+          return Column(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                children[i],
+                if (i != children.length - 1) const SizedBox(height: 12),
+              ],
             ],
+          );
+        }
+        final w = (c.maxWidth - 12) / 2;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final child in children) SizedBox(width: w, child: child),
           ],
         );
-      }
-      final w = (c.maxWidth - 12) / 2;
-      return Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: [for (final child in children) SizedBox(width: w, child: child)],
-      );
-    });
+      },
+    );
   }
-
-
 
   Widget _select({
     required String label,
@@ -124,27 +127,33 @@ class FamiliaStepWidget extends ConsumerWidget {
     required ValueChanged<String?> onChanged,
     bool isLoading = false,
     String? Function(String?)? validator,
-  }) =>
-      DropdownButtonFormField<String>(
-        isExpanded: true,
-        initialValue: value,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: isLoading
-              ? const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: SizedBox(
-                      width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                )
-              : Icon(icon),
-        ),
-        items: options
-            .map((o) => DropdownMenuItem(
-                value: o, child: Text(o, overflow: TextOverflow.ellipsis)))
-            .toList(),
-        onChanged: onChanged,
-        validator: validator,
-      );
+  }) => DropdownButtonFormField<String>(
+    isExpanded: true,
+    initialValue: value,
+    decoration: InputDecoration(
+      labelText: label,
+      prefixIcon: isLoading
+          ? const Padding(
+              padding: EdgeInsets.all(12.0),
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          : Icon(icon),
+    ),
+    items: options
+        .map(
+          (o) => DropdownMenuItem(
+            value: o,
+            child: Text(o, overflow: TextOverflow.ellipsis),
+          ),
+        )
+        .toList(),
+    onChanged: onChanged,
+    validator: validator,
+  );
 }
 
 class _StepPanel extends ConsumerWidget {
@@ -192,7 +201,9 @@ class _StepPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: color == AppColors.green ? AppColors.greenDark : color,
+                      color: color == AppColors.green
+                          ? AppColors.greenDark
+                          : color,
                     ),
                   ),
                 ),

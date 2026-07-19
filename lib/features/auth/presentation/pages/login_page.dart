@@ -16,8 +16,8 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final _formKey            = GlobalKey<FormState>();
-  final _userController     = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _userController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
@@ -57,7 +57,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final viewModel = ref.read(authViewModelProvider);
     final success = await viewModel.login(
       nombreUsuario: _userController.text.trim(),
-      contrasena:    _passwordController.text,
+      contrasena: _passwordController.text,
     );
     if (!mounted) return;
 
@@ -79,7 +79,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Row(
           children: [
-            Icon(Icons.check_circle_outline, color: theme.colorScheme.primary, size: 28),
+            Icon(
+              Icons.check_circle_outline,
+              color: theme.colorScheme.primary,
+              size: 28,
+            ),
             const SizedBox(width: 10),
             Text('Éxito', style: TextStyle(color: theme.colorScheme.onSurface)),
           ],
@@ -88,7 +92,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Continuar', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Continuar',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -98,15 +105,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _showErrorDialog(AuthViewModel viewModel) async {
     final theme = Theme.of(context);
     final errorMsg = viewModel.errorMessage?.toLowerCase() ?? '';
-    final isConnection = errorMsg.contains('conexión') || errorMsg.contains('network') || errorMsg.contains('socket') || errorMsg.contains('timeout');
-    
+    final isConnection =
+        errorMsg.contains('conexión') ||
+        errorMsg.contains('network') ||
+        errorMsg.contains('socket') ||
+        errorMsg.contains('timeout');
+
     final title = isConnection ? 'Falla de conexión' : 'Contraseña incorrecta';
-    final msg = isConnection 
-        ? 'No pudimos conectarnos al servidor. Revisa tu conexión a internet.' 
+    final msg = isConnection
+        ? 'No pudimos conectarnos al servidor. Revisa tu conexión a internet.'
         : 'El usuario o contraseña ingresados no son correctos.';
     final icon = isConnection ? Icons.wifi_off : Icons.lock_outline;
-    final iconColor = isConnection ? theme.colorScheme.error : theme.colorScheme.error;
-    
+    final iconColor = isConnection
+        ? theme.colorScheme.error
+        : theme.colorScheme.error;
+
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -115,7 +128,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           children: [
             Icon(icon, color: iconColor, size: 28),
             const SizedBox(width: 10),
-            Expanded(child: Text(title, style: TextStyle(color: theme.colorScheme.onSurface))),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(color: theme.colorScheme.onSurface),
+              ),
+            ),
           ],
         ),
         content: Text(msg),
@@ -155,10 +173,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 400),
                           child: LoginCard(
-                            formKey:            _formKey,
-                            userController:     _userController,
+                            formKey: _formKey,
+                            userController: _userController,
                             passwordController: _passwordController,
-                            onSubmit:           _submit,
+                            onSubmit: _submit,
                           ),
                         ),
                       ),
@@ -169,17 +187,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             }
             return CustomScrollView(
               slivers: [
-                const SliverToBoxAdapter(
-                  child: MobileLoginHeader(),
-                ),
+                const SliverToBoxAdapter(child: MobileLoginHeader()),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(32, 24, 32, 40),
                   sliver: SliverToBoxAdapter(
                     child: LoginCard(
-                      formKey:            _formKey,
-                      userController:     _userController,
+                      formKey: _formKey,
+                      userController: _userController,
                       passwordController: _passwordController,
-                      onSubmit:           _submit,
+                      onSubmit: _submit,
                     ),
                   ),
                 ),

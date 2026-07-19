@@ -8,10 +8,12 @@ class ProductividadAdminPage extends ConsumerStatefulWidget {
   const ProductividadAdminPage({super.key});
 
   @override
-  ConsumerState<ProductividadAdminPage> createState() => _ProductividadAdminPageState();
+  ConsumerState<ProductividadAdminPage> createState() =>
+      _ProductividadAdminPageState();
 }
 
-class _ProductividadAdminPageState extends ConsumerState<ProductividadAdminPage> {
+class _ProductividadAdminPageState
+    extends ConsumerState<ProductividadAdminPage> {
   @override
   void initState() {
     super.initState();
@@ -81,22 +83,61 @@ class _ProductividadAdminPageState extends ConsumerState<ProductividadAdminPage>
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
-            headingRowColor: WidgetStateProperty.all(AppColors.greenDark.withOpacity(0.05)),
+            headingRowColor: WidgetStateProperty.all(
+              AppColors.greenDark.withOpacity(0.05),
+            ),
             columns: const [
-              DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Entrevistador', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Hoy', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Semana', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Mes', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Última Act.', style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                label: Text('#', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+              DataColumn(
+                label: Text(
+                  'Entrevistador',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Hoy',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Semana',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Mes',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Total',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Última Act.',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
             rows: List.generate(vm.productividad.length, (index) {
               final p = vm.productividad[index];
               return DataRow(
                 cells: [
                   DataCell(Text('${index + 1}')),
-                  DataCell(Text(p.nombre, style: const TextStyle(fontWeight: FontWeight.w600))),
+                  DataCell(
+                    Text(
+                      p.nombre,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
                   DataCell(Text('${p.hoy}')),
                   DataCell(Text('${p.semana}')),
                   DataCell(Text('${p.mes}')),

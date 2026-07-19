@@ -5,7 +5,10 @@ class SubmitRecordUseCase {
 
   const SubmitRecordUseCase(this.repository);
 
-  Future<Map<String, dynamic>> submitCompleta(Map<String, dynamic> body, {bool isDraft = false}) {
+  Future<Map<String, dynamic>> submitCompleta(
+    Map<String, dynamic> body, {
+    bool isDraft = false,
+  }) {
     return repository.submitCapturaCompleta(body, isDraft: isDraft);
   }
 

@@ -11,7 +11,10 @@ abstract class AdminRepository {
   // Unidades de Salud
   Future<List<UnidadSaludEntity>> getUnidadesSalud();
   Future<UnidadSaludEntity> createUnidadSalud(Map<String, dynamic> body);
-  Future<UnidadSaludEntity> updateUnidadSalud(int id, Map<String, dynamic> body);
+  Future<UnidadSaludEntity> updateUnidadSalud(
+    int id,
+    Map<String, dynamic> body,
+  );
   Future<bool> deleteUnidadSalud(int id);
 
   // Catálogos

@@ -7,7 +7,7 @@ abstract class TokenStorage {
   Future<void> saveToken(String token);
   Future<String?> readToken();
   Future<void> deleteToken();
-  
+
   Future<void> saveSession(AuthSession session);
   Future<AuthSession?> readSession();
 }
@@ -18,11 +18,11 @@ class SecureTokenStorage implements TokenStorage {
   static const _sessionKey = 'auth_session_data';
 
   SecureTokenStorage([FlutterSecureStorage? secureStorage])
-      : _secureStorage = secureStorage ?? const FlutterSecureStorage(
-          aOptions: AndroidOptions(
-            encryptedSharedPreferences: true,
-          ),
-        );
+    : _secureStorage =
+          secureStorage ??
+          const FlutterSecureStorage(
+            aOptions: AndroidOptions(encryptedSharedPreferences: true),
+          );
 
   @override
   Future<void> saveToken(String token) async {
@@ -43,7 +43,10 @@ class SecureTokenStorage implements TokenStorage {
   @override
   Future<void> saveSession(AuthSession session) async {
     await saveToken(session.token);
-    await _secureStorage.write(key: _sessionKey, value: jsonEncode(session.toJson()));
+    await _secureStorage.write(
+      key: _sessionKey,
+      value: jsonEncode(session.toJson()),
+    );
   }
 
   @override

@@ -26,15 +26,16 @@ class CedulaFormPage extends ConsumerStatefulWidget {
 }
 
 class _WizardStep {
-  final String   label;
+  final String label;
   final IconData icon;
-  final Color    color;
+  final Color color;
   const _WizardStep(this.label, this.icon, this.color);
 }
 
-class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProviderStateMixin {
+class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
+    with TickerProviderStateMixin {
   int _currentStep = 0;
-  
+
   final List<GlobalKey<FormState>> _formKeys = [
     GlobalKey<FormState>(),
     GlobalKey<FormState>(),
@@ -49,16 +50,24 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProv
     super.initState();
     _initScreenProtector();
   }
-  
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final theme = Theme.of(context);
     _steps = [
-      _WizardStep('Familia',     Icons.groups_outlined,      theme.colorScheme.primary),
-      _WizardStep('Vivienda',    Icons.home_outlined,        theme.colorScheme.tertiary),
-      _WizardStep('Integrantes', Icons.people_alt_outlined,  theme.colorScheme.secondary),
-      _WizardStep('Vacunación',  Icons.vaccines_outlined,    theme.colorScheme.error), // fallback
+      _WizardStep('Familia', Icons.groups_outlined, theme.colorScheme.primary),
+      _WizardStep('Vivienda', Icons.home_outlined, theme.colorScheme.tertiary),
+      _WizardStep(
+        'Integrantes',
+        Icons.people_alt_outlined,
+        theme.colorScheme.secondary,
+      ),
+      _WizardStep(
+        'Vacunación',
+        Icons.vaccines_outlined,
+        theme.colorScheme.error,
+      ), // fallback
     ];
   }
 
@@ -90,9 +99,12 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProv
     if (!_formKeys[_currentStep].currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Por favor corrige los errores antes de continuar', style: TextStyle(color: Colors.white)), 
-          backgroundColor: Theme.of(context).colorScheme.error
-        )
+          content: const Text(
+            'Por favor corrige los errores antes de continuar',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
       return;
     }
@@ -117,10 +129,15 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProv
   Future<void> _saveDraft() async {
     final authVm = ref.read(authViewModelProvider);
     final user = authVm.session?.user;
-    if (user == null || user.entrevistadorId == null || user.entrevistadorId! <= 0) {
+    if (user == null ||
+        user.entrevistadorId == null ||
+        user.entrevistadorId! <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('ID de entrevistador inválido. No se puede guardar borrador.', style: TextStyle(color: Colors.white)),
+          content: const Text(
+            'ID de entrevistador inválido. No se puede guardar borrador.',
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -134,9 +151,12 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProv
     if (!isValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Corrige los errores antes de guardar el borrador', style: TextStyle(color: Colors.white)), 
-          backgroundColor: Theme.of(context).colorScheme.error
-        )
+          content: const Text(
+            'Corrige los errores antes de guardar el borrador',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
       return;
     }
@@ -145,15 +165,15 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProv
     final viviendaVm = ref.read(viviendaViewModelProvider);
     final vacunasVm = ref.read(vacunacionViewModelProvider);
     final integrantesVm = ref.read(integrantesViewModelProvider);
-    
+
     final payload = {
       "unidad_salud_id": user.unidadSaludId ?? 1,
       "entrevistador_id": user.entrevistadorId,
       "familia": familiaVm.toPayload(),
       "vivienda": viviendaVm.toPayload(),
       "vacunacion": vacunasVm.toPayload(),
-      "integrantes": integrantesVm.toPayload()
-    }; 
+      "integrantes": integrantesVm.toPayload(),
+    };
 
     showDialog(
       context: context,
@@ -169,13 +189,15 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProv
 
     if (success) {
       Navigator.pop(context); // Regresa
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vm.successMessage ?? 'Borrador guardado')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(vm.successMessage ?? 'Borrador guardado')),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(vm.errorMessage ?? 'Error al guardar borrador'),
-          backgroundColor: Theme.of(context).colorScheme.error
-        )
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
     }
   }
@@ -196,8 +218,11 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProv
           TextButton.icon(
             onPressed: _saveDraft,
             icon: Icon(Icons.save_outlined, color: theme.colorScheme.onPrimary),
-            label: Text('Guardar Borrador', style: TextStyle(color: theme.colorScheme.onPrimary)),
-          )
+            label: Text(
+              'Guardar Borrador',
+              style: TextStyle(color: theme.colorScheme.onPrimary),
+            ),
+          ),
         ],
       ),
       body: Column(
@@ -206,10 +231,26 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProv
             child: IndexedStack(
               index: _currentStep,
               children: [
-                Form(key: _formKeys[0], autovalidateMode: AutovalidateMode.onUserInteraction, child: const FamiliaStepWidget()),
-                Form(key: _formKeys[1], autovalidateMode: AutovalidateMode.onUserInteraction, child: const ViviendaStepWidget()),
-                Form(key: _formKeys[2], autovalidateMode: AutovalidateMode.onUserInteraction, child: const IntegrantesStepWidget()),
-                Form(key: _formKeys[3], autovalidateMode: AutovalidateMode.onUserInteraction, child: const VacunacionStepWidget()),
+                Form(
+                  key: _formKeys[0],
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: const FamiliaStepWidget(),
+                ),
+                Form(
+                  key: _formKeys[1],
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: const ViviendaStepWidget(),
+                ),
+                Form(
+                  key: _formKeys[2],
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: const IntegrantesStepWidget(),
+                ),
+                Form(
+                  key: _formKeys[3],
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: const VacunacionStepWidget(),
+                ),
               ],
             ),
           ),
@@ -219,19 +260,28 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage> with TickerProv
             child: Row(
               children: [
                 if (_currentStep > 0)
-                  Expanded(child: OutlinedButton(onPressed: _prevStep, child: const Text('Anterior')))
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _prevStep,
+                      child: const Text('Anterior'),
+                    ),
+                  )
                 else
                   const Spacer(),
                 const SizedBox(width: 16),
                 Expanded(
                   child: FilledButton(
                     onPressed: _nextStep,
-                    child: Text(_currentStep == _steps.length - 1 ? 'Finalizar' : 'Siguiente'),
+                    child: Text(
+                      _currentStep == _steps.length - 1
+                          ? 'Finalizar'
+                          : 'Siguiente',
+                    ),
                   ),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

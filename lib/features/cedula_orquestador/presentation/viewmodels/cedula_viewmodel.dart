@@ -11,12 +11,12 @@ enum CedulaStatus { initial, loading, success, error }
 
 /// Resultado de una captura completa exitosa.
 class CapturaCompletaResult {
-  final int?   cedulaId;
-  final int    nucleoFamiliarId;
-  final int?   direccionId;
-  final int?   viviendaId;
-  final int    integrantesCreados;
-  final int    vacunasCreadas;
+  final int? cedulaId;
+  final int nucleoFamiliarId;
+  final int? direccionId;
+  final int? viviendaId;
+  final int integrantesCreados;
+  final int vacunasCreadas;
   final List<String> warnings;
 
   const CapturaCompletaResult({
@@ -32,18 +32,16 @@ class CapturaCompletaResult {
   factory CapturaCompletaResult.fromJson(Map<String, dynamic> json) {
     final integrantes = (json['integrantes'] as List?)?.length ?? 0;
     final inmunizaciones = (json['inmunizaciones'] as List?)?.length ?? 0;
-    final warnings = (json['warnings'] as List?)
-            ?.map((w) => w.toString())
-            .toList() ??
-        [];
+    final warnings =
+        (json['warnings'] as List?)?.map((w) => w.toString()).toList() ?? [];
     return CapturaCompletaResult(
-      cedulaId:           _asInt(json['cedula_id']),
-      nucleoFamiliarId:   _asInt(json['nucleo_familiar_id']) ?? 0,
-      direccionId:        _asInt(json['direccion_id']),
-      viviendaId:         _asInt(json['vivienda_id']),
+      cedulaId: _asInt(json['cedula_id']),
+      nucleoFamiliarId: _asInt(json['nucleo_familiar_id']) ?? 0,
+      direccionId: _asInt(json['direccion_id']),
+      viviendaId: _asInt(json['vivienda_id']),
       integrantesCreados: integrantes,
-      vacunasCreadas:     inmunizaciones,
-      warnings:           warnings,
+      vacunasCreadas: inmunizaciones,
+      warnings: warnings,
     );
   }
 
@@ -83,7 +81,9 @@ class CedulaViewModel extends ChangeNotifier {
   bool get isOnline => _isOnline;
 
   void _listenConnectivity() {
-    _connectivitySub = Connectivity().onConnectivityChanged.listen((results) async {
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((
+      results,
+    ) async {
       final online = !results.contains(ConnectivityResult.none);
       final wasOffline = !_isOnline;
       _isOnline = online;
@@ -109,7 +109,8 @@ class CedulaViewModel extends ChangeNotifier {
 
   /// Sincronización manual/automática en foreground
   Future<SyncResult> syncNow() async {
-    if (_isSyncing) return const SyncResult(error: 'Ya hay una sincronización en curso');
+    if (_isSyncing)
+      return const SyncResult(error: 'Ya hay una sincronización en curso');
     _isSyncing = true;
     notifyListeners();
     try {
@@ -136,10 +137,9 @@ class CedulaViewModel extends ChangeNotifier {
     }
   }
 
-
   CedulaStatus _status = CedulaStatus.initial;
-  String?      _errorMessage;
-  String?      _successMessage;
+  String? _errorMessage;
+  String? _successMessage;
   Map<String, List<CatalogItem>> _catalogs = {};
   CapturaCompletaResult? _lastResult;
 
@@ -150,20 +150,20 @@ class CedulaViewModel extends ChangeNotifier {
   int? lastViviendaId;
 
   // ── Getters ───────────────────────────────────────────────────────────────
-  CedulaStatus                     get status         => _status;
-  String?                          get errorMessage   => _errorMessage;
-  String?                          get successMessage => _successMessage;
-  bool                             get isLoading      => _status == CedulaStatus.loading;
-  Map<String, List<CatalogItem>>   get catalogs       => _catalogs;
-  CapturaCompletaResult?           get lastResult     => _lastResult;
+  CedulaStatus get status => _status;
+  String? get errorMessage => _errorMessage;
+  String? get successMessage => _successMessage;
+  bool get isLoading => _status == CedulaStatus.loading;
+  Map<String, List<CatalogItem>> get catalogs => _catalogs;
+  CapturaCompletaResult? get lastResult => _lastResult;
 
   // ── Catálogos ─────────────────────────────────────────────────────────────
 
   Future<void> loadCatalogs() async {
     _setLoading();
     try {
-      _catalogs     = await loadCatalogsUseCase();
-      _status       = CedulaStatus.success;
+      _catalogs = await loadCatalogsUseCase();
+      _status = CedulaStatus.success;
       _errorMessage = null;
       notifyListeners();
     } catch (error) {
@@ -189,10 +189,13 @@ class CedulaViewModel extends ChangeNotifier {
   Future<bool> submitCapturaCompleta(Map<String, dynamic> payload) async {
     _setLoading();
     try {
-      final response = await submitRecordUseCase.submitCompleta(_clean(payload));
-      
+      final response = await submitRecordUseCase.submitCompleta(
+        _clean(payload),
+      );
+
       // Manejar caso de borrador o fallback offline
-      if (response['status'] == 'draft' || response['status'] == 'pending_sync') {
+      if (response['status'] == 'draft' ||
+          response['status'] == 'pending_sync') {
         _status = CedulaStatus.success;
         _errorMessage = null;
         _successMessage = response['warnings']?.first ?? 'Guardado localmente';
@@ -204,9 +207,9 @@ class CedulaViewModel extends ChangeNotifier {
       _lastResult = CapturaCompletaResult.fromJson(response);
 
       // Guardar IDs principales
-      lastNucleoId  = _lastResult?.nucleoFamiliarId;
+      lastNucleoId = _lastResult?.nucleoFamiliarId;
       lastViviendaId = _lastResult?.viviendaId;
-      lastCedulaId  = _lastResult?.cedulaId;
+      lastCedulaId = _lastResult?.cedulaId;
 
       _status = CedulaStatus.success;
       _errorMessage = null;
@@ -227,10 +230,14 @@ class CedulaViewModel extends ChangeNotifier {
   Future<bool> saveDraft(Map<String, dynamic> payload) async {
     _setLoading();
     try {
-      final response = await submitRecordUseCase.submitCompleta(_clean(payload), isDraft: true);
+      final response = await submitRecordUseCase.submitCompleta(
+        _clean(payload),
+        isDraft: true,
+      );
       _status = CedulaStatus.success;
       _errorMessage = null;
-      _successMessage = response['warnings']?.first ?? 'Guardado como borrador localmente';
+      _successMessage =
+          response['warnings']?.first ?? 'Guardado como borrador localmente';
       await refreshSyncCounts();
       notifyListeners();
       return true;
@@ -260,7 +267,11 @@ class CedulaViewModel extends ChangeNotifier {
   }) async {
     _setLoading();
     try {
-      final response = await submitRecordUseCase(path, _clean(body), patch: patch);
+      final response = await submitRecordUseCase(
+        path,
+        _clean(body),
+        patch: patch,
+      );
       final capturedId = _readId(response);
       if (captureIdAs != null && capturedId != null) {
         _storeLastId(captureIdAs, capturedId);
@@ -279,9 +290,9 @@ class CedulaViewModel extends ChangeNotifier {
   }
 
   void clearMessages() {
-    _errorMessage   = null;
+    _errorMessage = null;
     _successMessage = null;
-    _lastResult     = null;
+    _lastResult = null;
     if (_status == CedulaStatus.error) _status = CedulaStatus.initial;
     notifyListeners();
   }
@@ -300,10 +311,11 @@ class CedulaViewModel extends ChangeNotifier {
   }
 
   int? _readId(Map<String, dynamic> response) {
-    final value = response['id']                   ??
-        response['id_persona']                     ??
-        response['id_nucleo_familiar']             ??
-        response['id_cedula']                      ??
+    final value =
+        response['id'] ??
+        response['id_persona'] ??
+        response['id_nucleo_familiar'] ??
+        response['id_cedula'] ??
         response['id_vivienda'];
     if (value is int) return value;
     return int.tryParse(value?.toString() ?? '');
@@ -311,23 +323,31 @@ class CedulaViewModel extends ChangeNotifier {
 
   void _storeLastId(String key, int value) {
     switch (key) {
-      case 'nucleo':   lastNucleoId    = value; break;
-      case 'persona':  lastPersonaId   = value; break;
-      case 'cedula':   lastCedulaId    = value; break;
-      case 'vivienda': lastViviendaId  = value; break;
+      case 'nucleo':
+        lastNucleoId = value;
+        break;
+      case 'persona':
+        lastPersonaId = value;
+        break;
+      case 'cedula':
+        lastCedulaId = value;
+        break;
+      case 'vivienda':
+        lastViviendaId = value;
+        break;
     }
   }
 
   void _setLoading() {
-    _status         = CedulaStatus.loading;
-    _errorMessage   = null;
+    _status = CedulaStatus.loading;
+    _errorMessage = null;
     _successMessage = null;
     notifyListeners();
   }
 
   void _setError(Object error) {
-    _status         = CedulaStatus.error;
-    _errorMessage   = error.toString();
+    _status = CedulaStatus.error;
+    _errorMessage = error.toString();
     _successMessage = null;
     notifyListeners();
   }

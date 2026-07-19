@@ -26,7 +26,7 @@ class CatalogSelect extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final items = catalogs[catalogKey] ?? const <CatalogItem>[];
-    
+
     // Safety check to ensure the current value exists in the catalog items
     final effectiveValue = items.any((item) => item.id == value) ? value : null;
 
@@ -41,10 +41,7 @@ class CatalogSelect extends ConsumerWidget {
           .map(
             (item) => DropdownMenuItem<int>(
               value: item.id,
-              child: Text(
-                item.nombre,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(item.nombre, overflow: TextOverflow.ellipsis),
             ),
           )
           .toList(),

@@ -12,27 +12,32 @@ class Cedulas extends Table {
   IntColumn get syncStatus => integer()(); // 0=DRAFT, 1=PENDING_SYNC, 2=SYNCED
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get informanteNombre => text().nullable()();
-  TextColumn get familiaData => text()(); // JSON con los datos de familia e IDs base
+  TextColumn get familiaData =>
+      text()(); // JSON con los datos de familia e IDs base
 }
 
 // Definición de la tabla Viviendas
 class Viviendas extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get cedulaId => integer().references(Cedulas, #id, onDelete: KeyAction.cascade)();
+  IntColumn get cedulaId =>
+      integer().references(Cedulas, #id, onDelete: KeyAction.cascade)();
   TextColumn get viviendaData => text()(); // JSON con datos de vivienda
 }
 
 // Definición de la tabla Vacunas
 class Vacunas extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get cedulaId => integer().references(Cedulas, #id, onDelete: KeyAction.cascade)();
-  TextColumn get vacunaData => text()(); // JSON con datos de la vacuna/inmunizacion
+  IntColumn get cedulaId =>
+      integer().references(Cedulas, #id, onDelete: KeyAction.cascade)();
+  TextColumn get vacunaData =>
+      text()(); // JSON con datos de la vacuna/inmunizacion
 }
 
 // Definición de la tabla Integrantes
 class Integrantes extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get cedulaId => integer().references(Cedulas, #id, onDelete: KeyAction.cascade)();
+  IntColumn get cedulaId =>
+      integer().references(Cedulas, #id, onDelete: KeyAction.cascade)();
   TextColumn get integranteData => text()(); // JSON con datos del integrante
 }
 
@@ -44,7 +49,9 @@ class CatalogosLocal extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 }
 
-@DriftDatabase(tables: [Cedulas, Viviendas, Vacunas, Integrantes, CatalogosLocal])
+@DriftDatabase(
+  tables: [Cedulas, Viviendas, Vacunas, Integrantes, CatalogosLocal],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 

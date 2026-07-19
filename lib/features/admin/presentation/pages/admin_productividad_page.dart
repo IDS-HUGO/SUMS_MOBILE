@@ -6,20 +6,42 @@ class AdminProductividadPage extends ConsumerStatefulWidget {
   const AdminProductividadPage({super.key});
 
   @override
-  ConsumerState<AdminProductividadPage> createState() => _AdminProductividadPageState();
+  ConsumerState<AdminProductividadPage> createState() =>
+      _AdminProductividadPageState();
 }
 
-class _AdminProductividadPageState extends ConsumerState<AdminProductividadPage> {
+class _AdminProductividadPageState
+    extends ConsumerState<AdminProductividadPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   String _selectedEncuestador = 'Todos';
 
   // Datos mock para el UI. (Idealmente esto vendría de un ViewModel/Backend)
   final List<Map<String, dynamic>> _datosProductividad = [
-    {'nombre': 'Juan Pérez', 'completadas': 45, 'en_progreso': 12, 'tiempo_promedio': '25 min'},
-    {'nombre': 'María García', 'completadas': 62, 'en_progreso': 5, 'tiempo_promedio': '20 min'},
-    {'nombre': 'Carlos López', 'completadas': 30, 'en_progreso': 20, 'tiempo_promedio': '35 min'},
-    {'nombre': 'Ana Martínez', 'completadas': 55, 'en_progreso': 8, 'tiempo_promedio': '22 min'},
+    {
+      'nombre': 'Juan Pérez',
+      'completadas': 45,
+      'en_progreso': 12,
+      'tiempo_promedio': '25 min',
+    },
+    {
+      'nombre': 'María García',
+      'completadas': 62,
+      'en_progreso': 5,
+      'tiempo_promedio': '20 min',
+    },
+    {
+      'nombre': 'Carlos López',
+      'completadas': 30,
+      'en_progreso': 20,
+      'tiempo_promedio': '35 min',
+    },
+    {
+      'nombre': 'Ana Martínez',
+      'completadas': 55,
+      'en_progreso': 8,
+      'tiempo_promedio': '22 min',
+    },
   ];
 
   Future<void> _selectDate(BuildContext context, bool isStart) async {
@@ -70,9 +92,11 @@ class _AdminProductividadPageState extends ConsumerState<AdminProductividadPage>
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.calendar_today, size: 16),
-                        label: Text(_startDate != null 
-                            ? '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}' 
-                            : 'Fecha Inicio'),
+                        label: Text(
+                          _startDate != null
+                              ? '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}'
+                              : 'Fecha Inicio',
+                        ),
                         onPressed: () => _selectDate(context, true),
                       ),
                     ),
@@ -80,9 +104,11 @@ class _AdminProductividadPageState extends ConsumerState<AdminProductividadPage>
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.calendar_today, size: 16),
-                        label: Text(_endDate != null 
-                            ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}' 
-                            : 'Fecha Fin'),
+                        label: Text(
+                          _endDate != null
+                              ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
+                              : 'Fecha Fin',
+                        ),
                         onPressed: () => _selectDate(context, false),
                       ),
                     ),
@@ -94,11 +120,23 @@ class _AdminProductividadPageState extends ConsumerState<AdminProductividadPage>
                   decoration: const InputDecoration(
                     labelText: 'Encuestador',
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
-                  items: ['Todos', 'Juan Pérez', 'María García', 'Carlos López', 'Ana Martínez']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
+                  items:
+                      [
+                            'Todos',
+                            'Juan Pérez',
+                            'María García',
+                            'Carlos López',
+                            'Ana Martínez',
+                          ]
+                          .map(
+                            (e) => DropdownMenuItem(value: e, child: Text(e)),
+                          )
+                          .toList(),
                   onChanged: (v) => setState(() => _selectedEncuestador = v!),
                 ),
               ],
@@ -137,7 +175,8 @@ class _AdminProductividadPageState extends ConsumerState<AdminProductividadPage>
               itemCount: _datosProductividad.length,
               itemBuilder: (context, index) {
                 final dato = _datosProductividad[index];
-                if (_selectedEncuestador != 'Todos' && dato['nombre'] != _selectedEncuestador) {
+                if (_selectedEncuestador != 'Todos' &&
+                    dato['nombre'] != _selectedEncuestador) {
                   return const SizedBox.shrink();
                 }
                 return Card(
@@ -157,12 +196,19 @@ class _AdminProductividadPageState extends ConsumerState<AdminProductividadPage>
                             const CircleAvatar(
                               backgroundColor: AppColors.rolEncuestador,
                               radius: 16,
-                              child: Icon(Icons.person, color: Colors.white, size: 18),
+                              child: Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Text(
                               dato['nombre'],
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
                           ],
                         ),
@@ -170,9 +216,21 @@ class _AdminProductividadPageState extends ConsumerState<AdminProductividadPage>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _StatColumn(label: 'Completadas', value: dato['completadas'].toString(), color: AppColors.green),
-                            _StatColumn(label: 'En Progreso', value: dato['en_progreso'].toString(), color: AppColors.gold),
-                            _StatColumn(label: 'Promedio', value: dato['tiempo_promedio'], color: AppColors.ink),
+                            _StatColumn(
+                              label: 'Completadas',
+                              value: dato['completadas'].toString(),
+                              color: AppColors.green,
+                            ),
+                            _StatColumn(
+                              label: 'En Progreso',
+                              value: dato['en_progreso'].toString(),
+                              color: AppColors.gold,
+                            ),
+                            _StatColumn(
+                              label: 'Promedio',
+                              value: dato['tiempo_promedio'],
+                              color: AppColors.ink,
+                            ),
                           ],
                         ),
                       ],
@@ -194,7 +252,12 @@ class _SummaryBox extends ConsumerWidget {
   final IconData icon;
   final Color color;
 
-  const _SummaryBox({required this.title, required this.value, required this.icon, required this.color});
+  const _SummaryBox({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -209,8 +272,15 @@ class _SummaryBox extends ConsumerWidget {
         children: [
           Icon(icon, color: color, size: 28),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          Text(title, style: const TextStyle(fontSize: 12, color: AppColors.muted), textAlign: TextAlign.center),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 12, color: AppColors.muted),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -222,15 +292,29 @@ class _StatColumn extends ConsumerWidget {
   final String value;
   final Color color;
 
-  const _StatColumn({required this.label, required this.value, required this.color});
+  const _StatColumn({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
-        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.muted),
+        ),
       ],
     );
   }

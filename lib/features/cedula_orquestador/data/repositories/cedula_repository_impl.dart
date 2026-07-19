@@ -11,7 +11,7 @@ import '../../../../core/storage/local_database.dart';
 class CedulaRepositoryImpl implements CedulaRepository {
   final CedulaRemoteDataSource remoteDataSource;
   final CedulaLocalDataSource? localDataSource;
-  final TokenStorage           tokenStorage;
+  final TokenStorage tokenStorage;
 
   const CedulaRepositoryImpl({
     required this.remoteDataSource,
@@ -25,7 +25,20 @@ class CedulaRepositoryImpl implements CedulaRepository {
       final token = await tokenStorage.readToken();
       return await remoteDataSource.getCatalogKeys(token: token);
     } catch (e) {
-      return ['parentesco', 'estado-civil', 'lengua', 'escolaridad', 'ingreso-salarial', 'atencion-embarazo', 'frecuencia-servicio-salud', 'toxicomania', 'enfermedad-cronica', 'material', 'manejo-excretas', 'animal']; // Fallback keys
+      return [
+        'parentesco',
+        'estado-civil',
+        'lengua',
+        'escolaridad',
+        'ingreso-salarial',
+        'atencion-embarazo',
+        'frecuencia-servicio-salud',
+        'toxicomania',
+        'enfermedad-cronica',
+        'material',
+        'manejo-excretas',
+        'animal',
+      ]; // Fallback keys
     }
   }
 
@@ -38,27 +51,45 @@ class CedulaRepositoryImpl implements CedulaRepository {
           .whereType<Map<String, dynamic>>()
           .map(CatalogItem.fromJson)
           .toList();
-          
+
       // Caching
       if (localDataSource != null) {
-        final jsonStr = jsonEncode(list.map((e) => {'id': e.id, 'nombre': e.nombre, 'descripcion': e.descripcion}).toList());
-        await (localDataSource!.db.delete(localDataSource!.db.catalogosLocal)..where((tbl) => tbl.tipo.equals(key))).go();
-        await localDataSource!.db.into(localDataSource!.db.catalogosLocal).insert(
-          CatalogosLocalCompanion.insert(
-            tipo: key,
-            jsonList: jsonStr,
-            updatedAt: DateTime.now(),
-          ),
-          mode: InsertMode.insertOrReplace
+        final jsonStr = jsonEncode(
+          list
+              .map(
+                (e) => {
+                  'id': e.id,
+                  'nombre': e.nombre,
+                  'descripcion': e.descripcion,
+                },
+              )
+              .toList(),
         );
+        await (localDataSource!.db.delete(
+          localDataSource!.db.catalogosLocal,
+        )..where((tbl) => tbl.tipo.equals(key))).go();
+        await localDataSource!.db
+            .into(localDataSource!.db.catalogosLocal)
+            .insert(
+              CatalogosLocalCompanion.insert(
+                tipo: key,
+                jsonList: jsonStr,
+                updatedAt: DateTime.now(),
+              ),
+              mode: InsertMode.insertOrReplace,
+            );
       }
       return list;
     } catch (e) {
       if (localDataSource != null) {
-        final localResult = await (localDataSource!.db.select(localDataSource!.db.catalogosLocal)..where((tbl) => tbl.tipo.equals(key))).getSingleOrNull();
+        final localResult = await (localDataSource!.db.select(
+          localDataSource!.db.catalogosLocal,
+        )..where((tbl) => tbl.tipo.equals(key))).getSingleOrNull();
         if (localResult != null) {
           final decoded = jsonDecode(localResult.jsonList) as List;
-          return decoded.map((e) => CatalogItem.fromJson(Map<String,dynamic>.from(e))).toList();
+          return decoded
+              .map((e) => CatalogItem.fromJson(Map<String, dynamic>.from(e)))
+              .toList();
         }
       }
       return [];
@@ -78,7 +109,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
           'cedula_id': null,
           '_local_id': localId,
           'status': 'draft',
-          'warnings': ['Guardado como borrador localmente']
+          'warnings': ['Guardado como borrador localmente'],
         };
       }
       throw Exception('Almacenamiento local no configurado');
@@ -90,14 +121,21 @@ class CedulaRepositoryImpl implements CedulaRepository {
       return await remoteDataSource.postCapturaCompleta(body, token: token);
     } catch (e) {
       // Si falla por red u otro error, hacer fallback a SQLite
-      AppLogger.warn('Fallo red, guardando localmente. (OWASP MASVS-STORAGE-3)');
+      AppLogger.warn(
+        'Fallo red, guardando localmente. (OWASP MASVS-STORAGE-3)',
+      );
       if (localDataSource != null) {
-        final localId = await localDataSource!.saveCedula(body, 1); // 1 = PENDING_SYNC
+        final localId = await localDataSource!.saveCedula(
+          body,
+          1,
+        ); // 1 = PENDING_SYNC
         return {
           'cedula_id': null,
           '_local_id': localId,
           'status': 'pending_sync',
-          'warnings': ['Sin conexión. Cédula guardada localmente para sincronizar después.']
+          'warnings': [
+            'Sin conexión. Cédula guardada localmente para sincronizar después.',
+          ],
         };
       }
       rethrow;
@@ -152,7 +190,9 @@ class CedulaRepositoryImpl implements CedulaRepository {
       return const SyncResult(error: 'Sin almacenamiento local');
     }
 
-    final pending = await localDataSource!.getCedulasByStatus(1); // 1 = PENDING_SYNC
+    final pending = await localDataSource!.getCedulasByStatus(
+      1,
+    ); // 1 = PENDING_SYNC
     if (pending.isEmpty) return const SyncResult(synced: 0, failed: 0);
 
     final token = await tokenStorage.readToken();
@@ -168,7 +208,11 @@ class CedulaRepositoryImpl implements CedulaRepository {
         synced++;
       } catch (e) {
         failed++;
-        await localDataSource!.updateSyncStatus(localId, 1, error: e.toString());
+        await localDataSource!.updateSyncStatus(
+          localId,
+          1,
+          error: e.toString(),
+        );
       }
     }
 
@@ -180,17 +224,24 @@ class CedulaRepositoryImpl implements CedulaRepository {
 
   @override
   Future<SyncResult> syncSingleCedula(int localId) async {
-    if (localDataSource == null) return const SyncResult(error: 'Sin almacenamiento local');
-    
+    if (localDataSource == null)
+      return const SyncResult(error: 'Sin almacenamiento local');
+
     // Obtener la cédula específica reconstruyendo el payload
     final allPending = await localDataSource!.getCedulasByStatus(1);
-    final record = allPending.firstWhere((r) => r['_localId'] == localId, orElse: () => {});
-    
-    if (record.isEmpty) return const SyncResult(error: 'Registro no encontrado o no está pendiente');
+    final record = allPending.firstWhere(
+      (r) => r['_localId'] == localId,
+      orElse: () => {},
+    );
+
+    if (record.isEmpty)
+      return const SyncResult(
+        error: 'Registro no encontrado o no está pendiente',
+      );
 
     final token = await tokenStorage.readToken();
     final payload = Map<String, dynamic>.from(record)..remove('_localId');
-    
+
     try {
       await remoteDataSource.postCapturaCompleta(payload, token: token);
       await localDataSource!.updateSyncStatus(localId, 2); // 2 = SYNCED
@@ -198,8 +249,10 @@ class CedulaRepositoryImpl implements CedulaRepository {
     } catch (e) {
       String errorMsg = e.toString();
       // Estrategia mínima para duplicados (409 Conflict o similar)
-      if (errorMsg.contains('409') || errorMsg.toLowerCase().contains('duplicado')) {
-        errorMsg = 'Conflicto: Este registro ya existe en el servidor o contiene datos duplicados.';
+      if (errorMsg.contains('409') ||
+          errorMsg.toLowerCase().contains('duplicado')) {
+        errorMsg =
+            'Conflicto: Este registro ya existe en el servidor o contiene datos duplicados.';
       }
       await localDataSource!.updateSyncStatus(localId, 1, error: errorMsg);
       return SyncResult(failed: 1, error: errorMsg);

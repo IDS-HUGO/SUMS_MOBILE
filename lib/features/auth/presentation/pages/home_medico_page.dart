@@ -15,7 +15,9 @@ class HomeMedicoPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userName = ref.watch(authViewModelProvider).session?.user.nombreUsuario ?? 'médico';
+    final userName =
+        ref.watch(authViewModelProvider).session?.user.nombreUsuario ??
+        'médico';
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
@@ -28,7 +30,7 @@ class HomeMedicoPage extends ConsumerWidget {
                 userName: 'Dr. $userName',
                 rolLabel: 'Médico IMSS-Bienestar',
                 rolColor: AppColors.rolMedico,
-                icon:     Icons.medical_services_outlined,
+                icon: Icons.medical_services_outlined,
               ),
             ),
             SliverPadding(
@@ -45,8 +47,10 @@ class HomeMedicoPage extends ConsumerWidget {
                 itemBuilder: (_, i) {
                   final m = _modules[i];
                   return _ModuleRow(
-                    icon: m.icon, title: m.title,
-                    subtitle: m.subtitle, color: m.color,
+                    icon: m.icon,
+                    title: m.title,
+                    subtitle: m.subtitle,
+                    color: m.color,
                   );
                 },
               ),
@@ -59,34 +63,62 @@ class HomeMedicoPage extends ConsumerWidget {
   }
 
   static const _modules = [
-    _Module(Icons.vaccines_outlined, 'Esquemas de vacunación', 'Registra y consulta inmunizaciones por persona.', AppColors.green),
-    _Module(Icons.people_alt_outlined, 'Personas', 'Datos personales y perfil de salud de cada integrante.', AppColors.greenDark),
-    _Module(Icons.health_and_safety_outlined, 'Salud preventiva', 'Tamizajes, atención de embarazo y seguimiento.', AppColors.burgundy),
-    _Module(Icons.monitor_heart_outlined, 'Enfermedades crónicas', 'Hipertensión, diabetes y seguimiento longitudinal.', AppColors.terracota),
+    _Module(
+      Icons.vaccines_outlined,
+      'Esquemas de vacunación',
+      'Registra y consulta inmunizaciones por persona.',
+      AppColors.green,
+    ),
+    _Module(
+      Icons.people_alt_outlined,
+      'Personas',
+      'Datos personales y perfil de salud de cada integrante.',
+      AppColors.greenDark,
+    ),
+    _Module(
+      Icons.health_and_safety_outlined,
+      'Salud preventiva',
+      'Tamizajes, atención de embarazo y seguimiento.',
+      AppColors.burgundy,
+    ),
+    _Module(
+      Icons.monitor_heart_outlined,
+      'Enfermedades crónicas',
+      'Hipertensión, diabetes y seguimiento longitudinal.',
+      AppColors.terracota,
+    ),
   ];
 
   AppBar _buildAppBar(BuildContext context, WidgetRef ref) => AppBar(
-        title: Row(
-          children: [
-            Container(width: 8, height: 8,
-                decoration: const BoxDecoration(color: AppColors.rolMedico, shape: BoxShape.circle)),
-            const SizedBox(width: 8),
-            const Text('Médico'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Cerrar sesión',
-            icon: const Icon(Icons.logout_outlined),
-            onPressed: () async {
-              await ref.read(authViewModelProvider).logout();
-              if (!context.mounted) return;
-              Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
-            },
+    title: Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: AppColors.rolMedico,
+            shape: BoxShape.circle,
           ),
-          const SizedBox(width: 4),
-        ],
-      );
+        ),
+        const SizedBox(width: 8),
+        const Text('Médico'),
+      ],
+    ),
+    actions: [
+      IconButton(
+        tooltip: 'Cerrar sesión',
+        icon: const Icon(Icons.logout_outlined),
+        onPressed: () async {
+          await ref.read(authViewModelProvider).logout();
+          if (!context.mounted) return;
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+        },
+      ),
+      const SizedBox(width: 4),
+    ],
+  );
 }
 
 class _Module {
@@ -99,10 +131,15 @@ class _Module {
 
 class _ModuleRow extends ConsumerWidget {
   final IconData icon;
-  final String   title;
-  final String   subtitle;
-  final Color    color;
-  const _ModuleRow({required this.icon, required this.title, required this.subtitle, required this.color});
+  final String title;
+  final String subtitle;
+  final Color color;
+  const _ModuleRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -133,13 +170,30 @@ class _ModuleRow extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.greenDark)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: AppColors.greenDark,
+                      ),
+                    ),
                     const SizedBox(height: 3),
-                    Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.muted,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.subtle, size: 18),
+              const Icon(
+                Icons.chevron_right,
+                color: AppColors.subtle,
+                size: 18,
+              ),
             ],
           ),
         ),
@@ -152,9 +206,14 @@ class _ModuleRow extends ConsumerWidget {
 
 class _RolHeader extends ConsumerWidget {
   final String userName, rolLabel;
-  final Color  rolColor;
+  final Color rolColor;
   final IconData icon;
-  const _RolHeader({required this.userName, required this.rolLabel, required this.rolColor, required this.icon});
+  const _RolHeader({
+    required this.userName,
+    required this.rolLabel,
+    required this.rolColor,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -165,7 +224,10 @@ class _RolHeader extends ConsumerWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: rolColor.withOpacity(0.2), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: rolColor.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
             child: Icon(icon, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 14),
@@ -173,12 +235,32 @@ class _RolHeader extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Hola, $userName', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+                Text(
+                  'Hola, $userName',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(height: 3),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: rolColor.withOpacity(0.25), borderRadius: BorderRadius.circular(20)),
-                  child: Text(rolLabel, style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: rolColor.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    rolLabel,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -195,7 +277,12 @@ class _SectionLabel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => Text(
-        text.toUpperCase(),
-        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.muted, letterSpacing: 1.0),
-      );
+    text.toUpperCase(),
+    style: const TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      color: AppColors.muted,
+      letterSpacing: 1.0,
+    ),
+  );
 }

@@ -3,11 +3,7 @@ class CatalogItem {
   final String nombre;
   final String? descripcion;
 
-  const CatalogItem({
-    required this.id,
-    required this.nombre,
-    this.descripcion,
-  });
+  const CatalogItem({required this.id, required this.nombre, this.descripcion});
 
   factory CatalogItem.fromJson(Map<String, dynamic> json) {
     return CatalogItem(

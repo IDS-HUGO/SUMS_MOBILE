@@ -3,11 +3,7 @@ class PendingCedula {
   final String payload;
   final DateTime updatedAt;
 
-  PendingCedula({
-    this.id,
-    required this.payload,
-    required this.updatedAt,
-  });
+  PendingCedula({this.id, required this.payload, required this.updatedAt});
 
   Map<String, dynamic> toMap() {
     return {

@@ -9,7 +9,8 @@ class AdminCedulasListPage extends ConsumerStatefulWidget {
   const AdminCedulasListPage({super.key});
 
   @override
-  ConsumerState<AdminCedulasListPage> createState() => _AdminCedulasListPageState();
+  ConsumerState<AdminCedulasListPage> createState() =>
+      _AdminCedulasListPageState();
 }
 
 class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
@@ -75,15 +76,20 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
           Expanded(
             child: Consumer(
               builder: (context, ref, child) {
-final vm = ref.watch(cedulaViewModelProvider);
+                final vm = ref.watch(cedulaViewModelProvider);
                 final records = vm.allLocalRecords.where((r) {
-                  final informante = (r['_informante'] ?? '').toString().toLowerCase();
+                  final informante = (r['_informante'] ?? '')
+                      .toString()
+                      .toLowerCase();
                   return informante.contains(_searchQuery);
                 }).toList();
 
                 if (records.isEmpty) {
                   return const Center(
-                    child: Text('No se encontraron cédulas.', style: TextStyle(color: Colors.grey)),
+                    child: Text(
+                      'No se encontraron cédulas.',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   );
                 }
 
@@ -122,8 +128,13 @@ final vm = ref.watch(cedulaViewModelProvider);
                           backgroundColor: statusColor.withOpacity(0.1),
                           child: Icon(Icons.assignment, color: statusColor),
                         ),
-                        title: Text(informante, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text('Fecha: ${fechaStr.length >= 10 ? fechaStr.substring(0, 10) : fechaStr}\nEstado: $statusText'),
+                        title: Text(
+                          informante,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          'Fecha: ${fechaStr.length >= 10 ? fechaStr.substring(0, 10) : fechaStr}\nEstado: $statusText',
+                        ),
                         trailing: PopupMenuButton<String>(
                           onSelected: (value) {
                             if (value == 'edit') {
@@ -137,7 +148,11 @@ final vm = ref.watch(cedulaViewModelProvider);
                               value: 'edit',
                               child: Row(
                                 children: [
-                                  Icon(Icons.edit, size: 20, color: AppColors.ink),
+                                  Icon(
+                                    Icons.edit,
+                                    size: 20,
+                                    color: AppColors.ink,
+                                  ),
                                   SizedBox(width: 8),
                                   Text('Editar Cédula'),
                                 ],

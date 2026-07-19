@@ -1,4 +1,3 @@
-import 'package:sums/core/di/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'injection.dart';
 
@@ -12,46 +11,63 @@ import '../../features/admin/presentation/viewmodels/admin_users_viewmodel.dart'
 import '../../features/admin/presentation/viewmodels/admin_unidades_viewmodel.dart';
 import '../../features/admin/presentation/viewmodels/admin_catalogos_viewmodel.dart';
 import '../../features/estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
+import '../../features/mineria/presentation/viewmodels/mineria_viewmodel.dart';
 
 // Definimos los providers de Riverpod usando autoDispose para la gestión del ciclo de vida de la pantalla.
 // Las instancias reales se resuelven usando get_it (sl).
 
-final authViewModelProvider = ChangeNotifierProvider.autoDispose<AuthViewModel>((ref) {
-  return sl<AuthViewModel>();
-});
+final authViewModelProvider = ChangeNotifierProvider.autoDispose<AuthViewModel>(
+  (ref) {
+    return sl<AuthViewModel>();
+  },
+);
 
-final cedulaViewModelProvider = ChangeNotifierProvider.autoDispose<CedulaViewModel>((ref) {
-  return sl<CedulaViewModel>();
-});
+final cedulaViewModelProvider =
+    ChangeNotifierProvider.autoDispose<CedulaViewModel>((ref) {
+      return sl<CedulaViewModel>();
+    });
 
-final familiaViewModelProvider = ChangeNotifierProvider.autoDispose<FamiliaViewModel>((ref) {
-  return sl<FamiliaViewModel>();
-});
+final familiaViewModelProvider =
+    ChangeNotifierProvider.autoDispose<FamiliaViewModel>((ref) {
+      return sl<FamiliaViewModel>();
+    });
 
-final viviendaViewModelProvider = ChangeNotifierProvider.autoDispose<ViviendaViewModel>((ref) {
-  return sl<ViviendaViewModel>();
-});
+final viviendaViewModelProvider =
+    ChangeNotifierProvider.autoDispose<ViviendaViewModel>((ref) {
+      return sl<ViviendaViewModel>();
+    });
 
-final vacunacionViewModelProvider = ChangeNotifierProvider.autoDispose<VacunacionViewModel>((ref) {
-  return sl<VacunacionViewModel>();
-});
+final vacunacionViewModelProvider =
+    ChangeNotifierProvider.autoDispose<VacunacionViewModel>((ref) {
+      return sl<VacunacionViewModel>();
+    });
 
-final integrantesViewModelProvider = ChangeNotifierProvider.autoDispose<IntegrantesViewModel>((ref) {
-  return sl<IntegrantesViewModel>();
-});
+final integrantesViewModelProvider =
+    ChangeNotifierProvider.autoDispose<IntegrantesViewModel>((ref) {
+      return sl<IntegrantesViewModel>();
+    });
 
-final adminUsersViewModelProvider = ChangeNotifierProvider.autoDispose<AdminUsersViewModel>((ref) {
-  return sl<AdminUsersViewModel>();
-});
+final adminUsersViewModelProvider =
+    ChangeNotifierProvider.autoDispose<AdminUsersViewModel>((ref) {
+      return sl<AdminUsersViewModel>();
+    });
 
-final adminUnidadesViewModelProvider = ChangeNotifierProvider.autoDispose<AdminUnidadesViewModel>((ref) {
-  return sl<AdminUnidadesViewModel>();
-});
+final adminUnidadesViewModelProvider =
+    ChangeNotifierProvider.autoDispose<AdminUnidadesViewModel>((ref) {
+      return sl<AdminUnidadesViewModel>();
+    });
 
-final adminCatalogosViewModelProvider = ChangeNotifierProvider.autoDispose<AdminCatalogosViewModel>((ref) {
-  return sl<AdminCatalogosViewModel>();
-});
+final adminCatalogosViewModelProvider =
+    ChangeNotifierProvider.autoDispose<AdminCatalogosViewModel>((ref) {
+      return sl<AdminCatalogosViewModel>();
+    });
 
-final estadisticasViewModelProvider = ChangeNotifierProvider.autoDispose<EstadisticasViewModel>((ref) {
-  return sl<EstadisticasViewModel>();
-});
+final estadisticasViewModelProvider =
+    ChangeNotifierProvider.autoDispose<EstadisticasViewModel>((ref) {
+      return sl<EstadisticasViewModel>();
+    });
+
+final mineriaViewModelProvider =
+    ChangeNotifierProvider.autoDispose<MineriaViewModel>((ref) {
+      return sl<MineriaViewModel>();
+    });
