@@ -8,8 +8,12 @@ void main() {
   testWidgets('muestra la pantalla inicial de captura', (
     WidgetTester tester,
   ) async {
+    // Nombre de canal correcto de flutter_secure_storage_platform_interface
+    // (antes decía 'plugins.itrix.com.br/...', que nunca existió — el mock
+    // no interceptaba nada y quedó sin detectarse porque, hasta ahora, esta
+    // prueba nunca disparaba una llamada real a flutter_secure_storage).
     const channel = MethodChannel(
-      'plugins.itrix.com.br/flutter_secure_storage',
+      'plugins.it_nomads.com/flutter_secure_storage',
     );
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
       MethodCall methodCall,

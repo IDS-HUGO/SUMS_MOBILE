@@ -9,7 +9,6 @@ class AdminReportesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Reportes'),
         backgroundColor: AppColors.gold,

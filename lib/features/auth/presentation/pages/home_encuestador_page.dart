@@ -7,6 +7,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/brand_header.dart';
+import '../../../../shared/widgets/theme_mode_menu_button.dart';
 import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
 import '../../../estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
@@ -99,7 +100,6 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
     final today = _todayLabel();
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: _buildAppBar(context, ref),
       body: Stack(
         children: [
@@ -317,6 +317,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
       ],
     ),
     actions: [
+      const ThemeModeMenuButton(),
       IconButton(
         tooltip: 'Cerrar sesión',
         icon: const Icon(Icons.logout_outlined),

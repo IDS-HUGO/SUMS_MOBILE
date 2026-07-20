@@ -34,7 +34,6 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Cédulas Registradas'),
         backgroundColor: AppColors.green,

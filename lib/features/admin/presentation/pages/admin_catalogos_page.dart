@@ -35,6 +35,9 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
     final nombreController = TextEditingController();
     final descController = TextEditingController();
 
+    // Los controladores son propios de este diálogo (no del State de la
+    // página), así que se liberan cuando el diálogo se cierra, sin importar
+    // si fue por "Cancelar" o después de guardar.
     showDialog(
       context: context,
       builder: (ctx) {
@@ -100,7 +103,10 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
           ],
         );
       },
-    );
+    ).then((_) {
+      nombreController.dispose();
+      descController.dispose();
+    });
   }
 
   @override
@@ -108,7 +114,6 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
     final vm = ref.watch(adminCatalogosViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Gestión de Catálogos'),
         backgroundColor: AppColors.terracota,

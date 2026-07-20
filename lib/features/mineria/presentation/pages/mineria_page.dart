@@ -41,7 +41,6 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
     final vm = ref.watch(mineriaViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Minería OCR'),
         actions: [
@@ -243,12 +242,18 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
             label,
             style: const TextStyle(color: AppColors.muted, fontSize: 13),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              color: color ?? AppColors.ink,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: color ?? AppColors.ink,
+              ),
             ),
           ),
         ],

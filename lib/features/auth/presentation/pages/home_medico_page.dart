@@ -8,6 +8,7 @@ import 'package:sums/core/di/providers.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/widgets/theme_mode_menu_button.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class HomeMedicoPage extends ConsumerWidget {
@@ -20,7 +21,6 @@ class HomeMedicoPage extends ConsumerWidget {
         'médico';
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: _buildAppBar(context, ref),
       body: SafeArea(
         child: CustomScrollView(
@@ -105,6 +105,7 @@ class HomeMedicoPage extends ConsumerWidget {
       ],
     ),
     actions: [
+      const ThemeModeMenuButton(),
       IconButton(
         tooltip: 'Cerrar sesión',
         icon: const Icon(Icons.logout_outlined),

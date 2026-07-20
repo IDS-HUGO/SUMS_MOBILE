@@ -28,7 +28,6 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
     final vm = ref.watch(adminUsersViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Gestión de Usuarios'),
         backgroundColor: AppColors.rolAdmin,

@@ -4,6 +4,7 @@ import 'package:sums/core/di/providers.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/widgets/theme_mode_menu_button.dart';
 
 class HomeAdminPage extends ConsumerWidget {
   const HomeAdminPage({super.key});
@@ -25,7 +26,6 @@ class HomeAdminPage extends ConsumerWidget {
     final userName = auth.session?.user.nombreUsuario ?? 'administrador';
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: _buildAppBar(context, ref),
       body: SafeArea(
         child: CustomScrollView(
@@ -164,6 +164,7 @@ class HomeAdminPage extends ConsumerWidget {
       ],
     ),
     actions: [
+      const ThemeModeMenuButton(),
       IconButton(
         tooltip: 'Cerrar sesión',
         icon: const Icon(Icons.logout_outlined),

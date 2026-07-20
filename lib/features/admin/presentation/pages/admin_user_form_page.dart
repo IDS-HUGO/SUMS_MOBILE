@@ -108,7 +108,6 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
     final unidadesVm = ref.watch(adminUnidadesViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: Text(widget.user != null ? 'Editar Usuario' : 'Nuevo Usuario'),
         backgroundColor: AppColors.rolAdmin,

@@ -73,7 +73,6 @@ class _AdminProductividadPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Productividad'),
         backgroundColor: AppColors.gold,
@@ -203,11 +202,15 @@ class _AdminProductividadPageState
                               ),
                             ),
                             const SizedBox(width: 12),
-                            Text(
-                              dato['nombre'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            Expanded(
+                              child: Text(
+                                dato['nombre'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -216,20 +219,26 @@ class _AdminProductividadPageState
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _StatColumn(
-                              label: 'Completadas',
-                              value: dato['completadas'].toString(),
-                              color: AppColors.green,
+                            Expanded(
+                              child: _StatColumn(
+                                label: 'Completadas',
+                                value: dato['completadas'].toString(),
+                                color: AppColors.green,
+                              ),
                             ),
-                            _StatColumn(
-                              label: 'En Progreso',
-                              value: dato['en_progreso'].toString(),
-                              color: AppColors.gold,
+                            Expanded(
+                              child: _StatColumn(
+                                label: 'En Progreso',
+                                value: dato['en_progreso'].toString(),
+                                color: AppColors.gold,
+                              ),
                             ),
-                            _StatColumn(
-                              label: 'Promedio',
-                              value: dato['tiempo_promedio'],
-                              color: AppColors.ink,
+                            Expanded(
+                              child: _StatColumn(
+                                label: 'Promedio',
+                                value: dato['tiempo_promedio'],
+                                color: AppColors.ink,
+                              ),
                             ),
                           ],
                         ),
@@ -301,6 +310,7 @@ class _StatColumn extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           value,
@@ -309,11 +319,17 @@ class _StatColumn extends ConsumerWidget {
             fontWeight: FontWeight.bold,
             color: color,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),
         Text(
           label,
           style: const TextStyle(fontSize: 12, color: AppColors.muted),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
         ),
       ],
     );
