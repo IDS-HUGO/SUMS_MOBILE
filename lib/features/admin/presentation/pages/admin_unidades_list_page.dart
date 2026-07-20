@@ -28,7 +28,6 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
     final vm = ref.watch(adminUnidadesViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Unidades de Salud'),
         backgroundColor: AppColors.green,

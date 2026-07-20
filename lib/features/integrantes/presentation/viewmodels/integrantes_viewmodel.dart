@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../domain/repositories/integrantes_repository.dart';
 
-class MemberForm {
+/// Representa el formulario de UN integrante. Extiende ChangeNotifier para
+/// que su propia tarjeta (_MemberCard) pueda reconstruirse sola cuando este
+/// integrante cambia, sin necesidad de reconstruir las tarjetas de los demás
+/// integrantes (antes, cualquier tecla en cualquier integrante reconstruía
+/// la pantalla completa vía IntegrantesViewModel.notifyListeners()).
+class MemberForm extends ChangeNotifier {
   final TextEditingController nombre = TextEditingController();
   final TextEditingController fechaNacimiento = TextEditingController();
   final TextEditingController edad = TextEditingController();
@@ -36,6 +41,12 @@ class MemberForm {
   final toxicomanias = <String>{};
   final cronicas = <String>{};
 
+  /// Notifica solo a quien escucha ESTE integrante (su propia tarjeta), sin
+  /// tocar a los demás. `notifyListeners()` es protegido en `ChangeNotifier`;
+  /// este método público es la forma correcta de dispararlo desde fuera.
+  void touch() => notifyListeners();
+
+  @override
   void dispose() {
     nombre.dispose();
     fechaNacimiento.dispose();
@@ -50,6 +61,7 @@ class MemberForm {
     fechaCervico.dispose();
     fechaMama.dispose();
     motivoSalud.dispose();
+    super.dispose();
   }
 }
 

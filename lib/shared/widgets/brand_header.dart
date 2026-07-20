@@ -21,6 +21,12 @@ class BrandHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final accent = accentColor ?? AppColors.green;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // En oscuro, greenDark es casi invisible sobre un fondo casi negro:
+    // se usa un verde más claro para que el título siga siendo legible.
+    final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
+    final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -60,14 +66,14 @@ class BrandHeader extends ConsumerWidget {
                           (compact
                                   ? Theme.of(context).textTheme.headlineSmall
                                   : Theme.of(context).textTheme.headlineMedium)
-                              ?.copyWith(color: AppColors.greenDark),
+                              ?.copyWith(color: titleColor),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       subtitle,
                       style: Theme.of(
                         context,
-                      ).textTheme.bodyMedium?.copyWith(color: AppColors.muted),
+                      ).textTheme.bodyMedium?.copyWith(color: mutedColor),
                     ),
                   ],
                 ),
@@ -137,11 +143,20 @@ class SectionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
+    final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        // scheme.surface SÍ cambia entre claro/oscuro (a diferencia de un
+        // Colors.white fijo, que dejaba la tarjeta siempre clara).
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(
+          color: theme.dividerTheme.color ?? AppColors.line,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: IntrinsicHeight(
@@ -173,18 +188,18 @@ class SectionCard extends ConsumerWidget {
                             children: [
                               Text(
                                 title,
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: AppColors.greenDark,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: titleColor,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
                               if (subtitle != null) ...[
                                 const SizedBox(height: 2),
                                 Text(
                                   subtitle!,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: AppColors.muted),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: mutedColor,
+                                  ),
                                 ),
                               ],
                             ],

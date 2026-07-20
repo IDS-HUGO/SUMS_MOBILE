@@ -25,6 +25,7 @@ import 'features/cedula_orquestador/presentation/pages/pending_captures_page.dar
 import 'features/cedula_orquestador/presentation/pages/cedula_history_page.dart';
 
 import 'shared/theme/app_theme.dart';
+import 'shared/theme/theme_mode_controller.dart';
 
 class App extends ConsumerStatefulWidget {
   final bool isSecureDevice;
@@ -99,7 +100,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       title: 'SUMS IMSS Bienestar',
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: ref.watch(themeModeProvider),
       initialRoute: AppRoutes.login,
       routes: {
         AppRoutes.login: (_) => const LoginPage(),

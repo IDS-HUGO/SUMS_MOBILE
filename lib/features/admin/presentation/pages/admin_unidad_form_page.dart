@@ -86,7 +86,6 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: Text(widget.unidad != null ? 'Editar Unidad' : 'Nueva Unidad'),
         backgroundColor: AppColors.green,

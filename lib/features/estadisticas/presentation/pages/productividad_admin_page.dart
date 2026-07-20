@@ -27,7 +27,6 @@ class _ProductividadAdminPageState
     final vm = ref.watch(estadisticasViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Productividad de Entrevistadores'),
         actions: [

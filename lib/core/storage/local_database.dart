@@ -4,6 +4,8 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
+import 'local_db_encryption.dart';
+
 part 'local_database.g.dart';
 
 // Definición de la tabla Cedulas
@@ -12,8 +14,9 @@ class Cedulas extends Table {
   IntColumn get syncStatus => integer()(); // 0=DRAFT, 1=PENDING_SYNC, 2=SYNCED
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get informanteNombre => text().nullable()();
-  TextColumn get familiaData =>
-      text()(); // JSON con los datos de familia e IDs base
+  // JSON con los datos de familia e IDs base — cifrado en reposo (AES-256-GCM,
+  // ver local_db_encryption.dart). Contiene nombres/domicilio de la familia.
+  TextColumn get familiaData => text().map(const EncryptedTextConverter())();
 }
 
 // Definición de la tabla Viviendas
@@ -21,7 +24,8 @@ class Viviendas extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get cedulaId =>
       integer().references(Cedulas, #id, onDelete: KeyAction.cascade)();
-  TextColumn get viviendaData => text()(); // JSON con datos de vivienda
+  // JSON con datos de vivienda — cifrado en reposo.
+  TextColumn get viviendaData => text().map(const EncryptedTextConverter())();
 }
 
 // Definición de la tabla Vacunas
@@ -29,8 +33,8 @@ class Vacunas extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get cedulaId =>
       integer().references(Cedulas, #id, onDelete: KeyAction.cascade)();
-  TextColumn get vacunaData =>
-      text()(); // JSON con datos de la vacuna/inmunizacion
+  // JSON con datos de la vacuna/inmunizacion — cifrado en reposo.
+  TextColumn get vacunaData => text().map(const EncryptedTextConverter())();
 }
 
 // Definición de la tabla Integrantes
@@ -38,7 +42,9 @@ class Integrantes extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get cedulaId =>
       integer().references(Cedulas, #id, onDelete: KeyAction.cascade)();
-  TextColumn get integranteData => text()(); // JSON con datos del integrante
+  // JSON con datos del integrante (salud, escolaridad, etc.) — cifrado en reposo.
+  TextColumn get integranteData =>
+      text().map(const EncryptedTextConverter())();
 }
 
 // Definición de la tabla CatalogosLocal

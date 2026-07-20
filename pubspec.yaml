@@ -32,6 +32,15 @@ dependencies:
   flutter_jailbreak_detection: ^1.10.0
   get_it: ^9.2.1
   flutter_riverpod: ^2.6.1
+
+  # --- Security ---
+  # Hash del password para permitir validar el login offline sin guardar la
+  # contraseña en claro (ver token_storage.dart).
+  crypto: ^3.0.6
+  # Cifrado AES-256-GCM de los campos JSON sensibles de la BD local
+  # (ver core/storage/local_db_encryption.dart). Paquete puro Dart
+  # (PointyCastle), sin código nativo — no requiere tocar el motor SQLite.
+  encrypt: ^5.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
