@@ -12,7 +12,7 @@ Esta prueba demuestra que la aplicación funciona correctamente cuando no hay ni
 
 1. **Inicia la aplicación:** Ejecuta el proyecto en tu dispositivo físico o emulador (`flutter run`). 
    - *Importante:* Asegúrate de que no haya ningún proxy activo en la red Wi-Fi de tu teléfono/emulador en este momento.
-2. **Interactúa con la app:** Navega por la aplicación, intenta iniciar sesión o realiza cualquier acción que consulte la API (`api-sums.troy.engineer`).
+2. **Interactúa con la app:** Navega por la aplicación, intenta iniciar sesión o realiza cualquier acción que consulte la API (`sums-api.troy.engineer`).
 3. **Toma la Captura 1:** Toma una captura de pantalla de tu celular donde se evidencie que la app cargó los datos con éxito o que inició sesión sin problemas. 
    - Esta será tu **primera captura** para el reporte (Conexión Exitosa).
 
@@ -54,11 +54,12 @@ Ahora configuraremos la red para forzar a que todo el tráfico de la app pase po
 En este punto comprobaremos que el SSL Pinning hace su trabajo y aborta la conexión comprometida.
 
 1. Con el proxy (ZAP) encendido e interceptando, y el celular conectado a dicho proxy, **abre nuevamente tu aplicación Flutter**.
+   - ⚠️ **Cierra sesión primero (si ya iniciaste sesión en la Parte 1):** la app tiene un mecanismo de *login offline* que, si detecta una sesión guardada localmente, te deja entrar usándola aunque el pinning haya rechazado el certificado del servidor — esto oculta el bloqueo sin que te des cuenta. Ve a "Cerrar sesión" en la app antes de continuar, para forzar un login real contra el servidor.
 2. Intenta realizar la misma acción que en la Parte 1 (ej. iniciar sesión o recargar datos).
-3. **Comprobación:** En lugar de cargar los datos o permitir el inicio de sesión, la aplicación **fallará de inmediato**. Deberías ver en la pantalla el mensaje de error controlado que se configuró en el código: `"Posible ataque MitM. Certificado de api-sums.troy.engineer es inválido."` (o una alerta visual de error de conexión/API).
+3. **Comprobación:** En lugar de cargar los datos o permitir el inicio de sesión, la aplicación **fallará de inmediato**. Deberías ver en la pantalla el mensaje de error controlado que se configuró en el código: `"Posible ataque MitM. Certificado de sums-api.troy.engineer es inválido."` (o una alerta visual de error de conexión/API).
 4. **Toma la Captura 2:** Toma una captura de pantalla de la aplicación mostrando claramente este mensaje de rechazo o alerta de seguridad. 
    - Esta será tu **segunda captura** (Bloqueo Exitoso).
-5. *(Opcional)*: Si observas la interfaz de OWASP ZAP en tu computadora, notarás que la conexión hacia `api-sums.troy.engineer` aparece bloqueada, vacía o con un error de TLS handshake, confirmando que la aplicación cortó la comunicación a nivel de red antes de enviar cualquier dato.
+5. *(Opcional)*: Si observas la interfaz de OWASP ZAP en tu computadora, notarás que la conexión hacia `sums-api.troy.engineer` aparece bloqueada, vacía o con un error de TLS handshake, confirmando que la aplicación cortó la comunicación a nivel de red antes de enviar cualquier dato.
 
 ---
 

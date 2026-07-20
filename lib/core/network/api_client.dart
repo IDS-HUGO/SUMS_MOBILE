@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
@@ -12,7 +13,7 @@ class ApiException implements Exception {
 }
 
 /// Cliente HTTP genérico para la API SUMS.
-/// Base URL: https://api-sums.troy.engineer/sums
+/// Base URL: https://sums-api.troy.engineer/sums
 class ApiClient {
   final http.Client client;
   final String baseUrl;
@@ -121,6 +122,8 @@ class ApiClient {
       throw const ApiException('El servidor tardó demasiado en responder.');
     } on ApiException {
       rethrow;
+    } on HandshakeException {
+      throw ApiException('Posible ataque MitM. Certificado de ${uri.host} es inválido.');
     } catch (_) {
       throw const ApiException('No se pudo conectar con la API.');
     }
