@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -19,15 +20,19 @@ class ApiClient {
   const ApiClient({required this.client, required this.baseUrl});
 
   Future<Map<String, dynamic>> get(String path, {String? token}) async {
+    final uri = _uri(path);
     final response = await _sendRequest(
-      () => client.get(_uri(path), headers: _headers(token)),
+      () => client.get(uri, headers: _headers(token)),
+      uri,
     );
     return _decodeMap(response);
   }
 
   Future<List<dynamic>> getList(String path, {String? token}) async {
+    final uri = _uri(path);
     final response = await _sendRequest(
-      () => client.get(_uri(path), headers: _headers(token)),
+      () => client.get(uri, headers: _headers(token)),
+      uri,
     );
     return _decodeList(response);
   }
@@ -37,8 +42,10 @@ class ApiClient {
     required Map<String, dynamic> body,
     String? token,
   }) async {
+    final uri = _uri(path);
     final response = await _sendRequest(
-      () => client.post(_uri(path), headers: _headers(token), body: jsonEncode(body)),
+      () => client.post(uri, headers: _headers(token), body: jsonEncode(body)),
+      uri,
     );
     return _decodeMap(response);
   }
@@ -48,8 +55,10 @@ class ApiClient {
     required Map<String, dynamic> body,
     String? token,
   }) async {
+    final uri = _uri(path);
     final response = await _sendRequest(
-      () => client.put(_uri(path), headers: _headers(token), body: jsonEncode(body)),
+      () => client.put(uri, headers: _headers(token), body: jsonEncode(body)),
+      uri,
     );
     return _decodeMap(response);
   }
@@ -59,8 +68,10 @@ class ApiClient {
     required Map<String, dynamic> body,
     String? token,
   }) async {
+    final uri = _uri(path);
     final response = await _sendRequest(
-      () => client.patch(_uri(path), headers: _headers(token), body: jsonEncode(body)),
+      () => client.patch(uri, headers: _headers(token), body: jsonEncode(body)),
+      uri,
     );
     return _decodeMap(response);
   }
@@ -85,7 +96,25 @@ class ApiClient {
 
   Future<http.Response> _sendRequest(
     Future<http.Response> Function() request,
+    Uri uri,
   ) async {
+    if (uri.scheme == 'https') {
+      try {
+        await HttpCertificatePinning.check(
+          serverURL: '${uri.scheme}://${uri.host}',
+          headerHttp: <String, String>{},
+          sha: SHA.SHA256,
+          allowedSHAFingerprints: [
+            '21:D2:97:B0:BF:47:B9:6C:D6:13:B4:E1:EC:52:3A:E1:76:6C:88:7A:A6:D0:10:94:4A:64:39:77:C8:97:22:B3',
+            // Agregamos sin los dos puntos por si el paquete lo normaliza de forma distinta
+            '21D297B0BF47B96CD613B4E1EC523AE1766C887AA6D010944A643977C89722B3'
+          ],
+          timeout: 15,
+        );
+      } catch (e) {
+        throw ApiException('Posible ataque MitM. Certificado de ${uri.host} es inválido.');
+      }
+    }
     try {
       return await request().timeout(const Duration(seconds: 30));
     } on TimeoutException {
