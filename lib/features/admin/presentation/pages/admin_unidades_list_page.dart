@@ -74,7 +74,9 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            side: const BorderSide(color: AppColors.line),
+            side: BorderSide(
+              color: Theme.of(context).dividerTheme.color ?? AppColors.line,
+            ),
           ),
           child: ListTile(
             leading: const CircleAvatar(

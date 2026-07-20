@@ -289,8 +289,13 @@ class _AdminActionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
+    final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
+
     return Material(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
         onTap: onTap,
@@ -298,7 +303,7 @@ class _AdminActionCard extends ConsumerWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
           ),
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -318,17 +323,17 @@ class _AdminActionCard extends ConsumerWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.greenDark,
+                      color: titleColor,
                     ),
                   ),
                   Text(
                     detail,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.muted,
+                      color: mutedColor,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -358,8 +363,12 @@ class _QuickLinkRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final inkColor = isDark ? Colors.white : AppColors.ink;
+
     return Material(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
         onTap: onTap,
@@ -368,7 +377,7 @@ class _QuickLinkRow extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
           ),
           child: Row(
             children: [
@@ -377,10 +386,10 @@ class _QuickLinkRow extends ConsumerWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.ink,
+                    color: inkColor,
                   ),
                 ),
               ),

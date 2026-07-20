@@ -85,3 +85,19 @@ class EncryptedTextConverter extends TypeConverter<String, String> {
     return cipher.encryptText(value);
   }
 }
+
+/// Variante nullable de [EncryptedTextConverter], para columnas
+/// `text().nullable()` que también guardan PII (p. ej.
+/// `Cedulas.informanteNombre`, un nombre de persona usado como etiqueta en
+/// listas de "capturas pendientes").
+///
+/// Drift 2.34 ya trae el helper `NullAwareTypeConverter.wrap` (ver
+/// `package:drift/src/runtime/types/converters.dart`) que envuelve un
+/// `TypeConverter<D, S>` no-nulo en uno `TypeConverter<D?, S?>`: si el valor
+/// es `null`, lo devuelve tal cual en ambas direcciones SIN llamar a
+/// `fromSql`/`toSql` del converter interno (por lo tanto nunca se invoca el
+/// cifrador con `null`). Para valores no nulos delega en
+/// [EncryptedTextConverter], que ya maneja el cifrado y el fallback de
+/// texto plano heredado. No hizo falta escribir una clase custom.
+const NullAwareTypeConverter<String, String> nullableEncryptedTextConverter =
+    NullAwareTypeConverter.wrap(EncryptedTextConverter());

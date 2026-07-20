@@ -13,7 +13,11 @@ class Cedulas extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get syncStatus => integer()(); // 0=DRAFT, 1=PENDING_SYNC, 2=SYNCED
   DateTimeColumn get createdAt => dateTime()();
-  TextColumn get informanteNombre => text().nullable()();
+  // Nombre del informante — dato denormalizado para mostrar en listas de
+  // capturas pendientes. Sigue siendo PII (nombre de persona), por lo que se
+  // cifra igual que el resto de los campos, con soporte para valores nulos.
+  TextColumn get informanteNombre =>
+      text().nullable().map(nullableEncryptedTextConverter)();
   // JSON con los datos de familia e IDs base — cifrado en reposo (AES-256-GCM,
   // ver local_db_encryption.dart). Contiene nombres/domicilio de la familia.
   TextColumn get familiaData => text().map(const EncryptedTextConverter())();

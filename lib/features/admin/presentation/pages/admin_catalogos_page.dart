@@ -136,7 +136,7 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -197,7 +197,9 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
           margin: const EdgeInsets.only(bottom: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            side: const BorderSide(color: AppColors.line),
+            side: BorderSide(
+              color: Theme.of(context).dividerTheme.color ?? AppColors.line,
+            ),
           ),
           child: ListTile(
             leading: const Icon(

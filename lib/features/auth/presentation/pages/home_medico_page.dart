@@ -144,8 +144,13 @@ class _ModuleRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
+    final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
+
     return Material(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
         onTap: () {},
@@ -153,7 +158,7 @@ class _ModuleRow extends ConsumerWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
           ),
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -173,18 +178,18 @@ class _ModuleRow extends ConsumerWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: AppColors.greenDark,
+                        color: titleColor,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.muted,
+                        color: mutedColor,
                       ),
                     ),
                   ],

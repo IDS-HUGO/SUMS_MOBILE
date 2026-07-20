@@ -43,17 +43,15 @@ class $CedulasTable extends Cedulas with TableInfo<$CedulasTable, Cedula> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _informanteNombreMeta = const VerificationMeta(
-    'informanteNombre',
-  );
   @override
-  late final GeneratedColumn<String> informanteNombre = GeneratedColumn<String>(
+  late final GeneratedColumnWithTypeConverter<String?, String>
+  informanteNombre = GeneratedColumn<String>(
     'informante_nombre',
     aliasedName,
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
+  ).withConverter<String?>($CedulasTable.$converterinformanteNombre);
   @override
   late final GeneratedColumnWithTypeConverter<String, String> familiaData =
       GeneratedColumn<String>(
@@ -102,15 +100,6 @@ class $CedulasTable extends Cedulas with TableInfo<$CedulasTable, Cedula> {
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
-    if (data.containsKey('informante_nombre')) {
-      context.handle(
-        _informanteNombreMeta,
-        informanteNombre.isAcceptableOrUnknown(
-          data['informante_nombre']!,
-          _informanteNombreMeta,
-        ),
-      );
-    }
     return context;
   }
 
@@ -132,9 +121,11 @@ class $CedulasTable extends Cedulas with TableInfo<$CedulasTable, Cedula> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
-      informanteNombre: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}informante_nombre'],
+      informanteNombre: $CedulasTable.$converterinformanteNombre.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}informante_nombre'],
+        ),
       ),
       familiaData: $CedulasTable.$converterfamiliaData.fromSql(
         attachedDatabase.typeMapping.read(
@@ -150,6 +141,8 @@ class $CedulasTable extends Cedulas with TableInfo<$CedulasTable, Cedula> {
     return $CedulasTable(attachedDatabase, alias);
   }
 
+  static TypeConverter<String?, String?> $converterinformanteNombre =
+      nullableEncryptedTextConverter;
   static TypeConverter<String, String> $converterfamiliaData =
       const EncryptedTextConverter();
 }
@@ -174,7 +167,9 @@ class Cedula extends DataClass implements Insertable<Cedula> {
     map['sync_status'] = Variable<int>(syncStatus);
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || informanteNombre != null) {
-      map['informante_nombre'] = Variable<String>(informanteNombre);
+      map['informante_nombre'] = Variable<String>(
+        $CedulasTable.$converterinformanteNombre.toSql(informanteNombre),
+      );
     }
     {
       map['familia_data'] = Variable<String>(
@@ -345,7 +340,9 @@ class CedulasCompanion extends UpdateCompanion<Cedula> {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
     if (informanteNombre.present) {
-      map['informante_nombre'] = Variable<String>(informanteNombre.value);
+      map['informante_nombre'] = Variable<String>(
+        $CedulasTable.$converterinformanteNombre.toSql(informanteNombre.value),
+      );
     }
     if (familiaData.present) {
       map['familia_data'] = Variable<String>(
@@ -1581,9 +1578,10 @@ class $$CedulasTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get informanteNombre => $composableBuilder(
+  ColumnWithTypeConverterFilters<String?, String, String>
+  get informanteNombre => $composableBuilder(
     column: $table.informanteNombre,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnWithTypeConverterFilters<String, String, String> get familiaData =>
@@ -1723,10 +1721,11 @@ class $$CedulasTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<String> get informanteNombre => $composableBuilder(
-    column: $table.informanteNombre,
-    builder: (column) => column,
-  );
+  GeneratedColumnWithTypeConverter<String?, String> get informanteNombre =>
+      $composableBuilder(
+        column: $table.informanteNombre,
+        builder: (column) => column,
+      );
 
   GeneratedColumnWithTypeConverter<String, String> get familiaData =>
       $composableBuilder(
