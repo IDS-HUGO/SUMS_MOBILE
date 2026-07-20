@@ -98,4 +98,48 @@ void main() {
       expect(converter.fromSql(legacyPlainJson), legacyPlainJson);
     });
   });
+
+  group('nullableEncryptedTextConverter (Cedulas.informanteNombre)', () {
+    tearDown(() {
+      LocalDbKeyHolder.cipher = null;
+    });
+
+    test('valores no nulos hacen round-trip cifrado igual que EncryptedTextConverter', () {
+      LocalDbKeyHolder.cipher = LocalFieldCipher(enc.Key.fromSecureRandom(32));
+      const original = 'María Guadalupe Hernández';
+
+      final stored = nullableEncryptedTextConverter.toSql(original);
+      expect(stored, isNotNull);
+      expect(stored, isNot(equals(original)));
+
+      final restored = nullableEncryptedTextConverter.fromSql(stored!);
+      expect(restored, original);
+    });
+
+    test('null pasa directo sin invocar el cifrador (toSql)', () {
+      LocalDbKeyHolder.cipher = LocalFieldCipher(enc.Key.fromSecureRandom(32));
+
+      expect(nullableEncryptedTextConverter.toSql(null), isNull);
+    });
+
+    test('null pasa directo sin invocar el cifrador (fromSql)', () {
+      LocalDbKeyHolder.cipher = LocalFieldCipher(enc.Key.fromSecureRandom(32));
+
+      expect(nullableEncryptedTextConverter.fromSql(null), isNull);
+    });
+
+    test('null no lanza excepción ni cuando el cifrador aún no está listo', () {
+      LocalDbKeyHolder.cipher = null;
+
+      expect(nullableEncryptedTextConverter.toSql(null), isNull);
+      expect(nullableEncryptedTextConverter.fromSql(null), isNull);
+    });
+
+    test('filas viejas en claro (legacy) siguen siendo legibles', () {
+      LocalDbKeyHolder.cipher = LocalFieldCipher(enc.Key.fromSecureRandom(32));
+      const legacyPlainName = 'Dato guardado antes del cifrado';
+
+      expect(nullableEncryptedTextConverter.fromSql(legacyPlainName), legacyPlainName);
+    });
+  });
 }

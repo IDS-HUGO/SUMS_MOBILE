@@ -13,7 +13,18 @@ class VacunacionStepWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vm = ref.watch(vacunacionViewModelProvider);
+    // Solo nos suscribimos a lo "estructural" (cargando / error / si se
+    // aplicó vacuna / cuántas vacunas hay). Escribir en un campo de una
+    // vacuna NO cambia ninguno de estos 4 valores, así que esta pantalla ya
+    // no se reconstruye completa en cada tecla — ver ListenableBuilder en
+    // _VaccineCard, que es quien ahora reacciona a los cambios de CADA
+    // vacuna por separado.
+    ref.watch(
+      vacunacionViewModelProvider.select(
+        (v) => (v.isLoading, v.errorMessage, v.seAplicoVacuna, v.vacunas.length),
+      ),
+    );
+    final vm = ref.read(vacunacionViewModelProvider);
     final intVm = ref.watch(integrantesViewModelProvider);
     final pacientesOpts = intVm.integrantes
         .where((i) => i.nombre.text.isNotEmpty)
@@ -89,7 +100,13 @@ class VacunacionStepWidget extends ConsumerWidget {
                   vacunasOpts: vm.vacunasOpts,
                   dosisOpts: vm.dosisOpts,
                   pacientesOpts: pacientesOpts,
-                  onChanged: () => vm.updateForm(),
+                  onChanged: () {
+                    // Notifica primero a la propia vacuna (rebuild acotado a
+                    // su tarjeta) y luego al vm completo (compatibilidad con
+                    // quien más escuche este vm).
+                    vm.vacunas[i].touch();
+                    vm.updateForm();
+                  },
                 ),
               ),
             OutlinedButton.icon(
@@ -208,6 +225,17 @@ class _VaccineCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Reconstruye esta tarjeta cuando ESTA vacuna cambia (form es su propio
+    // ChangeNotifier), sin depender de que el widget padre vuelva a
+    // ejecutar build() — así escribir en la vacuna 3 no reconstruye las
+    // tarjetas de las demás vacunas.
+    return ListenableBuilder(
+      listenable: form,
+      builder: (context, _) => _buildCard(context, ref),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,

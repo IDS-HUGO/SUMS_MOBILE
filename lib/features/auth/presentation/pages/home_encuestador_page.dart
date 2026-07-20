@@ -558,13 +558,14 @@ class _MetricCardFullWidth extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
         boxShadow: [
           BoxShadow(
             color: AppColors.greenDark.withValues(alpha: 0.06),
@@ -628,12 +629,13 @@ class _MetricCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
         boxShadow: [
           BoxShadow(
             color: AppColors.greenDark.withValues(alpha: 0.06),
@@ -827,7 +829,11 @@ class _FlowStepRow extends ConsumerWidget {
               ),
             ),
             if (!isLast)
-              Container(width: 1.5, height: 36, color: AppColors.line),
+              Container(
+                width: 1.5,
+                height: 36,
+                color: Theme.of(context).dividerTheme.color ?? AppColors.line,
+              ),
           ],
         ),
         const SizedBox(width: 14),
