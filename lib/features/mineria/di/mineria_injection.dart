@@ -5,6 +5,8 @@ import '../data/datasources/remote/mineria_remote_datasource.dart';
 import '../data/repositories/mineria_repository_impl.dart';
 import '../domain/repositories/mineria_repository.dart';
 import '../domain/usecases/check_salud_usecase.dart';
+import '../domain/usecases/get_catalogos_usecase.dart';
+import '../domain/usecases/predecir_riesgo_usecase.dart';
 import '../domain/usecases/procesar_pdf_usecase.dart';
 import '../presentation/viewmodels/mineria_viewmodel.dart';
 
@@ -21,8 +23,17 @@ void registerMineriaDependencies(GetIt sl) {
 
   sl.registerLazySingleton<ProcesarPdfUseCase>(() => ProcesarPdfUseCase(sl()));
   sl.registerLazySingleton<CheckSaludUseCase>(() => CheckSaludUseCase(sl()));
+  sl.registerLazySingleton<GetCatalogosUseCase>(() => GetCatalogosUseCase(sl()));
+  sl.registerLazySingleton<PredecirRiesgoUseCase>(
+    () => PredecirRiesgoUseCase(sl()),
+  );
 
   sl.registerFactory<MineriaViewModel>(
-    () => MineriaViewModel(procesarPdfUseCase: sl(), checkSaludUseCase: sl()),
+    () => MineriaViewModel(
+      procesarPdfUseCase: sl(),
+      checkSaludUseCase: sl(),
+      getCatalogosUseCase: sl(),
+      predecirRiesgoUseCase: sl(),
+    ),
   );
 }

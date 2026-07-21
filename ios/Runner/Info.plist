@@ -4,15 +4,21 @@
 <dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<false/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
 	</dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Se requiere acceso a la galería para seleccionar documentos PDF.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Se requiere acceso a la cámara para escanear documentos.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Esta aplicación no utiliza el micrófono.</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Esta aplicación no utiliza música.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>Sums</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -32,6 +38,10 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

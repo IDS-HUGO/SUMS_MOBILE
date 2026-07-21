@@ -17,4 +17,14 @@ class MineriaRepositoryImpl implements MineriaRepository {
   Future<bool> checkSalud() async {
     return await remoteDataSource.checkSalud();
   }
+
+  @override
+  Future<Map<String, List<String>>> getCatalogos() {
+    return remoteDataSource.getCatalogos();
+  }
+
+  @override
+  Future<Map<String, dynamic>> predecirRiesgo(Map<String, dynamic> payload) {
+    return remoteDataSource.predecirRiesgo(payload);
+  }
 }
