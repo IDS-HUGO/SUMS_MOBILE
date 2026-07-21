@@ -199,49 +199,57 @@ class IntegrantesViewModel extends ChangeNotifier {
     return int.tryParse(text);
   }
 
+  /// Devuelve el texto de [c] recortado (sin espacios al inicio/fin), o
+  /// `null` si queda vacío tras el recorte. Centraliza el `.trim()` de todos
+  /// los campos de texto libre antes de serializarlos hacia el backend.
+  String? _trimmedOrNull(TextEditingController c) {
+    final t = c.text.trim();
+    return t.isEmpty ? null : t;
+  }
+
   List<Map<String, dynamic>> toPayload() {
     return _integrantes.map((i) {
       final isFem = i.sexo == 'Femenino';
       return {
-        "nombre": i.nombre.text,
-        "fecha_nacimiento": i.fechaNacimiento.text,
+        "nombre": i.nombre.text.trim(),
+        "fecha_nacimiento": i.fechaNacimiento.text.trim(),
         "edad": _parseEdad(i.edad.text),
         "sexo": i.sexo,
         "estado_civil": i.estadoCivil,
         "parentesco": i.parentesco,
         "lengua": i.lengua,
         "lenguaEspecificar": i.lengua == 'Lengua indígena'
-            ? (i.lenguaEsp.text.isEmpty ? null : i.lenguaEsp.text)
+            ? _trimmedOrNull(i.lenguaEsp)
             : null,
         "escolaridad": i.escolaridad,
-        "ocupacion": i.ocupacion.text,
+        "ocupacion": i.ocupacion.text.trim(),
         "ingreso": i.ingreso,
         "alfabetizacion": i.alfabetizacion,
         "seguridad_social": i.seguridadSocial,
         "higiene": i.higiene,
         "discapacidad": i.discapacidad,
         "tipoDiscapacidad": i.discapacidad
-            ? (i.tipoDisc.text.isEmpty ? null : i.tipoDisc.text)
+            ? _trimmedOrNull(i.tipoDisc)
             : null,
-        "proteina": int.tryParse(i.proteina.text),
-        "frutasVerduras": int.tryParse(i.frutasVerd.text),
-        "cereales": int.tryParse(i.cereales.text),
+        "proteina": int.tryParse(i.proteina.text.trim()),
+        "frutasVerduras": int.tryParse(i.frutasVerd.text.trim()),
+        "cereales": int.tryParse(i.cereales.text.trim()),
         "toxicomanias": i.toxicomanias.toList(),
         "otraSustancia": i.toxicomanias.contains('Otras sustancias')
-            ? (i.otraSust.text.isEmpty ? null : i.otraSust.text)
+            ? _trimmedOrNull(i.otraSust)
             : null,
         "cronicas": i.cronicas.toList(),
         "embarazo": isFem ? i.embarazo : null,
         "tamizajeCervico": isFem ? i.tamizajeCervico : null,
         "fechaCervico": (isFem && i.tamizajeCervico == 'Sí')
-            ? (i.fechaCervico.text.isEmpty ? null : i.fechaCervico.text)
+            ? _trimmedOrNull(i.fechaCervico)
             : null,
         "tamizajeMama": isFem ? i.tamizajeMama : null,
         "fechaMama": (isFem && i.tamizajeMama == 'Sí')
-            ? (i.fechaMama.text.isEmpty ? null : i.fechaMama.text)
+            ? _trimmedOrNull(i.fechaMama)
             : null,
         "frecuenciaSalud": i.frecuenciaSalud,
-        "motivoSalud": i.motivoSalud.text,
+        "motivoSalud": i.motivoSalud.text.trim(),
       };
     }).toList();
   }

@@ -35,11 +35,26 @@ String hashOfflinePassword(String contrasena, {String? existingSalt}) {
   return '$salt:$hash';
 }
 
+/// Compara dos strings en tiempo (aproximadamente) constante, para no filtrar
+/// por temporización en qué posición difieren dos hashes (timing attack).
+/// Si difieren en longitud igual recorre ambas cadenas por completo antes de
+/// devolver el resultado.
+bool _constantTimeStringEquals(String a, String b) {
+  final maxLen = a.length > b.length ? a.length : b.length;
+  var diff = a.length ^ b.length;
+  for (var i = 0; i < maxLen; i++) {
+    final codeA = i < a.length ? a.codeUnitAt(i) : 0;
+    final codeB = i < b.length ? b.codeUnitAt(i) : 0;
+    diff |= codeA ^ codeB;
+  }
+  return diff == 0;
+}
+
 bool verifyOfflinePasswordHash(String? stored, String contrasena) {
   if (stored == null || !stored.contains(':')) return false;
   final salt = stored.substring(0, stored.indexOf(':'));
   final expected = hashOfflinePassword(contrasena, existingSalt: salt);
-  return expected == stored;
+  return _constantTimeStringEquals(expected, stored);
 }
 
 class SecureTokenStorage implements TokenStorage {

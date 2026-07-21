@@ -50,12 +50,12 @@ class FamiliaViewModel extends ChangeNotifier {
 
   Map<String, dynamic> toPayload() {
     return {
-      "informante_nombre": informanteNombre.text,
+      "informante_nombre": informanteNombre.text.trim(),
       "sexo": informanteSexo,
-      "domicilio": domicilio.text,
-      "localidad": localidad.text,
-      "manzana": manzana.text,
-      "vivienda_referencia": viviendaRef.text,
+      "domicilio": domicilio.text.trim(),
+      "localidad": localidad.text.trim(),
+      "manzana": manzana.text.trim(),
+      "vivienda_referencia": viviendaRef.text.trim(),
       "rol_informante": rolInformante,
     };
   }

@@ -4,6 +4,22 @@ import 'package:flutter/services.dart';
 
 final digitsOnly = [FilteringTextInputFormatter.digitsOnly];
 
+/// Whitelist para campos de nombre de persona: letras (incluye acentos y
+/// eñe), espacios, guion y apóstrofe. Bloquea dígitos y caracteres de
+/// control/inyección que no tienen sentido en un nombre.
+final nameInputFormatters = [
+  FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZÀ-ÖØ-öø-ÿ\s\-']")),
+];
+
+/// Whitelist más permisiva para texto libre (domicilio, ocupación, motivos
+/// de salud, tipo de discapacidad, etc.): letras, acentos, dígitos y
+/// puntuación básica de direcciones/observaciones, sin permitir caracteres
+/// de control ni símbolos usados típicamente en inyección (<, >, {, }, ;,
+/// comillas, backticks, etc).
+final freeTextInputFormatters = [
+  FilteringTextInputFormatter.allow(RegExp(r"[a-zA-Z0-9À-ÖØ-öø-ÿ\s\.,#\-/°()]")),
+];
+
 int? optionalInt(String value) {
   if (value.trim().isEmpty) return null;
   return int.tryParse(value.trim());

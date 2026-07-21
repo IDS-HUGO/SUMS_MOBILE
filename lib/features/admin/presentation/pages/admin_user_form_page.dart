@@ -140,13 +140,19 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   decoration: InputDecoration(
                     labelText: widget.user != null
                         ? 'Contraseña (Opcional si no cambia)'
-                        : 'Contraseña (min 6 caracteres)',
+                        : 'Contraseña (min 8 caracteres, mayúsculas, minúsculas y números)',
                     border: const OutlineInputBorder(),
                   ),
                   validator: (v) {
                     if (widget.user != null && (v == null || v.isEmpty))
                       return null;
-                    if (v == null || v.length < 6) return 'Minimo 6 caracteres';
+                    if (v == null || v.length < 8) return 'Mínimo 8 caracteres';
+                    final hasUpper = RegExp(r'[A-Z]').hasMatch(v);
+                    final hasLower = RegExp(r'[a-z]').hasMatch(v);
+                    final hasDigit = RegExp(r'[0-9]').hasMatch(v);
+                    if (!hasUpper || !hasLower || !hasDigit) {
+                      return 'Debe incluir mayúsculas, minúsculas y números';
+                    }
                     return null;
                   },
                 ),

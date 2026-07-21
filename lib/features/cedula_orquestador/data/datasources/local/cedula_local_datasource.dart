@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import '../../../../../core/storage/local_database.dart';
+import '../../../../../core/network/app_logger.dart';
 
 class CedulaLocalDataSource {
   final AppDatabase db;
@@ -90,41 +91,53 @@ class CedulaLocalDataSource {
     )..where((tbl) => tbl.syncStatus.equals(syncStatus))).get();
 
     for (final c in cedulasList) {
-      final cedulaPayload = jsonDecode(c.familiaData) as Map<String, dynamic>;
+      try {
+        final cedulaPayload = jsonDecode(c.familiaData) as Map<String, dynamic>;
 
-      // Obtener Vivienda
-      final viviendaQuery = await (db.select(
-        db.viviendas,
-      )..where((tbl) => tbl.cedulaId.equals(c.id))).getSingleOrNull();
-      if (viviendaQuery != null) {
-        cedulaPayload['vivienda'] = jsonDecode(viviendaQuery.viviendaData);
+        // Obtener Vivienda
+        final viviendaQuery = await (db.select(
+          db.viviendas,
+        )..where((tbl) => tbl.cedulaId.equals(c.id))).getSingleOrNull();
+        if (viviendaQuery != null) {
+          cedulaPayload['vivienda'] = jsonDecode(viviendaQuery.viviendaData);
+        }
+
+        // Obtener Vacunacion
+        final vacunasQuery = await (db.select(
+          db.vacunas,
+        )..where((tbl) => tbl.cedulaId.equals(c.id))).get();
+        final vacunasList = vacunasQuery
+            .map((vq) => jsonDecode(vq.vacunaData))
+            .toList();
+        // Ojo: asumiendo se_aplico_vacuna = true si hay vacunas, false si no.
+        cedulaPayload['vacunacion'] = {
+          'se_aplico_vacuna': vacunasList.isNotEmpty,
+          'vacunas': vacunasList,
+        };
+
+        // Obtener Integrantes
+        final integrantesQuery = await (db.select(
+          db.integrantes,
+        )..where((tbl) => tbl.cedulaId.equals(c.id))).get();
+        cedulaPayload['integrantes'] = integrantesQuery
+            .map((iq) => jsonDecode(iq.integranteData))
+            .toList();
+
+        // Agregar ID local para control
+        cedulaPayload['_localId'] = c.id;
+
+        results.add(cedulaPayload);
+      } catch (e, st) {
+        // Un registro cuyo JSON no se pudo decodificar (ej. no se descifró
+        // correctamente) no debe tumbar toda la sincronización: se omite y
+        // se deja constancia en el log en vez de propagar la excepción.
+        AppLogger.error(
+          'CedulaLocalDataSource: registro ${c.id} con JSON corrupto/no '
+          'decodificable; se omite de este lote (sync_status=$syncStatus).',
+          e,
+          st,
+        );
       }
-
-      // Obtener Vacunacion
-      final vacunasQuery = await (db.select(
-        db.vacunas,
-      )..where((tbl) => tbl.cedulaId.equals(c.id))).get();
-      final vacunasList = vacunasQuery
-          .map((vq) => jsonDecode(vq.vacunaData))
-          .toList();
-      // Ojo: asumiendo se_aplico_vacuna = true si hay vacunas, false si no.
-      cedulaPayload['vacunacion'] = {
-        'se_aplico_vacuna': vacunasList.isNotEmpty,
-        'vacunas': vacunasList,
-      };
-
-      // Obtener Integrantes
-      final integrantesQuery = await (db.select(
-        db.integrantes,
-      )..where((tbl) => tbl.cedulaId.equals(c.id))).get();
-      cedulaPayload['integrantes'] = integrantesQuery
-          .map((iq) => jsonDecode(iq.integranteData))
-          .toList();
-
-      // Agregar ID local para control
-      cedulaPayload['_localId'] = c.id;
-
-      results.add(cedulaPayload);
     }
 
     return results;
@@ -141,18 +154,36 @@ class CedulaLocalDataSource {
       final current = await (db.select(
         db.cedulas,
       )..where((tbl) => tbl.id.equals(localId))).getSingle();
-      final decoded = jsonDecode(current.familiaData) as Map<String, dynamic>;
-      decoded['_lastSyncError'] = error;
-      decoded['_lastSyncAttempt'] = DateTime.now().toIso8601String();
+      try {
+        final decoded =
+            jsonDecode(current.familiaData) as Map<String, dynamic>;
+        decoded['_lastSyncError'] = error;
+        decoded['_lastSyncAttempt'] = DateTime.now().toIso8601String();
 
-      await (db.update(
-        db.cedulas,
-      )..where((tbl) => tbl.id.equals(localId))).write(
-        CedulasCompanion(
-          syncStatus: Value(newStatus),
-          familiaData: Value(jsonEncode(decoded)),
-        ),
-      );
+        await (db.update(
+          db.cedulas,
+        )..where((tbl) => tbl.id.equals(localId))).write(
+          CedulasCompanion(
+            syncStatus: Value(newStatus),
+            familiaData: Value(jsonEncode(decoded)),
+          ),
+        );
+      } catch (e, st) {
+        // El JSON guardado está corrupto/no decodificable: no podemos anexar
+        // el mensaje de error dentro de él, pero sí debemos seguir marcando
+        // el nuevo syncStatus para no dejar el registro atascado
+        // silenciosamente. Se deja constancia en el log en vez de propagar
+        // la excepción sin control.
+        AppLogger.error(
+          'CedulaLocalDataSource: registro $localId con JSON corrupto al '
+          'intentar anexar el error de sincronización; se marca solo el '
+          'syncStatus, sin guardar el detalle del error.',
+          e,
+          st,
+        );
+        await (db.update(db.cedulas)..where((tbl) => tbl.id.equals(localId)))
+            .write(CedulasCompanion(syncStatus: Value(newStatus)));
+      }
     } else {
       await (db.update(db.cedulas)..where((tbl) => tbl.id.equals(localId)))
           .write(CedulasCompanion(syncStatus: Value(newStatus)));
@@ -167,12 +198,35 @@ class CedulaLocalDataSource {
     )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
 
     for (final c in cedulasList) {
-      final cedulaPayload = jsonDecode(c.familiaData) as Map<String, dynamic>;
-      cedulaPayload['_localId'] = c.id;
-      cedulaPayload['_syncStatus'] = c.syncStatus;
-      cedulaPayload['_createdAt'] = c.createdAt.toIso8601String();
-      cedulaPayload['_informante'] = c.informanteNombre;
-      results.add(cedulaPayload);
+      try {
+        final cedulaPayload =
+            jsonDecode(c.familiaData) as Map<String, dynamic>;
+        cedulaPayload['_localId'] = c.id;
+        cedulaPayload['_syncStatus'] = c.syncStatus;
+        cedulaPayload['_createdAt'] = c.createdAt.toIso8601String();
+        cedulaPayload['_informante'] = c.informanteNombre;
+        results.add(cedulaPayload);
+      } catch (e, st) {
+        // Registro con JSON corrupto/no decodificable: en vez de propagar la
+        // excepción (y tumbar toda la pantalla de historial), se agrega un
+        // marcador mínimo con los metadatos que sí viven en columnas propias
+        // (no dependen de decodificar familiaData), para que el usuario vea
+        // que el registro existe pero está dañado, en vez de desaparecer
+        // silenciosamente de la lista.
+        AppLogger.error(
+          'CedulaLocalDataSource: registro ${c.id} con JSON corrupto/no '
+          'decodificable en getAllCedulas; se marca como corrupto.',
+          e,
+          st,
+        );
+        results.add({
+          '_localId': c.id,
+          '_syncStatus': c.syncStatus,
+          '_createdAt': c.createdAt.toIso8601String(),
+          '_informante': c.informanteNombre,
+          '_corrupted': true,
+        });
+      }
     }
     return results;
   }

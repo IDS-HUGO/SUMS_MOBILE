@@ -1,0 +1,30 @@
+name: Flutter CI
+
+# Corre analisis estatico y pruebas en cada push/PR a la rama principal, para
+# detectar regresiones antes de mergear (segunda ronda de remediacion de
+# seguridad, hallazgo #6).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      - name: flutter analyze
+        run: flutter analyze
+
+      - name: flutter test
+        run: flutter test
