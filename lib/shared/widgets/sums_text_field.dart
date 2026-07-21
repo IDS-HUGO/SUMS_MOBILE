@@ -20,6 +20,7 @@ class SumsTextField extends ConsumerWidget {
   final bool enableSuggestions;
   final bool autocorrect;
   final bool enableInteractiveSelection;
+  final int? maxLength;
 
   const SumsTextField({
     super.key,
@@ -40,6 +41,7 @@ class SumsTextField extends ConsumerWidget {
     this.enableSuggestions = true,
     this.autocorrect = true,
     this.enableInteractiveSelection = true,
+    this.maxLength,
   });
 
   @override
@@ -59,6 +61,7 @@ class SumsTextField extends ConsumerWidget {
       enableInteractiveSelection: enableInteractiveSelection,
       minLines: obscureText ? 1 : minLines,
       maxLines: obscureText ? 1 : maxLines,
+      maxLength: maxLength,
       decoration: InputDecoration(
         labelText: label,
         helperText: helperText,

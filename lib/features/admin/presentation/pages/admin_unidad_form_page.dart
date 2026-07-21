@@ -86,7 +86,6 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: Text(widget.unidad != null ? 'Editar Unidad' : 'Nueva Unidad'),
         backgroundColor: AppColors.green,
@@ -121,10 +120,15 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
                     border: OutlineInputBorder(),
                   ),
                   validator: (v) {
-                    if (v!.isEmpty) return 'Requerido';
-                    // Validación básica de clues
-                    if (v.length < 11)
-                      return 'Debe tener 11 caracteres (ej. CSSMA000001)';
+                    if (v == null || v.isEmpty) return 'Requerido';
+                    // Formato oficial CLUES: 5 letras (institución + estado)
+                    // seguidas de 6 dígitos, 11 caracteres en total
+                    // (ej. CSSMA000001).
+                    final clues = v.trim().toUpperCase();
+                    final cluesRegex = RegExp(r'^[A-Z]{5}[0-9]{6}$');
+                    if (!cluesRegex.hasMatch(clues)) {
+                      return 'CLUES inválida. Formato: 5 letras + 6 dígitos (ej. CSSMA000001)';
+                    }
                     return null;
                   },
                 ),

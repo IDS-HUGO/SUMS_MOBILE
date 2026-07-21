@@ -6,6 +6,7 @@ import 'app.dart';
 import 'core/di/injection.dart';
 import 'core/sync/background_worker.dart';
 import 'core/network/app_logger.dart';
+import 'core/security/device_security.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,6 +30,11 @@ void main() async {
   } catch (e) {
     AppLogger.error('Error al verificar integridad de entorno de ejecucion', e);
   }
+
+  // Se expone globalmente para que login y guardado de cédulas puedan
+  // bloquear la acción (no solo advertirla) cuando el dispositivo no es
+  // confiable. Ver core/security/device_security.dart.
+  DeviceSecurityStatus.isSecure = isSecure;
 
   final prefs = await SharedPreferences.getInstance();
   await initInjection(prefs);

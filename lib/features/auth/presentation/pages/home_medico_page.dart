@@ -8,6 +8,7 @@ import 'package:sums/core/di/providers.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/widgets/theme_mode_menu_button.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class HomeMedicoPage extends ConsumerWidget {
@@ -20,7 +21,6 @@ class HomeMedicoPage extends ConsumerWidget {
         'médico';
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: _buildAppBar(context, ref),
       body: SafeArea(
         child: CustomScrollView(
@@ -105,6 +105,7 @@ class HomeMedicoPage extends ConsumerWidget {
       ],
     ),
     actions: [
+      const ThemeModeMenuButton(),
       IconButton(
         tooltip: 'Cerrar sesión',
         icon: const Icon(Icons.logout_outlined),
@@ -143,8 +144,13 @@ class _ModuleRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
+    final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
+
     return Material(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
         onTap: () {},
@@ -152,7 +158,7 @@ class _ModuleRow extends ConsumerWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
           ),
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -172,18 +178,18 @@ class _ModuleRow extends ConsumerWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: AppColors.greenDark,
+                        color: titleColor,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.muted,
+                        color: mutedColor,
                       ),
                     ),
                   ],

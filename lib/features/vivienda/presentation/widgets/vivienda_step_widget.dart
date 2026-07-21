@@ -40,6 +40,8 @@ class ViviendaStepWidget extends ConsumerWidget {
                     label: 'Otros materiales, especificar',
                     icon: Icons.edit_outlined,
                     validator: requiredText,
+                    maxLength: 80,
+                    inputFormatters: freeTextInputFormatters,
                   ),
                 _select(
                   label: 'Paredes',
@@ -56,6 +58,8 @@ class ViviendaStepWidget extends ConsumerWidget {
                     label: 'Otros materiales, especificar',
                     icon: Icons.edit_outlined,
                     validator: requiredText,
+                    maxLength: 80,
+                    inputFormatters: freeTextInputFormatters,
                   ),
                 _select(
                   label: 'Piso',
@@ -72,6 +76,8 @@ class ViviendaStepWidget extends ConsumerWidget {
                     label: 'Otros materiales, especificar',
                     icon: Icons.edit_outlined,
                     validator: requiredText,
+                    maxLength: 80,
+                    inputFormatters: freeTextInputFormatters,
                   ),
                 _numberField(
                   vm.cuartos,
@@ -165,6 +171,8 @@ class ViviendaStepWidget extends ConsumerWidget {
                     label: 'Otros, especificar',
                     icon: Icons.edit_outlined,
                     validator: requiredText,
+                    maxLength: 80,
+                    inputFormatters: freeTextInputFormatters,
                   ),
                 SumsTextField(
                   controller: vm.animalObs,
@@ -172,6 +180,8 @@ class ViviendaStepWidget extends ConsumerWidget {
                   icon: Icons.notes_outlined,
                   minLines: 2,
                   maxLines: 4,
+                  maxLength: 200,
+                  inputFormatters: freeTextInputFormatters,
                 ),
               ]),
             ],

@@ -30,7 +30,7 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
     );
 
     if (result != null && result.files.single.path != null) {
-      ref
+      await ref
           .read(mineriaViewModelProvider)
           .setFile(File(result.files.single.path!));
     }
@@ -41,7 +41,6 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
     final vm = ref.watch(mineriaViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Minería OCR'),
         actions: [
@@ -182,7 +181,9 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: AppColors.line),
+                side: BorderSide(
+                  color: Theme.of(context).dividerTheme.color ?? AppColors.line,
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -243,12 +244,18 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
             label,
             style: const TextStyle(color: AppColors.muted, fontSize: 13),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              color: color ?? AppColors.ink,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: color ?? AppColors.ink,
+              ),
             ),
           ),
         ],
@@ -266,13 +273,17 @@ class _FieldCard extends StatelessWidget {
     final Color statusColor = field.needsReview
         ? AppColors.error
         : (field.confidence < 0.8 ? AppColors.gold : AppColors.green);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final inkColor = isDark ? Colors.white : AppColors.ink;
+    final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -284,10 +295,10 @@ class _FieldCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   field.key.toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.muted,
+                    color: mutedColor,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -327,7 +338,7 @@ class _FieldCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: field.value.isEmpty ? AppColors.muted : AppColors.ink,
+              color: field.value.isEmpty ? mutedColor : inkColor,
             ),
           ),
           if (field.needsReview)

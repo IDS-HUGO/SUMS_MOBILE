@@ -4,6 +4,7 @@ import 'package:sums/core/di/providers.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/widgets/theme_mode_menu_button.dart';
 
 class HomeAdminPage extends ConsumerWidget {
   const HomeAdminPage({super.key});
@@ -25,7 +26,6 @@ class HomeAdminPage extends ConsumerWidget {
     final userName = auth.session?.user.nombreUsuario ?? 'administrador';
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: _buildAppBar(context, ref),
       body: SafeArea(
         child: CustomScrollView(
@@ -164,6 +164,7 @@ class HomeAdminPage extends ConsumerWidget {
       ],
     ),
     actions: [
+      const ThemeModeMenuButton(),
       IconButton(
         tooltip: 'Cerrar sesión',
         icon: const Icon(Icons.logout_outlined),
@@ -288,8 +289,13 @@ class _AdminActionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
+    final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
+
     return Material(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
         onTap: onTap,
@@ -297,7 +303,7 @@ class _AdminActionCard extends ConsumerWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
           ),
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -317,17 +323,17 @@ class _AdminActionCard extends ConsumerWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.greenDark,
+                      color: titleColor,
                     ),
                   ),
                   Text(
                     detail,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.muted,
+                      color: mutedColor,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -357,8 +363,12 @@ class _QuickLinkRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final inkColor = isDark ? Colors.white : AppColors.ink;
+
     return Material(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
         onTap: onTap,
@@ -367,7 +377,7 @@ class _QuickLinkRow extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
           ),
           child: Row(
             children: [
@@ -376,10 +386,10 @@ class _QuickLinkRow extends ConsumerWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.ink,
+                    color: inkColor,
                   ),
                 ),
               ),

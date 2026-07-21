@@ -5,6 +5,7 @@ import 'package:sums/core/di/providers.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/brand_header.dart';
+import '../../../../shared/widgets/theme_mode_menu_button.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class HomeAnalistaPage extends ConsumerWidget {
@@ -19,7 +20,7 @@ class HomeAnalistaPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('SUMS · Analista'),
-        actions: [_logoutButton(context, ref)],
+        actions: [const ThemeModeMenuButton(), _logoutButton(context, ref)],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

@@ -34,7 +34,6 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Cédulas Registradas'),
         backgroundColor: AppColors.green,
@@ -53,7 +52,7 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
@@ -121,7 +120,11 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-                        side: const BorderSide(color: AppColors.line),
+                        side: BorderSide(
+                          color:
+                              Theme.of(context).dividerTheme.color ??
+                              AppColors.line,
+                        ),
                       ),
                       child: ListTile(
                         leading: CircleAvatar(

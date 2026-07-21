@@ -18,6 +18,7 @@ import 'features/mineria/presentation/pages/mineria_page.dart';
 
 import 'features/estadisticas/presentation/pages/productividad_admin_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import 'features/auth/domain/entities/user_role.dart';
 
 // Importaciones actualizadas a la nueva carpeta cedula_orquestador
 import 'features/cedula_orquestador/presentation/pages/cedula_form_page.dart';
@@ -25,6 +26,37 @@ import 'features/cedula_orquestador/presentation/pages/pending_captures_page.dar
 import 'features/cedula_orquestador/presentation/pages/cedula_history_page.dart';
 
 import 'shared/theme/app_theme.dart';
+import 'shared/theme/theme_mode_controller.dart';
+
+/// Envuelve una página administrativa verificando, en el momento de
+/// construirla, que el usuario autenticado tenga el rol `admin`. Si no hay
+/// sesión o el rol no corresponde, no se construye la página real: se agenda
+/// una redirección a home/login (según corresponda) y mientras tanto se
+/// muestra un loader vacío. Evita que quien navegue directamente a una ruta
+/// `/admin/*` (deep link, back-stack manipulado, etc.) llegue a ver contenido
+/// administrativo sin el rol correcto.
+Widget _guardedAdminRoute(Widget Function() pageBuilder) {
+  return Builder(
+    builder: (context) {
+      final authViewModel = sl<AuthViewModel>();
+      final isAdmin =
+          authViewModel.isAuthenticated && authViewModel.role == UserRole.admin;
+      if (isAdmin) {
+        return pageBuilder();
+      }
+      final redirectRoute = authViewModel.isAuthenticated
+          ? authViewModel.homeRoute
+          : AppRoutes.login;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(redirectRoute, (route) => false);
+      });
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    },
+  );
+}
 
 class App extends ConsumerStatefulWidget {
   final bool isSecureDevice;
@@ -99,7 +131,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       title: 'SUMS IMSS Bienestar',
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: ref.watch(themeModeProvider),
       initialRoute: AppRoutes.login,
       routes: {
         AppRoutes.login: (_) => const LoginPage(),
@@ -112,14 +144,22 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
         AppRoutes.cedula: (_) => const CedulaFormPage(),
         AppRoutes.pending: (_) => const PendingCapturesPage(),
         AppRoutes.cedulaHistorial: (_) => const CedulaHistoryPage(),
-        AppRoutes.adminUsers: (_) => const AdminUsersListPage(),
-        AppRoutes.adminUnidades: (_) => const AdminUnidadesListPage(),
-        AppRoutes.adminCatalogos: (_) => const AdminCatalogosPage(),
-        AppRoutes.adminReportes: (_) => const AdminReportesPage(),
-        AppRoutes.adminProductividad: (_) => const AdminProductividadPage(),
-        AppRoutes.adminCedulas: (_) => const AdminCedulasListPage(),
-        AppRoutes.productividadAdmin: (_) => const ProductividadAdminPage(),
-        AppRoutes.adminMineria: (_) => const MineriaPage(),
+        AppRoutes.adminUsers: (_) =>
+            _guardedAdminRoute(() => const AdminUsersListPage()),
+        AppRoutes.adminUnidades: (_) =>
+            _guardedAdminRoute(() => const AdminUnidadesListPage()),
+        AppRoutes.adminCatalogos: (_) =>
+            _guardedAdminRoute(() => const AdminCatalogosPage()),
+        AppRoutes.adminReportes: (_) =>
+            _guardedAdminRoute(() => const AdminReportesPage()),
+        AppRoutes.adminProductividad: (_) =>
+            _guardedAdminRoute(() => const AdminProductividadPage()),
+        AppRoutes.adminCedulas: (_) =>
+            _guardedAdminRoute(() => const AdminCedulasListPage()),
+        AppRoutes.productividadAdmin: (_) =>
+            _guardedAdminRoute(() => const ProductividadAdminPage()),
+        AppRoutes.adminMineria: (_) =>
+            _guardedAdminRoute(() => const MineriaPage()),
       },
       // Guarda de ruta: si el usuario no está autenticado, va a login.
       onGenerateRoute: (settings) {

@@ -8,6 +8,7 @@ import '../../../familia/presentation/viewmodels/familia_viewmodel.dart';
 import '../../../vivienda/presentation/viewmodels/vivienda_viewmodel.dart';
 import '../../../vacunacion/presentation/viewmodels/vacunacion_viewmodel.dart';
 import '../../../integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
+import '../../../../core/security/device_security.dart';
 
 class CedulaSuccessSheet extends ConsumerWidget {
   final List<GlobalKey<FormState>> formKeys;
@@ -69,6 +70,12 @@ class CedulaSuccessSheet extends ConsumerWidget {
   }
 
   Future<void> _submitCedula(BuildContext context, WidgetRef ref) async {
+    if (!DeviceSecurityStatus.isSecure) {
+      Navigator.pop(context);
+      await showInsecureDeviceDialog(context);
+      return;
+    }
+
     final authVm = ref.read(authViewModelProvider);
     final user = authVm.session?.user;
     if (user == null ||
@@ -79,6 +86,19 @@ class CedulaSuccessSheet extends ConsumerWidget {
         SnackBar(
           content: const Text(
             'ID de entrevistador inválido. No se puede guardar la cédula.',
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    if (user.unidadSaludId == null || user.unidadSaludId! <= 0) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'ID de unidad de salud inválido. No se puede guardar la cédula.',
           ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
@@ -111,7 +131,7 @@ class CedulaSuccessSheet extends ConsumerWidget {
 
     // Construir el JSON consolidado
     final payload = {
-      "unidad_salud_id": user.unidadSaludId ?? 1,
+      "unidad_salud_id": user.unidadSaludId,
       "entrevistador_id": user.entrevistadorId,
       "familia": familiaVm.toPayload(),
       "vivienda": viviendaVm.toPayload(),

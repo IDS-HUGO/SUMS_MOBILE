@@ -43,28 +43,24 @@ class $CedulasTable extends Cedulas with TableInfo<$CedulasTable, Cedula> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _informanteNombreMeta = const VerificationMeta(
-    'informanteNombre',
-  );
   @override
-  late final GeneratedColumn<String> informanteNombre = GeneratedColumn<String>(
+  late final GeneratedColumnWithTypeConverter<String?, String>
+  informanteNombre = GeneratedColumn<String>(
     'informante_nombre',
     aliasedName,
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _familiaDataMeta = const VerificationMeta(
-    'familiaData',
-  );
+  ).withConverter<String?>($CedulasTable.$converterinformanteNombre);
   @override
-  late final GeneratedColumn<String> familiaData = GeneratedColumn<String>(
-    'familia_data',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+  late final GeneratedColumnWithTypeConverter<String, String> familiaData =
+      GeneratedColumn<String>(
+        'familia_data',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<String>($CedulasTable.$converterfamiliaData);
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -104,26 +100,6 @@ class $CedulasTable extends Cedulas with TableInfo<$CedulasTable, Cedula> {
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
-    if (data.containsKey('informante_nombre')) {
-      context.handle(
-        _informanteNombreMeta,
-        informanteNombre.isAcceptableOrUnknown(
-          data['informante_nombre']!,
-          _informanteNombreMeta,
-        ),
-      );
-    }
-    if (data.containsKey('familia_data')) {
-      context.handle(
-        _familiaDataMeta,
-        familiaData.isAcceptableOrUnknown(
-          data['familia_data']!,
-          _familiaDataMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_familiaDataMeta);
-    }
     return context;
   }
 
@@ -145,14 +121,18 @@ class $CedulasTable extends Cedulas with TableInfo<$CedulasTable, Cedula> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
-      informanteNombre: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}informante_nombre'],
+      informanteNombre: $CedulasTable.$converterinformanteNombre.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}informante_nombre'],
+        ),
       ),
-      familiaData: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}familia_data'],
-      )!,
+      familiaData: $CedulasTable.$converterfamiliaData.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}familia_data'],
+        )!,
+      ),
     );
   }
 
@@ -160,6 +140,11 @@ class $CedulasTable extends Cedulas with TableInfo<$CedulasTable, Cedula> {
   $CedulasTable createAlias(String alias) {
     return $CedulasTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<String?, String?> $converterinformanteNombre =
+      nullableEncryptedTextConverter;
+  static TypeConverter<String, String> $converterfamiliaData =
+      const EncryptedTextConverter();
 }
 
 class Cedula extends DataClass implements Insertable<Cedula> {
@@ -182,9 +167,15 @@ class Cedula extends DataClass implements Insertable<Cedula> {
     map['sync_status'] = Variable<int>(syncStatus);
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || informanteNombre != null) {
-      map['informante_nombre'] = Variable<String>(informanteNombre);
+      map['informante_nombre'] = Variable<String>(
+        $CedulasTable.$converterinformanteNombre.toSql(informanteNombre),
+      );
     }
-    map['familia_data'] = Variable<String>(familiaData);
+    {
+      map['familia_data'] = Variable<String>(
+        $CedulasTable.$converterfamiliaData.toSql(familiaData),
+      );
+    }
     return map;
   }
 
@@ -349,10 +340,14 @@ class CedulasCompanion extends UpdateCompanion<Cedula> {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
     if (informanteNombre.present) {
-      map['informante_nombre'] = Variable<String>(informanteNombre.value);
+      map['informante_nombre'] = Variable<String>(
+        $CedulasTable.$converterinformanteNombre.toSql(informanteNombre.value),
+      );
     }
     if (familiaData.present) {
-      map['familia_data'] = Variable<String>(familiaData.value);
+      map['familia_data'] = Variable<String>(
+        $CedulasTable.$converterfamiliaData.toSql(familiaData.value),
+      );
     }
     return map;
   }
@@ -403,17 +398,15 @@ class $ViviendasTable extends Viviendas
       'REFERENCES cedulas (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _viviendaDataMeta = const VerificationMeta(
-    'viviendaData',
-  );
   @override
-  late final GeneratedColumn<String> viviendaData = GeneratedColumn<String>(
-    'vivienda_data',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+  late final GeneratedColumnWithTypeConverter<String, String> viviendaData =
+      GeneratedColumn<String>(
+        'vivienda_data',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<String>($ViviendasTable.$converterviviendaData);
   @override
   List<GeneratedColumn> get $columns => [id, cedulaId, viviendaData];
   @override
@@ -439,17 +432,6 @@ class $ViviendasTable extends Viviendas
     } else if (isInserting) {
       context.missing(_cedulaIdMeta);
     }
-    if (data.containsKey('vivienda_data')) {
-      context.handle(
-        _viviendaDataMeta,
-        viviendaData.isAcceptableOrUnknown(
-          data['vivienda_data']!,
-          _viviendaDataMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_viviendaDataMeta);
-    }
     return context;
   }
 
@@ -467,10 +449,12 @@ class $ViviendasTable extends Viviendas
         DriftSqlType.int,
         data['${effectivePrefix}cedula_id'],
       )!,
-      viviendaData: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vivienda_data'],
-      )!,
+      viviendaData: $ViviendasTable.$converterviviendaData.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}vivienda_data'],
+        )!,
+      ),
     );
   }
 
@@ -478,6 +462,9 @@ class $ViviendasTable extends Viviendas
   $ViviendasTable createAlias(String alias) {
     return $ViviendasTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<String, String> $converterviviendaData =
+      const EncryptedTextConverter();
 }
 
 class Vivienda extends DataClass implements Insertable<Vivienda> {
@@ -494,7 +481,11 @@ class Vivienda extends DataClass implements Insertable<Vivienda> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['cedula_id'] = Variable<int>(cedulaId);
-    map['vivienda_data'] = Variable<String>(viviendaData);
+    {
+      map['vivienda_data'] = Variable<String>(
+        $ViviendasTable.$converterviviendaData.toSql(viviendaData),
+      );
+    }
     return map;
   }
 
@@ -612,7 +603,9 @@ class ViviendasCompanion extends UpdateCompanion<Vivienda> {
       map['cedula_id'] = Variable<int>(cedulaId.value);
     }
     if (viviendaData.present) {
-      map['vivienda_data'] = Variable<String>(viviendaData.value);
+      map['vivienda_data'] = Variable<String>(
+        $ViviendasTable.$converterviviendaData.toSql(viviendaData.value),
+      );
     }
     return map;
   }
@@ -660,17 +653,15 @@ class $VacunasTable extends Vacunas with TableInfo<$VacunasTable, Vacuna> {
       'REFERENCES cedulas (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _vacunaDataMeta = const VerificationMeta(
-    'vacunaData',
-  );
   @override
-  late final GeneratedColumn<String> vacunaData = GeneratedColumn<String>(
-    'vacuna_data',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+  late final GeneratedColumnWithTypeConverter<String, String> vacunaData =
+      GeneratedColumn<String>(
+        'vacuna_data',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<String>($VacunasTable.$convertervacunaData);
   @override
   List<GeneratedColumn> get $columns => [id, cedulaId, vacunaData];
   @override
@@ -696,14 +687,6 @@ class $VacunasTable extends Vacunas with TableInfo<$VacunasTable, Vacuna> {
     } else if (isInserting) {
       context.missing(_cedulaIdMeta);
     }
-    if (data.containsKey('vacuna_data')) {
-      context.handle(
-        _vacunaDataMeta,
-        vacunaData.isAcceptableOrUnknown(data['vacuna_data']!, _vacunaDataMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_vacunaDataMeta);
-    }
     return context;
   }
 
@@ -721,10 +704,12 @@ class $VacunasTable extends Vacunas with TableInfo<$VacunasTable, Vacuna> {
         DriftSqlType.int,
         data['${effectivePrefix}cedula_id'],
       )!,
-      vacunaData: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vacuna_data'],
-      )!,
+      vacunaData: $VacunasTable.$convertervacunaData.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}vacuna_data'],
+        )!,
+      ),
     );
   }
 
@@ -732,6 +717,9 @@ class $VacunasTable extends Vacunas with TableInfo<$VacunasTable, Vacuna> {
   $VacunasTable createAlias(String alias) {
     return $VacunasTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<String, String> $convertervacunaData =
+      const EncryptedTextConverter();
 }
 
 class Vacuna extends DataClass implements Insertable<Vacuna> {
@@ -748,7 +736,11 @@ class Vacuna extends DataClass implements Insertable<Vacuna> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['cedula_id'] = Variable<int>(cedulaId);
-    map['vacuna_data'] = Variable<String>(vacunaData);
+    {
+      map['vacuna_data'] = Variable<String>(
+        $VacunasTable.$convertervacunaData.toSql(vacunaData),
+      );
+    }
     return map;
   }
 
@@ -866,7 +858,9 @@ class VacunasCompanion extends UpdateCompanion<Vacuna> {
       map['cedula_id'] = Variable<int>(cedulaId.value);
     }
     if (vacunaData.present) {
-      map['vacuna_data'] = Variable<String>(vacunaData.value);
+      map['vacuna_data'] = Variable<String>(
+        $VacunasTable.$convertervacunaData.toSql(vacunaData.value),
+      );
     }
     return map;
   }
@@ -915,17 +909,15 @@ class $IntegrantesTable extends Integrantes
       'REFERENCES cedulas (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _integranteDataMeta = const VerificationMeta(
-    'integranteData',
-  );
   @override
-  late final GeneratedColumn<String> integranteData = GeneratedColumn<String>(
-    'integrante_data',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+  late final GeneratedColumnWithTypeConverter<String, String> integranteData =
+      GeneratedColumn<String>(
+        'integrante_data',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<String>($IntegrantesTable.$converterintegranteData);
   @override
   List<GeneratedColumn> get $columns => [id, cedulaId, integranteData];
   @override
@@ -951,17 +943,6 @@ class $IntegrantesTable extends Integrantes
     } else if (isInserting) {
       context.missing(_cedulaIdMeta);
     }
-    if (data.containsKey('integrante_data')) {
-      context.handle(
-        _integranteDataMeta,
-        integranteData.isAcceptableOrUnknown(
-          data['integrante_data']!,
-          _integranteDataMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_integranteDataMeta);
-    }
     return context;
   }
 
@@ -979,10 +960,12 @@ class $IntegrantesTable extends Integrantes
         DriftSqlType.int,
         data['${effectivePrefix}cedula_id'],
       )!,
-      integranteData: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}integrante_data'],
-      )!,
+      integranteData: $IntegrantesTable.$converterintegranteData.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}integrante_data'],
+        )!,
+      ),
     );
   }
 
@@ -990,6 +973,9 @@ class $IntegrantesTable extends Integrantes
   $IntegrantesTable createAlias(String alias) {
     return $IntegrantesTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<String, String> $converterintegranteData =
+      const EncryptedTextConverter();
 }
 
 class Integrante extends DataClass implements Insertable<Integrante> {
@@ -1006,7 +992,11 @@ class Integrante extends DataClass implements Insertable<Integrante> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['cedula_id'] = Variable<int>(cedulaId);
-    map['integrante_data'] = Variable<String>(integranteData);
+    {
+      map['integrante_data'] = Variable<String>(
+        $IntegrantesTable.$converterintegranteData.toSql(integranteData),
+      );
+    }
     return map;
   }
 
@@ -1125,7 +1115,9 @@ class IntegrantesCompanion extends UpdateCompanion<Integrante> {
       map['cedula_id'] = Variable<int>(cedulaId.value);
     }
     if (integranteData.present) {
-      map['integrante_data'] = Variable<String>(integranteData.value);
+      map['integrante_data'] = Variable<String>(
+        $IntegrantesTable.$converterintegranteData.toSql(integranteData.value),
+      );
     }
     return map;
   }
@@ -1586,15 +1578,17 @@ class $$CedulasTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get informanteNombre => $composableBuilder(
+  ColumnWithTypeConverterFilters<String?, String, String>
+  get informanteNombre => $composableBuilder(
     column: $table.informanteNombre,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
-  ColumnFilters<String> get familiaData => $composableBuilder(
-    column: $table.familiaData,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<String, String, String> get familiaData =>
+      $composableBuilder(
+        column: $table.familiaData,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   Expression<bool> viviendasRefs(
     Expression<bool> Function($$ViviendasTableFilterComposer f) f,
@@ -1727,15 +1721,17 @@ class $$CedulasTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<String> get informanteNombre => $composableBuilder(
-    column: $table.informanteNombre,
-    builder: (column) => column,
-  );
+  GeneratedColumnWithTypeConverter<String?, String> get informanteNombre =>
+      $composableBuilder(
+        column: $table.informanteNombre,
+        builder: (column) => column,
+      );
 
-  GeneratedColumn<String> get familiaData => $composableBuilder(
-    column: $table.familiaData,
-    builder: (column) => column,
-  );
+  GeneratedColumnWithTypeConverter<String, String> get familiaData =>
+      $composableBuilder(
+        column: $table.familiaData,
+        builder: (column) => column,
+      );
 
   Expression<T> viviendasRefs<T extends Object>(
     Expression<T> Function($$ViviendasTableAnnotationComposer a) f,
@@ -2033,10 +2029,11 @@ class $$ViviendasTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get viviendaData => $composableBuilder(
-    column: $table.viviendaData,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<String, String, String> get viviendaData =>
+      $composableBuilder(
+        column: $table.viviendaData,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   $$CedulasTableFilterComposer get cedulaId {
     final $$CedulasTableFilterComposer composer = $composerBuilder(
@@ -2117,10 +2114,11 @@ class $$ViviendasTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get viviendaData => $composableBuilder(
-    column: $table.viviendaData,
-    builder: (column) => column,
-  );
+  GeneratedColumnWithTypeConverter<String, String> get viviendaData =>
+      $composableBuilder(
+        column: $table.viviendaData,
+        builder: (column) => column,
+      );
 
   $$CedulasTableAnnotationComposer get cedulaId {
     final $$CedulasTableAnnotationComposer composer = $composerBuilder(
@@ -2308,10 +2306,11 @@ class $$VacunasTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get vacunaData => $composableBuilder(
-    column: $table.vacunaData,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<String, String, String> get vacunaData =>
+      $composableBuilder(
+        column: $table.vacunaData,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   $$CedulasTableFilterComposer get cedulaId {
     final $$CedulasTableFilterComposer composer = $composerBuilder(
@@ -2392,10 +2391,11 @@ class $$VacunasTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get vacunaData => $composableBuilder(
-    column: $table.vacunaData,
-    builder: (column) => column,
-  );
+  GeneratedColumnWithTypeConverter<String, String> get vacunaData =>
+      $composableBuilder(
+        column: $table.vacunaData,
+        builder: (column) => column,
+      );
 
   $$CedulasTableAnnotationComposer get cedulaId {
     final $$CedulasTableAnnotationComposer composer = $composerBuilder(
@@ -2583,10 +2583,11 @@ class $$IntegrantesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get integranteData => $composableBuilder(
-    column: $table.integranteData,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<String, String, String> get integranteData =>
+      $composableBuilder(
+        column: $table.integranteData,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   $$CedulasTableFilterComposer get cedulaId {
     final $$CedulasTableFilterComposer composer = $composerBuilder(
@@ -2667,10 +2668,11 @@ class $$IntegrantesTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get integranteData => $composableBuilder(
-    column: $table.integranteData,
-    builder: (column) => column,
-  );
+  GeneratedColumnWithTypeConverter<String, String> get integranteData =>
+      $composableBuilder(
+        column: $table.integranteData,
+        builder: (column) => column,
+      );
 
   $$CedulasTableAnnotationComposer get cedulaId {
     final $$CedulasTableAnnotationComposer composer = $composerBuilder(

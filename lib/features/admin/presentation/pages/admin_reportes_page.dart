@@ -9,7 +9,6 @@ class AdminReportesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Reportes'),
         backgroundColor: AppColors.gold,
@@ -58,7 +57,9 @@ class _ReportCard extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        side: const BorderSide(color: AppColors.line),
+        side: BorderSide(
+          color: Theme.of(context).dividerTheme.color ?? AppColors.line,
+        ),
       ),
       child: InkWell(
         onTap: onTap,

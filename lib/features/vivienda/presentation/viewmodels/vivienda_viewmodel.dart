@@ -203,8 +203,8 @@ class ViviendaViewModel extends ChangeNotifier {
       "animales_vacunas": animVacunas,
       "mascotas_esterilizadas": esterilizados,
       "otros_animales": otrosAnimales.toList(),
-      "animalOtro": animalOtro.text,
-      "animalObservaciones": animalObs.text,
+      "animalOtro": animalOtro.text.trim(),
+      "animalObservaciones": animalObs.text.trim(),
     };
   }
 

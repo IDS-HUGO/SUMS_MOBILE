@@ -13,7 +13,17 @@ class IntegrantesStepWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vm = ref.watch(integrantesViewModelProvider);
+    // Solo nos suscribimos a lo "estructural" (cargando / error / cuántos
+    // integrantes hay). Escribir en un campo de un integrante NO cambia
+    // ninguno de estos 3 valores, así que esta pantalla ya no se reconstruye
+    // completa en cada tecla — ver ListenableBuilder en _MemberCard, que es
+    // quien ahora reacciona a los cambios de CADA integrante por separado.
+    ref.watch(
+      integrantesViewModelProvider.select(
+        (v) => (v.isLoading, v.errorMessage, v.integrantes.length),
+      ),
+    );
+    final vm = ref.read(integrantesViewModelProvider);
 
     if (vm.isLoading) {
       return const Center(
@@ -46,7 +56,13 @@ class IntegrantesStepWidget extends ConsumerWidget {
                 form: vm.integrantes[i],
                 canRemove: vm.integrantes.length > 1,
                 onRemove: () => vm.removeMemberForm(i),
-                onChanged: () => vm.updateForm(),
+                onChanged: () {
+                  // Notifica primero al propio integrante (rebuild acotado a
+                  // su tarjeta) y luego al vm completo (compatibilidad con
+                  // quien más escuche este vm, ej. VacunacionStepWidget).
+                  vm.integrantes[i].touch();
+                  vm.updateForm();
+                },
                 roles: vm.rolesOpts,
                 sexoOpts: vm.sexoOpts,
                 edoCivilOpts: vm.edoCivilOpts,
@@ -116,6 +132,17 @@ class _MemberCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Reconstruye esta tarjeta cuando ESTE integrante cambia (form es su
+    // propio ChangeNotifier), sin depender de que el widget padre vuelva a
+    // ejecutar build() — así escribir en el integrante 3 no reconstruye las
+    // tarjetas de los demás integrantes.
+    return ListenableBuilder(
+      listenable: form,
+      builder: (context, _) => _buildCard(context, ref),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -190,6 +217,8 @@ class _MemberCard extends ConsumerWidget {
                             label: 'Nombre completo',
                             icon: Icons.person_outline,
                             validator: requiredText,
+                            maxLength: 100,
+                            inputFormatters: nameInputFormatters,
                             onChanged: (v) {
                               if (index == 0) {
                                 familiaVm.informanteNombre.text = v;
@@ -301,6 +330,8 @@ class _MemberCard extends ConsumerWidget {
                               label: 'Lengua indígena, especificar',
                               icon: Icons.edit_outlined,
                               validator: requiredText,
+                              maxLength: 60,
+                              inputFormatters: nameInputFormatters,
                             ),
                           ),
                         SizedBox(
@@ -322,6 +353,8 @@ class _MemberCard extends ConsumerWidget {
                             controller: form.ocupacion,
                             label: 'Ocupación',
                             icon: Icons.work_outline,
+                            maxLength: 80,
+                            inputFormatters: freeTextInputFormatters,
                           ),
                         ),
                         SizedBox(
@@ -405,6 +438,8 @@ class _MemberCard extends ConsumerWidget {
                               label: 'Tipo de discapacidad',
                               icon: Icons.accessible_forward_outlined,
                               validator: requiredText,
+                              maxLength: 80,
+                              inputFormatters: freeTextInputFormatters,
                             ),
                           ),
                       ],
@@ -448,6 +483,8 @@ class _MemberCard extends ConsumerWidget {
                         label: 'Otra sustancia, especificar',
                         icon: Icons.edit_outlined,
                         validator: requiredText,
+                        maxLength: 80,
+                        inputFormatters: freeTextInputFormatters,
                       ),
                     const SizedBox(height: 16),
                     const _SubLabel(text: 'Enfermedades crónico-degenerativas'),
@@ -567,6 +604,8 @@ class _MemberCard extends ConsumerWidget {
                             controller: form.motivoSalud,
                             label: 'Motivo de uso de servicios',
                             icon: Icons.notes_outlined,
+                            maxLength: 120,
+                            inputFormatters: freeTextInputFormatters,
                           ),
                         ),
                       ],

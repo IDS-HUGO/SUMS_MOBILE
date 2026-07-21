@@ -7,6 +7,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/brand_header.dart';
+import '../../../../shared/widgets/theme_mode_menu_button.dart';
 import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
 import '../../../estadisticas/presentation/viewmodels/estadisticas_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
@@ -99,7 +100,6 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
     final today = _todayLabel();
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: _buildAppBar(context, ref),
       body: Stack(
         children: [
@@ -317,6 +317,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
       ],
     ),
     actions: [
+      const ThemeModeMenuButton(),
       IconButton(
         tooltip: 'Cerrar sesión',
         icon: const Icon(Icons.logout_outlined),
@@ -557,13 +558,14 @@ class _MetricCardFullWidth extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
         boxShadow: [
           BoxShadow(
             color: AppColors.greenDark.withValues(alpha: 0.06),
@@ -627,12 +629,13 @@ class _MetricCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
         boxShadow: [
           BoxShadow(
             color: AppColors.greenDark.withValues(alpha: 0.06),
@@ -826,7 +829,11 @@ class _FlowStepRow extends ConsumerWidget {
               ),
             ),
             if (!isLast)
-              Container(width: 1.5, height: 36, color: AppColors.line),
+              Container(
+                width: 1.5,
+                height: 36,
+                color: Theme.of(context).dividerTheme.color ?? AppColors.line,
+              ),
           ],
         ),
         const SizedBox(width: 14),

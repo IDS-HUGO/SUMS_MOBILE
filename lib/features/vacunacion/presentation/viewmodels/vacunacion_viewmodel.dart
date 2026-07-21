@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../domain/repositories/vacunacion_repository.dart';
 
-class VaccineForm {
+/// Representa el formulario de UNA vacuna. Extiende ChangeNotifier para que
+/// su propia tarjeta (_VaccineCard) pueda reconstruirse sola cuando esta
+/// vacuna cambia, sin necesidad de reconstruir las tarjetas de las demás
+/// vacunas (antes, cualquier tecla en cualquier vacuna reconstruía la
+/// pantalla completa vía VacunacionViewModel.notifyListeners()).
+class VaccineForm extends ChangeNotifier {
   final TextEditingController paciente = TextEditingController();
   final TextEditingController fechaNacimiento = TextEditingController();
   final TextEditingController edad = TextEditingController();
@@ -10,11 +15,18 @@ class VaccineForm {
   String? tipo;
   String? dosis;
 
+  /// Notifica solo a quien escucha ESTA vacuna (su propia tarjeta), sin
+  /// tocar a las demás. `notifyListeners()` es protegido en `ChangeNotifier`;
+  /// este método público es la forma correcta de dispararlo desde fuera.
+  void touch() => notifyListeners();
+
+  @override
   void dispose() {
     paciente.dispose();
     fechaNacimiento.dispose();
     edad.dispose();
     otraVacuna.dispose();
+    super.dispose();
   }
 }
 

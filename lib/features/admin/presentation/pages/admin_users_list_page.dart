@@ -28,7 +28,6 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
     final vm = ref.watch(adminUsersViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Gestión de Usuarios'),
         backgroundColor: AppColors.rolAdmin,
@@ -76,7 +75,9 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            side: const BorderSide(color: AppColors.line),
+            side: BorderSide(
+              color: Theme.of(context).dividerTheme.color ?? AppColors.line,
+            ),
           ),
           child: ListTile(
             leading: CircleAvatar(
