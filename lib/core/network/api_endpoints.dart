@@ -10,6 +10,12 @@ class ApiEndpoints {
   /// En iOS o Web usar http://localhost:8001
   static const mineriaBaseUrl = String.fromEnvironment(
     'MINERIA_API_BASE_URL',
-    defaultValue: 'http://localhost:8001',
+    defaultValue: 'http://192.168.100.6:8001',
+  );
+
+  /// API Key para el microservicio de Minería.
+  static const mineriaApiKey = String.fromEnvironment(
+    'MINERIA_API_KEY',
+    defaultValue: 'tu_clave_secreta_aqui',
   );
 }

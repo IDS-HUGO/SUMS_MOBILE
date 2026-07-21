@@ -99,8 +99,8 @@ class HomeAdminPage extends ConsumerWidget {
                   ),
                   _AdminActionCard(
                     icon: Icons.document_scanner_outlined,
-                    label: 'Minería OCR',
-                    detail: 'Procesamiento de cédulas PDF',
+                    label: 'Escaneo de Cédulas',
+                    detail: 'Captura automática desde PDF',
                     color: AppColors.ink,
                     onTap: () =>
                         Navigator.pushNamed(context, AppRoutes.adminMineria),
