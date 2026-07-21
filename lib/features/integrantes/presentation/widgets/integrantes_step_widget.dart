@@ -217,6 +217,8 @@ class _MemberCard extends ConsumerWidget {
                             label: 'Nombre completo',
                             icon: Icons.person_outline,
                             validator: requiredText,
+                            maxLength: 100,
+                            inputFormatters: nameInputFormatters,
                             onChanged: (v) {
                               if (index == 0) {
                                 familiaVm.informanteNombre.text = v;
@@ -328,6 +330,8 @@ class _MemberCard extends ConsumerWidget {
                               label: 'Lengua indígena, especificar',
                               icon: Icons.edit_outlined,
                               validator: requiredText,
+                              maxLength: 60,
+                              inputFormatters: nameInputFormatters,
                             ),
                           ),
                         SizedBox(
@@ -349,6 +353,8 @@ class _MemberCard extends ConsumerWidget {
                             controller: form.ocupacion,
                             label: 'Ocupación',
                             icon: Icons.work_outline,
+                            maxLength: 80,
+                            inputFormatters: freeTextInputFormatters,
                           ),
                         ),
                         SizedBox(
@@ -432,6 +438,8 @@ class _MemberCard extends ConsumerWidget {
                               label: 'Tipo de discapacidad',
                               icon: Icons.accessible_forward_outlined,
                               validator: requiredText,
+                              maxLength: 80,
+                              inputFormatters: freeTextInputFormatters,
                             ),
                           ),
                       ],
@@ -475,6 +483,8 @@ class _MemberCard extends ConsumerWidget {
                         label: 'Otra sustancia, especificar',
                         icon: Icons.edit_outlined,
                         validator: requiredText,
+                        maxLength: 80,
+                        inputFormatters: freeTextInputFormatters,
                       ),
                     const SizedBox(height: 16),
                     const _SubLabel(text: 'Enfermedades crónico-degenerativas'),
@@ -594,6 +604,8 @@ class _MemberCard extends ConsumerWidget {
                             controller: form.motivoSalud,
                             label: 'Motivo de uso de servicios',
                             icon: Icons.notes_outlined,
+                            maxLength: 120,
+                            inputFormatters: freeTextInputFormatters,
                           ),
                         ),
                       ],

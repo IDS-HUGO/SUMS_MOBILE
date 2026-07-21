@@ -8,7 +8,8 @@ import '../../models/ocr_models.dart';
 
 /// Fuente de datos remota para el servicio de Minería OCR.
 /// Implementa su propio cliente HTTP para permitir conexiones a localhost (HTTP)
-/// sin comprometer la seguridad global del ApiClient principal.
+/// solo en modo debug (ver [enforceSecureScheme]) sin comprometer la
+/// seguridad global del ApiClient principal.
 class MineriaRemoteDataSource {
   final String baseUrl;
   final http.Client _client;
@@ -19,7 +20,7 @@ class MineriaRemoteDataSource {
   /// POST /ocr/procesar
   /// Envía un archivo PDF para extracción OCR.
   Future<OcrResultModel> procesarPdf(File archivo) async {
-    final uri = Uri.parse('$baseUrl/ocr/procesar');
+    final uri = enforceSecureScheme(Uri.parse('$baseUrl/ocr/procesar'));
     AppLogger.info(
       'MineriaOCR: Iniciando procesamiento de ${archivo.path} en $uri',
     );
@@ -69,7 +70,7 @@ class MineriaRemoteDataSource {
   /// GET /salud
   /// Verifica si el microservicio está en línea.
   Future<bool> checkSalud() async {
-    final uri = Uri.parse('$baseUrl/salud');
+    final uri = enforceSecureScheme(Uri.parse('$baseUrl/salud'));
     try {
       final response = await _client
           .get(uri)

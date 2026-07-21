@@ -1,3 +1,7 @@
+// Este archivo es el único punto sancionado para usar `print` (envuelto en
+// `kDebugMode`, nunca en release); por eso se excluye aquí de `avoid_print`
+// en vez de deshabilitar la regla para todo el proyecto.
+// ignore_for_file: avoid_print
 import 'package:flutter/foundation.dart';
 
 class AppLogger {

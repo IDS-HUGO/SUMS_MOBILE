@@ -30,7 +30,7 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
     );
 
     if (result != null && result.files.single.path != null) {
-      ref
+      await ref
           .read(mineriaViewModelProvider)
           .setFile(File(result.files.single.path!));
     }

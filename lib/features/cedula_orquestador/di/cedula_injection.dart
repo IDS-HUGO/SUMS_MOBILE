@@ -40,6 +40,7 @@ void registerCedulaDependencies(GetIt sl) {
       loadCatalogsUseCase: sl(),
       submitRecordUseCase: sl(),
       cedulaRepository: sl(),
+      prefs: sl(),
     ),
   );
 }

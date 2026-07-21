@@ -33,34 +33,75 @@ class _PendingCapturesPageState extends ConsumerState<PendingCapturesPage> {
               .where((r) => r['_syncStatus'] == 1)
               .toList();
 
-          if (pending.isEmpty) {
-            return const Center(
-              child: Text('No hay capturas pendientes por sincronizar.'),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: pending.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final record = pending[index];
-              return Card(
-                child: ListTile(
-                  title: Text(record['_informante'] ?? 'Sin nombre'),
-                  subtitle: Text('Guardado el: ${record['_createdAt']}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.sync, color: AppColors.green),
-                        onPressed: () => vm.retrySyncSingle(record['_localId']),
-                      ),
-                    ],
+          return Column(
+            children: [
+              if (vm.syncFailureWarning != null)
+                MaterialBanner(
+                  backgroundColor: AppColors.error.withOpacity(0.12),
+                  leading: const Icon(
+                    Icons.sync_problem_outlined,
+                    color: AppColors.error,
                   ),
+                  content: Text(
+                    vm.syncFailureWarning!,
+                    style: const TextStyle(color: AppColors.error),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => vm.dismissSyncFailureWarning(),
+                      child: const Text('Descartar'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await vm.syncNow();
+                        await vm.dismissSyncFailureWarning();
+                      },
+                      child: const Text('Reintentar ahora'),
+                    ),
+                  ],
                 ),
-              );
-            },
+              Expanded(
+                child: pending.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No hay capturas pendientes por sincronizar.',
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: pending.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final record = pending[index];
+                          return Card(
+                            child: ListTile(
+                              title: Text(
+                                record['_informante'] ?? 'Sin nombre',
+                              ),
+                              subtitle: Text(
+                                'Guardado el: ${record['_createdAt']}',
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.sync,
+                                      color: AppColors.green,
+                                    ),
+                                    onPressed: () => vm.retrySyncSingle(
+                                      record['_localId'],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         },
       ),

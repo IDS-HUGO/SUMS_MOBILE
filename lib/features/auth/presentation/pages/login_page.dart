@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/brand_panel.dart';
 import '../widgets/login_card.dart';
+import '../../../../core/security/device_security.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -54,6 +55,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!DeviceSecurityStatus.isSecure) {
+      await showInsecureDeviceDialog(context);
+      return;
+    }
     final viewModel = ref.read(authViewModelProvider);
     final success = await viewModel.login(
       nombreUsuario: _userController.text.trim(),

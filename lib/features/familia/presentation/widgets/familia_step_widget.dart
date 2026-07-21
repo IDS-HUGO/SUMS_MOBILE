@@ -28,6 +28,8 @@ class FamiliaStepWidget extends ConsumerWidget {
               label: 'Nombre del informante',
               icon: Icons.person_outline,
               validator: requiredText,
+              maxLength: 100,
+              inputFormatters: nameInputFormatters,
               onChanged: (v) {
                 final intVm = ref.read(integrantesViewModelProvider);
                 if (intVm.integrantes.isNotEmpty) {
@@ -72,21 +74,29 @@ class FamiliaStepWidget extends ConsumerWidget {
               label: 'Domicilio',
               icon: Icons.location_on_outlined,
               validator: requiredText,
+              maxLength: 120,
+              inputFormatters: freeTextInputFormatters,
             ),
             SumsTextField(
               controller: vm.localidad,
               label: 'Localidad',
               icon: Icons.location_city_outlined,
+              maxLength: 80,
+              inputFormatters: freeTextInputFormatters,
             ),
             SumsTextField(
               controller: vm.manzana,
               label: 'Manzana',
               icon: Icons.grid_view_outlined,
+              maxLength: 20,
+              inputFormatters: freeTextInputFormatters,
             ),
             SumsTextField(
               controller: vm.viviendaRef,
               label: 'Vivienda',
               icon: Icons.home_work_outlined,
+              maxLength: 60,
+              inputFormatters: freeTextInputFormatters,
             ),
           ]),
         ],

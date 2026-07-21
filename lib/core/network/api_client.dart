@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:http/http.dart' as http;
 
 class ApiException implements Exception {
@@ -8,6 +9,32 @@ class ApiException implements Exception {
   const ApiException(this.message);
   @override
   String toString() => message;
+}
+
+/// Hosts de desarrollo local (loopback / emulador Android). Fuera de estos
+/// hosts nunca se permite HTTP sin cifrar, ni siquiera en modo debug.
+bool isLoopbackDevHost(String host) {
+  final h = host.toLowerCase();
+  return h == 'localhost' || h == '127.0.0.1' || h == '10.0.2.2' || h == '::1';
+}
+
+/// Punto único de aplicación de la política de esquema seguro
+/// (OWASP MASVS-NETWORK-1): bloquea cualquier esquema distinto de `https`,
+/// salvo cuando el host es un host de desarrollo local (loopback/emulador)
+/// Y la app corre en modo debug (`kDebugMode`). En builds de release, HTTP
+/// SIEMPRE se bloquea, sin excepción.
+///
+/// Cualquier cliente HTTP de la app (el [ApiClient] principal, o clientes
+/// propios como el de minería/OCR) debe pasar sus URIs por aquí antes de
+/// usarlas, para no abrir una puerta trasera que evada este control.
+Uri enforceSecureScheme(Uri uri) {
+  if (uri.scheme == 'https') return uri;
+  if (kDebugMode && isLoopbackDevHost(uri.host)) {
+    return uri;
+  }
+  throw const ApiException(
+    'La comunicación no segura (HTTP) está bloqueada por políticas de seguridad (OWASP MASVS-NETWORK-1).',
+  );
 }
 
 /// Cliente HTTP genérico para la API SUMS.
@@ -97,12 +124,7 @@ class ApiClient {
         ? clean.substring(0, clean.length - 1)
         : clean;
     final uri = Uri.parse('$normalized$path');
-    if (uri.scheme != 'https') {
-      throw const ApiException(
-        'La comunicación no segura (HTTP) está bloqueada por políticas de seguridad (OWASP MASVS-NETWORK-1).',
-      );
-    }
-    return uri;
+    return enforceSecureScheme(uri);
   }
 
   Future<http.Response> _sendRequest(

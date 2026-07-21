@@ -419,6 +419,8 @@ class _VaccineCard extends ConsumerWidget {
                         label: 'Otra, especificar',
                         icon: Icons.edit_outlined,
                         validator: requiredText,
+                        maxLength: 80,
+                        inputFormatters: freeTextInputFormatters,
                       ),
                     ),
                 ],

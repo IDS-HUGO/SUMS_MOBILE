@@ -1,11 +1,17 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/entities/catalog_item.dart';
 import '../../domain/usecases/load_catalogs_usecase.dart';
 import '../../domain/usecases/submit_record_usecase.dart';
 import '../../domain/repositories/cedula_repository.dart';
+import '../../../../core/sync/background_worker.dart'
+    show
+        syncNeedsUserAttentionKey,
+        syncLastErrorKey,
+        syncConsecutiveFailuresKey;
 
 enum CedulaStatus { initial, loading, success, error }
 
@@ -60,18 +66,22 @@ class CedulaViewModel extends ChangeNotifier {
     required this.loadCatalogsUseCase,
     required this.submitRecordUseCase,
     required this.cedulaRepository,
+    required this.prefs,
   }) {
     refreshSyncCounts();
+    _checkSyncFailureWarning();
     _listenConnectivity();
   }
 
   final CedulaRepository cedulaRepository;
+  final SharedPreferences prefs;
 
   int _pendingSyncCount = 0;
   int _draftCount = 0;
   List<Map<String, dynamic>> _allLocalRecords = [];
   bool _isSyncing = false;
   bool _isOnline = true;
+  String? _syncFailureWarning;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
   int get pendingSyncCount => _pendingSyncCount;
@@ -79,6 +89,34 @@ class CedulaViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> get allLocalRecords => _allLocalRecords;
   bool get isSyncing => _isSyncing;
   bool get isOnline => _isOnline;
+
+  /// Mensaje visible para el usuario cuando la sincronización en segundo
+  /// plano (ver background_worker.dart) lleva varios intentos fallidos
+  /// consecutivos. `null` si no hay ningún aviso pendiente.
+  String? get syncFailureWarning => _syncFailureWarning;
+
+  /// Revisa si Workmanager marcó que la sincronización en segundo plano
+  /// necesita atención del usuario (ver [syncNeedsUserAttentionKey]).
+  void _checkSyncFailureWarning() {
+    final needsAttention = prefs.getBool(syncNeedsUserAttentionKey) ?? false;
+    if (needsAttention) {
+      final lastError = prefs.getString(syncLastErrorKey);
+      final failures = prefs.getInt(syncConsecutiveFailuresKey) ?? 0;
+      _syncFailureWarning =
+          'La sincronización automática de cédulas ha fallado $failures veces seguidas'
+          '${lastError != null ? ': $lastError' : '.'} '
+          'Verifica tu conexión o sincroniza manualmente desde "Capturas pendientes".';
+      notifyListeners();
+    }
+  }
+
+  /// Descarta el aviso de fallos repetidos de sincronización (ej. cuando el
+  /// usuario ya lo vio o reintentó manualmente).
+  Future<void> dismissSyncFailureWarning() async {
+    _syncFailureWarning = null;
+    await prefs.setBool(syncNeedsUserAttentionKey, false);
+    notifyListeners();
+  }
 
   void _listenConnectivity() {
     _connectivitySub = Connectivity().onConnectivityChanged.listen((
@@ -104,6 +142,7 @@ class CedulaViewModel extends ChangeNotifier {
     _pendingSyncCount = await cedulaRepository.getPendingSyncCount();
     _draftCount = await cedulaRepository.getDraftCount();
     _allLocalRecords = await cedulaRepository.getAllLocalCedulas();
+    _checkSyncFailureWarning();
     notifyListeners();
   }
 

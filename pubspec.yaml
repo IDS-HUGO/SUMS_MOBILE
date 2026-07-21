@@ -24,8 +24,14 @@ dependencies:
   file_picker: ^9.0.3
 
   # --- Database (Drift / SQLite) & Paths ---
+  # sqlite3_flutter_libs (^0.6.0+eol) fue removido: su propio changelog dice
+  # "Not used anymore, update to version 3.x of package:sqlite3 instead".
+  # Desde drift 2.32.0, todas las plataformas Flutter/Dart nativas se
+  # soportan sin necesidad de ese paquete: drift ya depende de sqlite3 ^3.4.0
+  # (que bundlea SQLite vía hooks), y este proyecto ya está en drift ^2.34.0.
+  # Ver https://pub.dev/packages/sqlite3_flutter_libs y el changelog de
+  # drift 2.32.0.
   drift: ^2.34.0
-  sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.6
   path: ^1.9.1
   flutter_secure_storage: ^10.3.1

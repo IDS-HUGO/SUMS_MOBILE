@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
@@ -17,6 +18,7 @@ import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 
 import '../utils/cedula_dummy_data.dart';
 import '../widgets/cedula_success_sheet.dart';
+import '../../../../core/security/device_security.dart';
 
 class CedulaFormPage extends ConsumerStatefulWidget {
   const CedulaFormPage({super.key});
@@ -127,6 +129,10 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
   }
 
   Future<void> _saveDraft() async {
+    if (!DeviceSecurityStatus.isSecure) {
+      await showInsecureDeviceDialog(context);
+      return;
+    }
     final authVm = ref.read(authViewModelProvider);
     final user = authVm.session?.user;
     if (user == null ||
@@ -136,6 +142,19 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
         SnackBar(
           content: const Text(
             'ID de entrevistador inválido. No se puede guardar borrador.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    if (user.unidadSaludId == null || user.unidadSaludId! <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'ID de unidad de salud inválido. No se puede guardar borrador.',
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Theme.of(context).colorScheme.error,
@@ -167,7 +186,7 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
     final integrantesVm = ref.read(integrantesViewModelProvider);
 
     final payload = {
-      "unidad_salud_id": user.unidadSaludId ?? 1,
+      "unidad_salud_id": user.unidadSaludId,
       "entrevistador_id": user.entrevistadorId,
       "familia": familiaVm.toPayload(),
       "vivienda": viviendaVm.toPayload(),
@@ -210,11 +229,17 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
       appBar: AppBar(
         title: const Text('Microdiagnóstico Familiar'),
         actions: [
-          IconButton(
-            onPressed: () => CedulaDummyData.apply(ref),
-            icon: Icon(Icons.bug_report, color: theme.colorScheme.onPrimary),
-            tooltip: 'Llenar datos de prueba',
-          ),
+          // Solo visible en builds de debug: nunca debe llegar a producción
+          // un atajo que rellena la cédula con datos ficticios.
+          if (kDebugMode)
+            IconButton(
+              onPressed: () => CedulaDummyData.apply(ref),
+              icon: Icon(
+                Icons.bug_report,
+                color: theme.colorScheme.onPrimary,
+              ),
+              tooltip: 'Llenar datos de prueba',
+            ),
           TextButton.icon(
             onPressed: _saveDraft,
             icon: Icon(Icons.save_outlined, color: theme.colorScheme.onPrimary),
