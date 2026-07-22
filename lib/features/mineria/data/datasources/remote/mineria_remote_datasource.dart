@@ -61,7 +61,7 @@ class MineriaRemoteDataSource {
     final uri = enforceSecureScheme(Uri.parse('$baseUrl/salud'));
     try {
       final response = await _client
-          .get(uri)
+          .get(uri, headers: _headers())
           .timeout(const Duration(seconds: 5));
       return response.statusCode == 200;
     } catch (e) {

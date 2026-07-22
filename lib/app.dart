@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/di/injection.dart';
+import 'core/di/providers.dart';
 import 'core/routes/app_routes.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'shared/theme/app_theme.dart';
@@ -9,7 +10,9 @@ import 'shared/theme/theme_mode_controller.dart';
 
 class App extends ConsumerStatefulWidget {
   final bool isSecureDevice;
+
   const App({super.key, this.isSecureDevice = true});
+
   @override
   ConsumerState<App> createState() => _AppState();
 }
@@ -45,6 +48,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
   void _resetIdleTimer() {
     _idleTimer?.cancel();
+    // 15 minutos de inactividad
     _idleTimer = Timer(const Duration(minutes: 15), _onIdleTimeout);
   }
 

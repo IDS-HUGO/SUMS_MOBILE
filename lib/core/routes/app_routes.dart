@@ -63,7 +63,12 @@ final GoRouter appRouter = GoRouter(
     }
 
     if (state.matchedLocation.startsWith('/admin')) {
-      if (authViewModel.role != UserRole.admin) {
+      final allowedRoles = [UserRole.admin];
+      if (state.matchedLocation == AppRoutes.adminMineria) {
+        allowedRoles.add(UserRole.encuestador);
+      }
+      
+      if (!allowedRoles.contains(authViewModel.role)) {
         return authViewModel.homeRoute;
       }
     }

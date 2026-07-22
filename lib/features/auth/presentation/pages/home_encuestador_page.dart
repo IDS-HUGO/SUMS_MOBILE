@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/brand_header.dart';
@@ -15,22 +15,26 @@ import '../viewmodels/auth_viewmodel.dart';
 
 class HomeEncuestadorPage extends ConsumerStatefulWidget {
   const HomeEncuestadorPage({super.key});
+
   @override
   ConsumerState<HomeEncuestadorPage> createState() =>
       _HomeEncuestadorPageState();
 }
 
 class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
+  // ── Connectivity banner ─────────────────────────────────────────────
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _wasOffline = false;
   bool _showBanner = false;
   String _bannerMessage = '';
   Color _bannerColor = Colors.green;
   Timer? _bannerTimer;
+
   @override
   void initState() {
     super.initState();
     _setupConnectivityListener();
+    // Refrescar el conteo de cédulas cada vez que se entra al Home
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(cedulaViewModelProvider).refreshSyncCounts();
@@ -44,12 +48,16 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
       results,
     ) async {
       final isOnline = !results.contains(ConnectivityResult.none);
+
       if (!isOnline && !_wasOffline) {
+        // Acaba de perder conexión
         _wasOffline = true;
         _showToast('Sin conexión a internet', const Color(0xFF616161));
       } else if (isOnline && _wasOffline) {
+        // Acaba de recuperar conexión
         _wasOffline = false;
         _showToast('Conexión restaurada', const Color(0xFF2E7D32));
+        // Siempre refrescar el conteo al reconectar
         if (mounted) {
           final cvm = ref.read(cedulaViewModelProvider);
           await cvm.refreshSyncCounts();
@@ -60,6 +68,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
         }
       }
     });
+    // Checar estado inicial
     Connectivity().checkConnectivity().then((results) {
       _wasOffline = results.contains(ConnectivityResult.none);
     });
@@ -90,6 +99,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
     final estadisticas = ref.watch(estadisticasViewModelProvider);
     final userName = auth.session?.user.nombreUsuario ?? 'encuestador';
     final today = _todayLabel();
+
     return Scaffold(
       appBar: _buildAppBar(context, ref),
       body: Stack(
@@ -106,9 +116,12 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
             child: SafeArea(
               child: CustomScrollView(
                 slivers: [
+                  // ── Cabecera con saludo ─────────────────────────────────────────
                   SliverToBoxAdapter(
                     child: _GreetingSection(userName: userName, date: today),
                   ),
+
+                  // ── Métricas ────────────────────────────────────────────────────
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
                     sliver: SliverToBoxAdapter(
@@ -121,12 +134,26 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                       ),
                     ),
                   ),
+
+                  // ── Acción principal ─────────────────────────────────────────────
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                     sliver: SliverToBoxAdapter(
                       child: _MainActionCard(onTap: _goToCedula),
                     ),
                   ),
+
+                  // ── Escaneo de Cédulas (OCR) ─────────────────────────────────────
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: _OCRActionCard(
+                        onTap: () => context.push(AppRoutes.adminMineria),
+                      ),
+                    ),
+                  ),
+
+                  // ── Sincronización y Capturas pendientes (Offline-first) ─────────
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
                     sliver: SliverToBoxAdapter(
@@ -186,9 +213,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                               ),
                               const SizedBox(height: 16),
                               _PendingCapturesCard(
-                                onTap: () => Navigator.of(
-                                  context,
-                                ).pushNamed(AppRoutes.pending),
+                                onTap: () => context.push(AppRoutes.pending),
                               ),
                             ],
                           );
@@ -196,6 +221,8 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                       ),
                     ),
                   ),
+
+                  // ── Flujo de captura ─────────────────────────────────────────────
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
                     sliver: SliverToBoxAdapter(
@@ -208,6 +235,8 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                       ),
                     ),
                   ),
+
+                  // ── Consejo de campo ─────────────────────────────────────────────
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
                     sliver: SliverToBoxAdapter(child: _TipCard()),
@@ -216,6 +245,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
               ),
             ),
           ),
+          // ── Banner de conectividad (tipo YouTube) ──────────────────────────
           Positioned(
             bottom: 0,
             left: 0,
@@ -309,6 +339,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
       const SizedBox(width: 4),
     ],
   );
+
   String _todayLabel() {
     final now = DateTime.now();
     const meses = [
@@ -330,9 +361,12 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
   }
 }
 
+// ── Capturas Pendientes ─────────────────────────────────────────────────────────
+
 class _PendingCapturesCard extends ConsumerWidget {
   final VoidCallback onTap;
   const _PendingCapturesCard({required this.onTap});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
@@ -382,10 +416,13 @@ class _PendingCapturesCard extends ConsumerWidget {
   }
 }
 
+// ── Sección de saludo ─────────────────────────────────────────────────────────
+
 class _GreetingSection extends ConsumerWidget {
   final String userName;
   final String date;
   const _GreetingSection({required this.userName, required this.date});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
@@ -447,12 +484,15 @@ class _GreetingSection extends ConsumerWidget {
   }
 }
 
+// ── Métricas ──────────────────────────────────────────────────────────────────
+
 class _MetricsRow extends ConsumerWidget {
   final int cedulasHoy;
   final int cedulasSemana;
   final int mes;
   final int total;
   final bool isLoading;
+
   const _MetricsRow({
     required this.cedulasHoy,
     required this.cedulasSemana,
@@ -460,6 +500,7 @@ class _MetricsRow extends ConsumerWidget {
     required this.total,
     required this.isLoading,
   });
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Transform.translate(
@@ -514,12 +555,14 @@ class _MetricCardFullWidth extends ConsumerWidget {
   final String label;
   final IconData icon;
   final Color color;
+
   const _MetricCardFullWidth({
     required this.value,
     required this.label,
     required this.icon,
     required this.color,
   });
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -583,12 +626,14 @@ class _MetricCard extends ConsumerWidget {
   final String label;
   final IconData icon;
   final Color color;
+
   const _MetricCard({
     required this.value,
     required this.label,
     required this.icon,
     required this.color,
   });
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -633,9 +678,12 @@ class _MetricCard extends ConsumerWidget {
   }
 }
 
+// ── Acción principal ──────────────────────────────────────────────────────────
+
 class _MainActionCard extends ConsumerWidget {
   final VoidCallback onTap;
   const _MainActionCard({required this.onTap});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Material(
@@ -697,8 +745,76 @@ class _MainActionCard extends ConsumerWidget {
   }
 }
 
+class _OCRActionCard extends ConsumerWidget {
+  final VoidCallback onTap;
+  const _OCRActionCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Material(
+      color: AppColors.ink,
+      borderRadius: BorderRadius.circular(AppDimens.radiusL),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(22),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.document_scanner_outlined,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Escaneo de Cédulas',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Captura automática desde archivo PDF',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white60,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Pasos del flujo ───────────────────────────────────────────────────────────
+
 class _FlowSteps extends ConsumerWidget {
   const _FlowSteps();
+
   static const _steps = [
     _FlowStep(
       num: '1',
@@ -725,6 +841,7 @@ class _FlowSteps extends ConsumerWidget {
       icon: Icons.vaccines_outlined,
     ),
   ];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
@@ -754,6 +871,7 @@ class _FlowStepRow extends ConsumerWidget {
   final _FlowStep step;
   final bool isLast;
   const _FlowStepRow({required this.step, required this.isLast});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
@@ -829,6 +947,8 @@ class _FlowStepRow extends ConsumerWidget {
   }
 }
 
+// ── Consejo de campo ──────────────────────────────────────────────────────────
+
 class _TipCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -875,17 +995,21 @@ class _TipCard extends ConsumerWidget {
   }
 }
 
+// ── Tarjeta de Estado de Sincronización ──────────────────────────────────────────
+
 class _SyncStatusCard extends ConsumerWidget {
   final int pendingCount;
   final bool isSyncing;
   final bool isOnline;
   final Future<void> Function() onSyncTap;
+
   const _SyncStatusCard({
     required this.pendingCount,
     required this.isSyncing,
     required this.isOnline,
     required this.onSyncTap,
   });
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final color = isSyncing
@@ -893,11 +1017,13 @@ class _SyncStatusCard extends ConsumerWidget {
         : isOnline
         ? AppColors.terracota
         : const Color(0xFF757575);
+
     final subtitle = isSyncing
         ? 'Sincronizando… por favor espera.'
         : isOnline
         ? 'Tienes conexión. Presiona sincronizar para enviar.'
         : 'Sin conexión. La sincronización ocurrirá al volver online.';
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(16),
