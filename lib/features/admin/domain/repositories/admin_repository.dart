@@ -3,12 +3,9 @@ import '../entities/unidad_salud_entity.dart';
 import '../../../cedula_orquestador/domain/entities/catalog_item.dart';
 
 abstract class AdminRepository {
-  // Users
   Future<List<AdminUserEntity>> getUsers();
   Future<AdminUserEntity> createUser(Map<String, dynamic> body);
   Future<AdminUserEntity> updateUser(int id, Map<String, dynamic> body);
-
-  // Unidades de Salud
   Future<List<UnidadSaludEntity>> getUnidadesSalud();
   Future<UnidadSaludEntity> createUnidadSalud(Map<String, dynamic> body);
   Future<UnidadSaludEntity> updateUnidadSalud(
@@ -16,8 +13,7 @@ abstract class AdminRepository {
     Map<String, dynamic> body,
   );
   Future<bool> deleteUnidadSalud(int id);
-
-  // Catálogos
+  Future<List<String>> getCatalogKeys();
   Future<List<CatalogItem>> getCatalog(String key);
   Future<bool> createCatalogItem(String catalogName, Map<String, dynamic> body);
 }

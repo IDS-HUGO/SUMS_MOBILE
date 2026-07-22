@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/admin_catalogos_viewmodel.dart';
 
 class AdminCatalogosPage extends ConsumerStatefulWidget {
   const AdminCatalogosPage({super.key});
-
   @override
   ConsumerState<AdminCatalogosPage> createState() => _AdminCatalogosPageState();
 }
 
 class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
   String? _selectedCatalog;
-
   @override
   void initState() {
     super.initState();
@@ -31,13 +30,8 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
 
   void _showAddDialog(BuildContext context, AdminCatalogosViewModel vm) {
     if (_selectedCatalog == null) return;
-
     final nombreController = TextEditingController();
     final descController = TextEditingController();
-
-    // Los controladores son propios de este diálogo (no del State de la
-    // página), así que se liberan cuando el diálogo se cierra, sin importar
-    // si fue por "Cancelar" o después de guardar.
     showDialog(
       context: context,
       builder: (ctx) {
@@ -61,32 +55,27 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx),
+              onPressed: () => ctx.pop(),
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () async {
                 final nombre = nombreController.text.trim();
                 if (nombre.isEmpty) return;
-
-                Navigator.pop(ctx); // close dialog
-
+                ctx.pop();
                 showDialog(
                   context: context,
                   barrierDismissible: false,
                   builder: (_) =>
                       const Center(child: CircularProgressIndicator()),
                 );
-
                 final success = await vm.createCatalogItem(
                   _selectedCatalog!,
                   nombre,
                   descController.text.trim(),
                 );
-
                 if (!mounted) return;
-                Navigator.pop(context); // close loader
-
+                context.pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -112,7 +101,6 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
   @override
   Widget build(BuildContext context) {
     final vm = ref.watch(adminCatalogosViewModelProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestión de Catálogos'),
@@ -176,17 +164,13 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
     if (vm.status == AdminCatalogosStatus.loading && vm.catalogos.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-
     if (_selectedCatalog == null) {
       return const Center(child: Text('Selecciona un catálogo arriba'));
     }
-
     final list = vm.catalogos[_selectedCatalog!] ?? [];
-
     if (list.isEmpty) {
       return const Center(child: Text('El catálogo está vacío.'));
     }
-
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: list.length,

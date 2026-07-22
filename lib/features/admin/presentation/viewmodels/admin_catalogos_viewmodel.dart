@@ -8,36 +8,22 @@ enum AdminCatalogosStatus { initial, loading, loaded, error }
 class AdminCatalogosViewModel extends ChangeNotifier {
   final AdminRepository repository;
   final LoadCatalogsUseCase loadCatalogsUseCase;
-
   AdminCatalogosViewModel({
     required this.repository,
     required this.loadCatalogsUseCase,
   });
-
   AdminCatalogosStatus _status = AdminCatalogosStatus.initial;
   Map<String, List<CatalogItem>> _catalogos = {};
   String? _errorMessage;
-
   AdminCatalogosStatus get status => _status;
   Map<String, List<CatalogItem>> get catalogos => _catalogos;
   String? get errorMessage => _errorMessage;
-
-  final List<String> catalogKeys = [
-    'roles',
-    'vacunas',
-    'material_techo',
-    'material_pared',
-    'material_piso',
-    'estado_civil',
-    'enfermedades_cronicas',
-    'padecimientos_detectados',
-  ];
-
+  List<String> catalogKeys = [];
   Future<void> fetchAllCatalogs() async {
     _status = AdminCatalogosStatus.loading;
     notifyListeners();
-
     try {
+      catalogKeys = await repository.getCatalogKeys();
       final Map<String, List<CatalogItem>> newCatalogs = {};
       for (final key in catalogKeys) {
         newCatalogs[key] = await repository.getCatalog(key);
@@ -59,19 +45,15 @@ class AdminCatalogosViewModel extends ChangeNotifier {
   ) async {
     _status = AdminCatalogosStatus.loading;
     notifyListeners();
-
     try {
       final body = {
         'nombre': nombre,
         if (descripcion != null && descripcion.isNotEmpty)
           'descripcion': descripcion,
       };
-
       final success = await repository.createCatalogItem(catalogName, body);
       if (success) {
-        // Refrescar el catalogo localmente mandando llamar fetch
         await fetchAllCatalogs();
-        // Forzar resincronización local en la base de datos sqlite
         await loadCatalogsUseCase();
         return true;
       } else {

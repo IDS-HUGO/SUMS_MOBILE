@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../../domain/repositories/integrantes_repository.dart';
 
-/// Representa el formulario de UN integrante. Extiende ChangeNotifier para
-/// que su propia tarjeta (_MemberCard) pueda reconstruirse sola cuando este
-/// integrante cambia, sin necesidad de reconstruir las tarjetas de los demás
-/// integrantes (antes, cualquier tecla en cualquier integrante reconstruía
-/// la pantalla completa vía IntegrantesViewModel.notifyListeners()).
 class MemberForm extends ChangeNotifier {
   final TextEditingController nombre = TextEditingController();
   final TextEditingController fechaNacimiento = TextEditingController();
@@ -21,7 +15,6 @@ class MemberForm extends ChangeNotifier {
   final TextEditingController fechaCervico = TextEditingController();
   final TextEditingController fechaMama = TextEditingController();
   final TextEditingController motivoSalud = TextEditingController();
-
   String? sexo,
       estadoCivil,
       lengua,
@@ -32,20 +25,13 @@ class MemberForm extends ChangeNotifier {
       tamizajeCervico,
       tamizajeMama,
       frecuenciaSalud;
-
   bool alfabetizacion = false;
   bool seguridadSocial = false;
   bool higiene = false;
   bool discapacidad = false;
-
   final toxicomanias = <String>{};
   final cronicas = <String>{};
-
-  /// Notifica solo a quien escucha ESTE integrante (su propia tarjeta), sin
-  /// tocar a los demás. `notifyListeners()` es protegido en `ChangeNotifier`;
-  /// este método público es la forma correcta de dispararlo desde fuera.
   void touch() => notifyListeners();
-
   @override
   void dispose() {
     nombre.dispose();
@@ -67,13 +53,10 @@ class MemberForm extends ChangeNotifier {
 
 class IntegrantesViewModel extends ChangeNotifier {
   final IntegrantesRepository repository;
-
   bool _isLoading = true;
   bool get isLoading => _isLoading;
-
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
-
   List<String> rolesOpts = [];
   List<String> sexoOpts = [];
   List<String> edoCivilOpts = [];
@@ -85,19 +68,15 @@ class IntegrantesViewModel extends ChangeNotifier {
   List<String> freqSaludOpts = [];
   List<String> toxicomaniasOpts = [];
   List<String> cronicasOpts = [];
-
   final List<MemberForm> _integrantes = [];
   List<MemberForm> get integrantes => _integrantes;
-
   IntegrantesViewModel({required this.repository}) {
     _init();
   }
-
   Future<void> _init() async {
     try {
       _isLoading = true;
       notifyListeners();
-
       final results = await Future.wait([
         repository.getCatalogOpts('parentesco'),
         repository.getCatalogOpts('estado-civil'),
@@ -109,7 +88,6 @@ class IntegrantesViewModel extends ChangeNotifier {
         repository.getCatalogOpts('toxicomania'),
         repository.getCatalogOpts('enfermedad-cronica'),
       ]);
-
       rolesOpts = results[0];
       sexoOpts = ['Masculino', 'Femenino'];
       edoCivilOpts = results[1];
@@ -121,13 +99,11 @@ class IntegrantesViewModel extends ChangeNotifier {
       freqSaludOpts = results[6];
       toxicomaniasOpts = results[7];
       cronicasOpts = results[8];
-
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
     } catch (e) {
       _errorMessage = e.toString();
-      // Fallback for UI if error occurs
       rolesOpts = ['Madre', 'Padre', 'Hijo(a)'];
       sexoOpts = ['Masculino', 'Femenino'];
       edoCivilOpts = ['Soltero(a)', 'Casado(a)'];
@@ -139,7 +115,6 @@ class IntegrantesViewModel extends ChangeNotifier {
       freqSaludOpts = ['Nunca', 'Anual'];
       toxicomaniasOpts = ['Ninguna', 'Alcohol'];
       cronicasOpts = ['Ninguna', 'Diabetes'];
-
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
@@ -199,9 +174,6 @@ class IntegrantesViewModel extends ChangeNotifier {
     return int.tryParse(text);
   }
 
-  /// Devuelve el texto de [c] recortado (sin espacios al inicio/fin), o
-  /// `null` si queda vacío tras el recorte. Centraliza el `.trim()` de todos
-  /// los campos de texto libre antes de serializarlos hacia el backend.
   String? _trimmedOrNull(TextEditingController c) {
     final t = c.text.trim();
     return t.isEmpty ? null : t;
@@ -228,9 +200,7 @@ class IntegrantesViewModel extends ChangeNotifier {
         "seguridad_social": i.seguridadSocial,
         "higiene": i.higiene,
         "discapacidad": i.discapacidad,
-        "tipoDiscapacidad": i.discapacidad
-            ? _trimmedOrNull(i.tipoDisc)
-            : null,
+        "tipoDiscapacidad": i.discapacidad ? _trimmedOrNull(i.tipoDisc) : null,
         "proteina": int.tryParse(i.proteina.text.trim()),
         "frutasVerduras": int.tryParse(i.frutasVerd.text.trim()),
         "cereales": int.tryParse(i.cereales.text.trim()),

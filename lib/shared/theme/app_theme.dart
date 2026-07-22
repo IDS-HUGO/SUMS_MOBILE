@@ -4,26 +4,21 @@ class AppColors {
   static const green = Color(0xff006657);
   static const greenDark = Color(0xff073b34);
   static const greenLight = Color(0xff4a9e8e);
-  static const terracota = Color(0xff9b4f2e); // ← NUEVO: acento tierra
+  static const terracota = Color(0xff9b4f2e);
   static const gold = Color(0xffbc955c);
   static const burgundy = Color(0xff691c32);
-
   static const canvas = Color(0xfff4efe6);
   static const surface = Color(0xffffffff);
   static const surfaceAlt = Color(0xfffaf7f2);
   static const soft = Color(0xffeef4ef);
-
   static const ink = Color(0xff1a2320);
   static const muted = Color(0xff5a6862);
   static const subtle = Color(0xff8fa49d);
-
   static const line = Color(0xffe2d9c8);
   static const lineStrong = Color(0xffc8bfae);
   static const success = Color(0xff2e7d32);
   static const warning = Color(0xfff57f17);
   static const error = Color(0xffc62828);
-
-  // Colores semánticos por rol
   static const rolAdmin = greenDark;
   static const rolMedico = burgundy;
   static const rolEncuestador = green;
@@ -38,11 +33,9 @@ class AppDimens {
 }
 
 class AppTheme {
-  // Configuración de semilla principal
   static const seedColor = AppColors.green;
   static const secondaryColor = AppColors.gold;
   static const tertiaryColor = AppColors.burgundy;
-
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(
       seedColor: seedColor,
@@ -74,13 +67,11 @@ class AppTheme {
     final ink = isDark ? Colors.white : AppColors.ink;
     final muted = isDark ? Colors.grey[400]! : AppColors.muted;
     final line = isDark ? Colors.grey[800]! : AppColors.line;
-
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: scaffoldColor,
       fontFamily: 'Arial',
-
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
@@ -97,7 +88,6 @@ class AppTheme {
           color: scheme.onPrimary,
         ),
       ),
-
       cardTheme: CardThemeData(
         color: scheme.surface,
         elevation: 0,
@@ -107,7 +97,6 @@ class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
-
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: scheme.primary,
@@ -120,7 +109,6 @@ class AppTheme {
           elevation: 0,
         ),
       ),
-
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: scheme.primary,
@@ -132,7 +120,6 @@ class AppTheme {
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: scheme.surface,
@@ -167,7 +154,6 @@ class AppTheme {
         ),
         prefixIconColor: muted,
       ),
-
       chipTheme: ChipThemeData(
         backgroundColor: scheme.surfaceContainerHighest,
         selectedColor: scheme.primaryContainer,
@@ -182,7 +168,6 @@ class AppTheme {
           color: ink,
         ),
       ),
-
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
           shape: WidgetStatePropertyAll(
@@ -206,9 +191,7 @@ class AppTheme {
           ),
         ),
       ),
-
       dividerTheme: DividerThemeData(color: line, thickness: 1, space: 24),
-
       textTheme: TextTheme(
         headlineLarge: TextStyle(
           fontSize: 32,

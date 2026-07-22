@@ -6,7 +6,6 @@ import '../viewmodels/cedula_viewmodel.dart';
 
 class CedulaHistoryPage extends ConsumerStatefulWidget {
   const CedulaHistoryPage({super.key});
-
   @override
   ConsumerState<CedulaHistoryPage> createState() => _CedulaHistoryPageState();
 }
@@ -55,7 +54,6 @@ class _CedulaHistoryPageState extends ConsumerState<CedulaHistoryPage> {
               ),
             );
           }
-
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: vm.allLocalRecords.length,
@@ -73,20 +71,16 @@ class _CedulaHistoryPageState extends ConsumerState<CedulaHistoryPage> {
 
 class _CedulaHistoryCard extends ConsumerWidget {
   final Map<String, dynamic> record;
-
   const _CedulaHistoryCard({required this.record});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final status = record['_syncStatus'] as int; // 0=DRAFT, 1=PENDING, 2=SYNCED
+    final status = record['_syncStatus'] as int;
     final informante = record['_informante'] ?? 'Sin nombre';
     final fechaStr = record['_createdAt'] ?? '';
     final error = record['_lastSyncError'] as String?;
-
     Color statusColor;
     String statusText;
     IconData statusIcon;
-
     switch (status) {
       case 0:
         statusColor = Colors.orange;
@@ -108,7 +102,6 @@ class _CedulaHistoryCard extends ConsumerWidget {
         statusText = 'Desconocido';
         statusIcon = Icons.help_outline;
     }
-
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(

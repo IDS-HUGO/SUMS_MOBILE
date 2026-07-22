@@ -1,8 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
 part of 'local_database.dart';
 
-// ignore_for_file: type=lint
 class $CedulasTable extends Cedulas with TableInfo<$CedulasTable, Cedula> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -1497,19 +1494,16 @@ typedef $$CedulasTableUpdateCompanionBuilder =
 final class $$CedulasTableReferences
     extends BaseReferences<_$AppDatabase, $CedulasTable, Cedula> {
   $$CedulasTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
   static MultiTypedResultKey<$ViviendasTable, List<Vivienda>>
   _viviendasRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.viviendas,
     aliasName: 'cedulas__id__viviendas__cedula_id',
   );
-
   $$ViviendasTableProcessedTableManager get viviendasRefs {
     final manager = $$ViviendasTableTableManager(
       $_db,
       $_db.viviendas,
     ).filter((f) => f.cedulaId.id.sqlEquals($_itemColumn<int>('id')!));
-
     final cache = $_typedResult.readTableOrNull(_viviendasRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -1522,13 +1516,11 @@ final class $$CedulasTableReferences
     db.vacunas,
     aliasName: 'cedulas__id__vacunas__cedula_id',
   );
-
   $$VacunasTableProcessedTableManager get vacunasRefs {
     final manager = $$VacunasTableTableManager(
       $_db,
       $_db.vacunas,
     ).filter((f) => f.cedulaId.id.sqlEquals($_itemColumn<int>('id')!));
-
     final cache = $_typedResult.readTableOrNull(_vacunasRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -1540,13 +1532,11 @@ final class $$CedulasTableReferences
     db.integrantes,
     aliasName: 'cedulas__id__integrantes__cedula_id',
   );
-
   $$IntegrantesTableProcessedTableManager get integrantesRefs {
     final manager = $$IntegrantesTableTableManager(
       $_db,
       $_db.integrantes,
     ).filter((f) => f.cedulaId.id.sqlEquals($_itemColumn<int>('id')!));
-
     final cache = $_typedResult.readTableOrNull(_integrantesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -1567,29 +1557,24 @@ class $$CedulasTableFilterComposer
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
-
   ColumnFilters<int> get syncStatus => $composableBuilder(
     column: $table.syncStatus,
     builder: (column) => ColumnFilters(column),
   );
-
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
-
   ColumnWithTypeConverterFilters<String?, String, String>
   get informanteNombre => $composableBuilder(
     column: $table.informanteNombre,
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
-
   ColumnWithTypeConverterFilters<String, String, String> get familiaData =>
       $composableBuilder(
         column: $table.familiaData,
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
-
   Expression<bool> viviendasRefs(
     Expression<bool> Function($$ViviendasTableFilterComposer f) f,
   ) {
@@ -1679,22 +1664,18 @@ class $$CedulasTableOrderingComposer
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<int> get syncStatus => $composableBuilder(
     column: $table.syncStatus,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<String> get informanteNombre => $composableBuilder(
     column: $table.informanteNombre,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<String> get familiaData => $composableBuilder(
     column: $table.familiaData,
     builder: (column) => ColumnOrderings(column),
@@ -1712,27 +1693,22 @@ class $$CedulasTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
   GeneratedColumn<int> get syncStatus => $composableBuilder(
     column: $table.syncStatus,
     builder: (column) => column,
   );
-
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
   GeneratedColumnWithTypeConverter<String?, String> get informanteNombre =>
       $composableBuilder(
         column: $table.informanteNombre,
         builder: (column) => column,
       );
-
   GeneratedColumnWithTypeConverter<String, String> get familiaData =>
       $composableBuilder(
         column: $table.familiaData,
         builder: (column) => column,
       );
-
   Expression<T> viviendasRefs<T extends Object>(
     Expression<T> Function($$ViviendasTableAnnotationComposer a) f,
   ) {
@@ -1996,13 +1972,10 @@ typedef $$ViviendasTableUpdateCompanionBuilder =
 final class $$ViviendasTableReferences
     extends BaseReferences<_$AppDatabase, $ViviendasTable, Vivienda> {
   $$ViviendasTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
   static $CedulasTable _cedulaIdTable(_$AppDatabase db) =>
       db.cedulas.createAlias('viviendas__cedula_id__cedulas__id');
-
   $$CedulasTableProcessedTableManager get cedulaId {
     final $_column = $_itemColumn<int>('cedula_id')!;
-
     final manager = $$CedulasTableTableManager(
       $_db,
       $_db.cedulas,
@@ -2028,13 +2001,11 @@ class $$ViviendasTableFilterComposer
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
-
   ColumnWithTypeConverterFilters<String, String, String> get viviendaData =>
       $composableBuilder(
         column: $table.viviendaData,
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
-
   $$CedulasTableFilterComposer get cedulaId {
     final $$CedulasTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -2072,12 +2043,10 @@ class $$ViviendasTableOrderingComposer
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<String> get viviendaData => $composableBuilder(
     column: $table.viviendaData,
     builder: (column) => ColumnOrderings(column),
   );
-
   $$CedulasTableOrderingComposer get cedulaId {
     final $$CedulasTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -2113,13 +2082,11 @@ class $$ViviendasTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
   GeneratedColumnWithTypeConverter<String, String> get viviendaData =>
       $composableBuilder(
         column: $table.viviendaData,
         builder: (column) => column,
       );
-
   $$CedulasTableAnnotationComposer get cedulaId {
     final $$CedulasTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -2231,7 +2198,6 @@ class $$ViviendasTableTableManager
                               )
                               as T;
                     }
-
                     return state;
                   },
               getPrefetchedDataCallback: (items) async {
@@ -2273,13 +2239,10 @@ typedef $$VacunasTableUpdateCompanionBuilder =
 final class $$VacunasTableReferences
     extends BaseReferences<_$AppDatabase, $VacunasTable, Vacuna> {
   $$VacunasTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
   static $CedulasTable _cedulaIdTable(_$AppDatabase db) =>
       db.cedulas.createAlias('vacunas__cedula_id__cedulas__id');
-
   $$CedulasTableProcessedTableManager get cedulaId {
     final $_column = $_itemColumn<int>('cedula_id')!;
-
     final manager = $$CedulasTableTableManager(
       $_db,
       $_db.cedulas,
@@ -2305,13 +2268,11 @@ class $$VacunasTableFilterComposer
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
-
   ColumnWithTypeConverterFilters<String, String, String> get vacunaData =>
       $composableBuilder(
         column: $table.vacunaData,
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
-
   $$CedulasTableFilterComposer get cedulaId {
     final $$CedulasTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -2349,12 +2310,10 @@ class $$VacunasTableOrderingComposer
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<String> get vacunaData => $composableBuilder(
     column: $table.vacunaData,
     builder: (column) => ColumnOrderings(column),
   );
-
   $$CedulasTableOrderingComposer get cedulaId {
     final $$CedulasTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -2390,13 +2349,11 @@ class $$VacunasTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
   GeneratedColumnWithTypeConverter<String, String> get vacunaData =>
       $composableBuilder(
         column: $table.vacunaData,
         builder: (column) => column,
       );
-
   $$CedulasTableAnnotationComposer get cedulaId {
     final $$CedulasTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -2508,7 +2465,6 @@ class $$VacunasTableTableManager
                               )
                               as T;
                     }
-
                     return state;
                   },
               getPrefetchedDataCallback: (items) async {
@@ -2550,13 +2506,10 @@ typedef $$IntegrantesTableUpdateCompanionBuilder =
 final class $$IntegrantesTableReferences
     extends BaseReferences<_$AppDatabase, $IntegrantesTable, Integrante> {
   $$IntegrantesTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
   static $CedulasTable _cedulaIdTable(_$AppDatabase db) =>
       db.cedulas.createAlias('integrantes__cedula_id__cedulas__id');
-
   $$CedulasTableProcessedTableManager get cedulaId {
     final $_column = $_itemColumn<int>('cedula_id')!;
-
     final manager = $$CedulasTableTableManager(
       $_db,
       $_db.cedulas,
@@ -2582,13 +2535,11 @@ class $$IntegrantesTableFilterComposer
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
-
   ColumnWithTypeConverterFilters<String, String, String> get integranteData =>
       $composableBuilder(
         column: $table.integranteData,
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
-
   $$CedulasTableFilterComposer get cedulaId {
     final $$CedulasTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -2626,12 +2577,10 @@ class $$IntegrantesTableOrderingComposer
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<String> get integranteData => $composableBuilder(
     column: $table.integranteData,
     builder: (column) => ColumnOrderings(column),
   );
-
   $$CedulasTableOrderingComposer get cedulaId {
     final $$CedulasTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -2667,13 +2616,11 @@ class $$IntegrantesTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
   GeneratedColumnWithTypeConverter<String, String> get integranteData =>
       $composableBuilder(
         column: $table.integranteData,
         builder: (column) => column,
       );
-
   $$CedulasTableAnnotationComposer get cedulaId {
     final $$CedulasTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -2785,7 +2732,6 @@ class $$IntegrantesTableTableManager
                               )
                               as T;
                     }
-
                     return state;
                   },
               getPrefetchedDataCallback: (items) async {
@@ -2839,17 +2785,14 @@ class $$CatalogosLocalTableFilterComposer
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
-
   ColumnFilters<String> get tipo => $composableBuilder(
     column: $table.tipo,
     builder: (column) => ColumnFilters(column),
   );
-
   ColumnFilters<String> get jsonList => $composableBuilder(
     column: $table.jsonList,
     builder: (column) => ColumnFilters(column),
   );
-
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
@@ -2869,17 +2812,14 @@ class $$CatalogosLocalTableOrderingComposer
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<String> get tipo => $composableBuilder(
     column: $table.tipo,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<String> get jsonList => $composableBuilder(
     column: $table.jsonList,
     builder: (column) => ColumnOrderings(column),
   );
-
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -2897,13 +2837,10 @@ class $$CatalogosLocalTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
   GeneratedColumn<String> get tipo =>
       $composableBuilder(column: $table.tipo, builder: (column) => column);
-
   GeneratedColumn<String> get jsonList =>
       $composableBuilder(column: $table.jsonList, builder: (column) => column);
-
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }

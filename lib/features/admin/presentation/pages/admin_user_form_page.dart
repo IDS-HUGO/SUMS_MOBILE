@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 import '../../domain/entities/user_entity.dart';
 import '../viewmodels/admin_users_viewmodel.dart';
@@ -9,9 +10,7 @@ import '../viewmodels/admin_unidades_viewmodel.dart';
 
 class AdminUserFormPage extends ConsumerStatefulWidget {
   final AdminUserEntity? user;
-
   const AdminUserFormPage({super.key, this.user});
-
   @override
   ConsumerState<AdminUserFormPage> createState() => _AdminUserFormPageState();
 }
@@ -20,10 +19,8 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  int _selectedRol = 3; // Encuestador por defecto
+  int _selectedRol = 3;
   int? _selectedUnidadId;
-
   @override
   void initState() {
     super.initState();
@@ -46,41 +43,31 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-
     final vm = ref.read(adminUsersViewModelProvider);
-
     final body = <String, dynamic>{
       'nombre_usuario': _nombreController.text.trim(),
       'rol_id': _selectedRol,
     };
-
     if (_passwordController.text.isNotEmpty) {
       body['contrasena'] = _passwordController.text;
     }
-
     if (widget.user == null) {
       body['activo'] = true;
     }
-
     if (_selectedUnidadId != null) {
       body['unidad_salud_id'] = _selectedUnidadId!;
     }
-
-    // Mostrar loader
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
-
     final isEditing = widget.user != null;
     final success = isEditing
         ? await vm.updateUser(widget.user!.id, body)
         : await vm.createUser(body);
-
     if (!mounted) return;
-    Navigator.pop(context); // Cerrar loader
-
+    context.pop();
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -92,7 +79,7 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
           backgroundColor: AppColors.green,
         ),
       );
-      Navigator.pop(context); // Regresar a la lista
+      context.pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -106,7 +93,6 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
   @override
   Widget build(BuildContext context) {
     final unidadesVm = ref.watch(adminUnidadesViewModelProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.user != null ? 'Editar Usuario' : 'Nuevo Usuario'),
@@ -157,7 +143,6 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   },
                 ),
                 const SizedBox(height: 24),
-
                 const Text(
                   'Perfil',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -178,7 +163,6 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   onChanged: (v) => setState(() => _selectedRol = v!),
                 ),
                 const SizedBox(height: 16),
-
                 DropdownButtonFormField<int>(
                   value: _selectedUnidadId,
                   decoration: const InputDecoration(
@@ -194,7 +178,6 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   onChanged: (v) => setState(() => _selectedUnidadId = v),
                 ),
                 const SizedBox(height: 32),
-
                 ElevatedButton(
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(

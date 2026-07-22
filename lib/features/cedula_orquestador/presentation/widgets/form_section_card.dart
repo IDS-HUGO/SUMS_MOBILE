@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 
 class FormSectionCard extends ConsumerWidget {
@@ -8,7 +7,6 @@ class FormSectionCard extends ConsumerWidget {
   final String subtitle;
   final IconData icon;
   final List<Widget> children;
-
   const FormSectionCard({
     super.key,
     required this.title,
@@ -16,7 +14,6 @@ class FormSectionCard extends ConsumerWidget {
     required this.icon,
     required this.children,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(

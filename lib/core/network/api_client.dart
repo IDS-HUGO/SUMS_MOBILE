@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:http/http.dart' as http;
 
@@ -11,22 +10,11 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Hosts de desarrollo local (loopback / emulador Android). Fuera de estos
-/// hosts nunca se permite HTTP sin cifrar, ni siquiera en modo debug.
 bool isLoopbackDevHost(String host) {
   final h = host.toLowerCase();
   return h == 'localhost' || h == '127.0.0.1' || h == '10.0.2.2' || h == '::1';
 }
 
-/// Punto único de aplicación de la política de esquema seguro
-/// (OWASP MASVS-NETWORK-1): bloquea cualquier esquema distinto de `https`,
-/// salvo cuando el host es un host de desarrollo local (loopback/emulador)
-/// Y la app corre en modo debug (`kDebugMode`). En builds de release, HTTP
-/// SIEMPRE se bloquea, sin excepción.
-///
-/// Cualquier cliente HTTP de la app (el [ApiClient] principal, o clientes
-/// propios como el de minería/OCR) debe pasar sus URIs por aquí antes de
-/// usarlas, para no abrir una puerta trasera que evada este control.
 Uri enforceSecureScheme(Uri uri) {
   if (uri.scheme == 'https') return uri;
   if (kDebugMode && isLoopbackDevHost(uri.host)) {
@@ -37,14 +25,10 @@ Uri enforceSecureScheme(Uri uri) {
   );
 }
 
-/// Cliente HTTP genérico para la API SUMS.
-/// Base URL: https://api-sums.troy.engineer/sums
 class ApiClient {
   final http.Client client;
   final String baseUrl;
-
   const ApiClient({required this.client, required this.baseUrl});
-
   Future<Map<String, dynamic>> get(String path, {String? token}) async {
     final response = await _sendRequest(
       () => client.get(_uri(path), headers: _headers(token)),
@@ -116,7 +100,6 @@ class ApiClient {
     'Accept': 'application/json',
     if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
   };
-
   Uri _uri(String path) {
     final clean = baseUrl.trim();
     if (clean.isEmpty) throw const ApiException('Configura API_BASE_URL.');
@@ -173,7 +156,6 @@ class ApiClient {
       final error = body['error'] ?? body['message'] ?? body['detail'];
       if (error != null) throw ApiException(error.toString());
     } else if (body is String && body.isNotEmpty) {
-      // Si la respuesta fue un texto plano en lugar de JSON
       throw ApiException(body);
     }
     throw ApiException('Error HTTP ${response.statusCode}.');

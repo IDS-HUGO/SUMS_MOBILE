@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../theme/theme_mode_controller.dart';
 
-/// Botón para la barra superior que permite elegir el tema de la app:
-/// Claro, Oscuro o Sistema (el ícono cambia según la opción activa).
 class ThemeModeMenuButton extends ConsumerWidget {
   const ThemeModeMenuButton({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeModeProvider);
-
     return PopupMenuButton<ThemeMode>(
       tooltip: 'Cambiar tema',
       icon: Icon(_iconFor(mode)),

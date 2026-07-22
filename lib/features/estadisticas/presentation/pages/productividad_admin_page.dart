@@ -6,7 +6,6 @@ import '../viewmodels/estadisticas_viewmodel.dart';
 
 class ProductividadAdminPage extends ConsumerStatefulWidget {
   const ProductividadAdminPage({super.key});
-
   @override
   ConsumerState<ProductividadAdminPage> createState() =>
       _ProductividadAdminPageState();
@@ -25,7 +24,6 @@ class _ProductividadAdminPageState
   @override
   Widget build(BuildContext context) {
     final vm = ref.watch(estadisticasViewModelProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Productividad de Entrevistadores'),
@@ -44,7 +42,6 @@ class _ProductividadAdminPageState
     if (vm.isProductividadLoading && vm.productividad.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-
     if (vm.productividadError != null && vm.productividad.isEmpty) {
       return Center(
         child: Padding(
@@ -74,7 +71,6 @@ class _ProductividadAdminPageState
         ),
       );
     }
-
     return RefreshIndicator(
       onRefresh: () => vm.fetchProductividad(),
       child: SingleChildScrollView(

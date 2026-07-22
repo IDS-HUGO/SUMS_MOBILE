@@ -9,24 +9,12 @@ abstract class TokenStorage {
   Future<void> saveToken(String token);
   Future<String?> readToken();
   Future<void> deleteToken();
-
   Future<void> saveSession(AuthSession session);
   Future<AuthSession?> readSession();
-
-  /// Guarda un hash salteado (SHA-256) de la contraseña, tomado justo después
-  /// de un login remoto exitoso. Se usa únicamente para poder validar la
-  /// contraseña en el fallback de login offline (ver [verifyOfflinePassword]) —
-  /// nunca se guarda la contraseña en claro.
   Future<void> saveOfflinePasswordHash(String contrasena);
-
-  /// Verifica [contrasena] contra el hash guardado por
-  /// [saveOfflinePasswordHash]. Devuelve `false` si nunca se guardó un hash
-  /// (ej. la app se reinstaló) o si la contraseña no coincide.
   Future<bool> verifyOfflinePassword(String contrasena);
 }
 
-/// Genera `sal:hash` con SHA-256(sal + contraseña). Compartido por las 3
-/// implementaciones de [TokenStorage] para no repetir la lógica de hashing.
 String hashOfflinePassword(String contrasena, {String? existingSalt}) {
   final salt =
       existingSalt ??
@@ -35,10 +23,6 @@ String hashOfflinePassword(String contrasena, {String? existingSalt}) {
   return '$salt:$hash';
 }
 
-/// Compara dos strings en tiempo (aproximadamente) constante, para no filtrar
-/// por temporización en qué posición difieren dos hashes (timing attack).
-/// Si difieren en longitud igual recorre ambas cadenas por completo antes de
-/// devolver el resultado.
 bool _constantTimeStringEquals(String a, String b) {
   final maxLen = a.length > b.length ? a.length : b.length;
   var diff = a.length ^ b.length;
@@ -62,14 +46,12 @@ class SecureTokenStorage implements TokenStorage {
   static const _tokenKey = 'auth_token';
   static const _sessionKey = 'auth_session_data';
   static const _offlinePasswordHashKey = 'auth_offline_password_hash';
-
   SecureTokenStorage([FlutterSecureStorage? secureStorage])
     : _secureStorage =
           secureStorage ??
           const FlutterSecureStorage(
             aOptions: AndroidOptions(encryptedSharedPreferences: true),
           );
-
   @override
   Future<void> saveToken(String token) async {
     await _secureStorage.write(key: _tokenKey, value: token);
@@ -130,9 +112,7 @@ class SharedPreferencesTokenStorage implements TokenStorage {
   static const _tokenKey = 'auth_token';
   static const _sessionKey = 'auth_session_data';
   static const _offlinePasswordHashKey = 'auth_offline_password_hash';
-
   SharedPreferencesTokenStorage(this.prefs);
-
   @override
   Future<void> saveToken(String token) async {
     await prefs.setString(_tokenKey, token);
@@ -172,7 +152,10 @@ class SharedPreferencesTokenStorage implements TokenStorage {
 
   @override
   Future<void> saveOfflinePasswordHash(String contrasena) async {
-    await prefs.setString(_offlinePasswordHashKey, hashOfflinePassword(contrasena));
+    await prefs.setString(
+      _offlinePasswordHashKey,
+      hashOfflinePassword(contrasena),
+    );
   }
 
   @override
@@ -182,18 +165,14 @@ class SharedPreferencesTokenStorage implements TokenStorage {
   }
 }
 
-/// Implementacion en memoria. Usada antes, ahora mantenida por compatibilidad.
 class InMemoryTokenStorage implements TokenStorage {
   String? _token;
   AuthSession? _session;
   String? _offlinePasswordHash;
-
   @override
   Future<void> saveToken(String token) async => _token = token;
-
   @override
   Future<String?> readToken() async => _token;
-
   @override
   Future<void> deleteToken() async {
     _token = null;
@@ -209,7 +188,6 @@ class InMemoryTokenStorage implements TokenStorage {
 
   @override
   Future<AuthSession?> readSession() async => _session;
-
   @override
   Future<void> saveOfflinePasswordHash(String contrasena) async {
     _offlinePasswordHash = hashOfflinePassword(contrasena);
