@@ -7,7 +7,6 @@ class OcrResult {
   final int nPaginas;
   final Map<String, OcrField> campos;
   final OcrSummary resumen;
-
   const OcrResult({
     required this.docId,
     required this.archivoOriginal,

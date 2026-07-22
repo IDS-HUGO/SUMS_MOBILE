@@ -8,7 +8,6 @@ class AdminUserEntity {
   final int? datosLaboralesId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-
   const AdminUserEntity({
     required this.id,
     required this.nombreUsuario,
@@ -20,7 +19,6 @@ class AdminUserEntity {
     this.createdAt,
     this.updatedAt,
   });
-
   factory AdminUserEntity.fromJson(Map<String, dynamic> json) {
     return AdminUserEntity(
       id: json['id'] as int,
@@ -38,7 +36,6 @@ class AdminUserEntity {
           : null,
     );
   }
-
   Map<String, dynamic> toJson() => {
     'id': id,
     'nombre_usuario': nombreUsuario,

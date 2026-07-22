@@ -5,7 +5,6 @@ class ProductividadEntrevistador {
   final int mes;
   final int total;
   final DateTime? ultimaActividad;
-
   const ProductividadEntrevistador({
     required this.nombre,
     required this.hoy,
@@ -14,7 +13,6 @@ class ProductividadEntrevistador {
     required this.total,
     this.ultimaActividad,
   });
-
   factory ProductividadEntrevistador.fromJson(Map<String, dynamic> json) {
     return ProductividadEntrevistador(
       nombre: json['nombre'] as String? ?? 'N/A',

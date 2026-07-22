@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -142,6 +143,16 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                     ),
                   ),
 
+                  // ── Escaneo de Cédulas (OCR) ─────────────────────────────────────
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: _OCRActionCard(
+                        onTap: () => context.push(AppRoutes.adminMineria),
+                      ),
+                    ),
+                  ),
+
                   // ── Sincronización y Capturas pendientes (Offline-first) ─────────
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
@@ -154,10 +165,8 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                           return Column(
                             children: [
                               GestureDetector(
-                                onTap: () => Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.cedulaHistorial,
-                                ),
+                                onTap: () =>
+                                    context.push(AppRoutes.cedulaHistorial),
                                 child: _SyncStatusCard(
                                   pendingCount: vm.pendingSyncCount,
                                   isSyncing: vm.isSyncing,
@@ -204,9 +213,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                               ),
                               const SizedBox(height: 16),
                               _PendingCapturesCard(
-                                onTap: () => Navigator.of(
-                                  context,
-                                ).pushNamed(AppRoutes.pending),
+                                onTap: () => context.push(AppRoutes.pending),
                               ),
                             ],
                           );
@@ -298,7 +305,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
 
   void _goToCedula() {
     ref.read(cedulaViewModelProvider).clearMessages();
-    Navigator.of(context).pushNamed(AppRoutes.cedula);
+    context.push(AppRoutes.cedula);
   }
 
   AppBar _buildAppBar(BuildContext context, WidgetRef ref) => AppBar(
@@ -717,6 +724,71 @@ class _MainActionCard extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Familia · Vivienda · Integrantes · Vacunación',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white60,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OCRActionCard extends ConsumerWidget {
+  final VoidCallback onTap;
+  const _OCRActionCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Material(
+      color: AppColors.ink,
+      borderRadius: BorderRadius.circular(AppDimens.radiusL),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(22),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.document_scanner_outlined,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Escaneo de Cédulas',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Captura automática desde archivo PDF',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 12,

@@ -10,7 +10,6 @@ import '../viewmodels/mineria_viewmodel.dart';
 
 class MineriaPage extends ConsumerStatefulWidget {
   const MineriaPage({super.key});
-
   @override
   ConsumerState<MineriaPage> createState() => _MineriaPageState();
 }
@@ -29,7 +28,6 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
-
     if (result != null && result.files.single.path != null) {
       await ref
           .read(mineriaViewModelProvider)
@@ -40,7 +38,6 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
   @override
   Widget build(BuildContext context) {
     final vm = ref.watch(mineriaViewModelProvider);
-
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
@@ -58,10 +55,9 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
         children: [
           _buildHealthStatus(vm.healthOk),
           Expanded(
-            child:
-                vm.result != null
-                    ? Form(key: vm.formKey, child: _buildResults(vm))
-                    : _buildUploadZone(vm),
+            child: vm.result != null
+                ? Form(key: vm.formKey, child: _buildResults(vm))
+                : _buildUploadZone(vm),
           ),
         ],
       ),
@@ -178,7 +174,6 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
   Widget _buildResults(MineriaViewModel vm) {
     final res = vm.result!;
     final theme = Theme.of(context);
-    
     return Column(
       children: [
         Expanded(
@@ -219,10 +214,9 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
                           _buildInfoRow(
                             'Requieren Revisión',
                             res.resumen.necesitanRevision.toString(),
-                            color:
-                                res.resumen.necesitanRevision > 0
-                                    ? AppColors.error
-                                    : AppColors.green,
+                            color: res.resumen.necesitanRevision > 0
+                                ? AppColors.error
+                                : AppColors.green,
                           ),
                         ],
                       ),
@@ -278,8 +272,8 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
                       vacunasOpts: vm.vacunasOpts,
                       dosisOpts: vm.dosisOpts,
                       onRemove: () => vm.removeVacuna(index),
-                      onChanged:
-                          (v, d) => vm.updateVacuna(index, vacuna: v, dosis: d),
+                      onChanged: (v, d) =>
+                          vm.updateVacuna(index, vacuna: v, dosis: d),
                     );
                   }, childCount: vm.vacunasSeleccionadas.length),
                 ),
@@ -339,20 +333,19 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
             ),
             elevation: 0,
           ),
-          child:
-              vm.isSaving
-                  ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                  : const Text(
-                    'GUARDAR DATOS EXTRAÍDOS',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+          child: vm.isSaving
+              ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
                   ),
+                )
+              : const Text(
+                  'GUARDAR DATOS EXTRAÍDOS',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                ),
         ),
       ),
     );
@@ -361,7 +354,6 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
   Future<void> _handleSave(MineriaViewModel vm) async {
     final success = await vm.guardarCambios();
     if (!mounted) return;
-
     if (success) {
       if (vm.nivelRiesgo != null) {
         await _showResultadoRiesgoDialog(
@@ -527,16 +519,15 @@ class _FieldCard extends StatelessWidget {
   final String fieldKey;
   final TextEditingController? controller;
   const _FieldCard({required this.fieldKey, this.controller});
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
-    
-    // Formatear la llave técnica para que sea amigable (ej: VIVIENDA > TECHO > CONCRETO)
-    final label = fieldKey.toUpperCase().replaceAll('.', ' > ').replaceAll('_', ' ');
-
+    final label = fieldKey
+        .toUpperCase()
+        .replaceAll('.', ' > ')
+        .replaceAll('_', ' ');
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -575,11 +566,18 @@ class _FieldCard extends StatelessWidget {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: theme.dividerTheme.color?.withOpacity(0.5) ?? AppColors.line.withOpacity(0.5)),
+                borderSide: BorderSide(
+                  color:
+                      theme.dividerTheme.color?.withOpacity(0.5) ??
+                      AppColors.line.withOpacity(0.5),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.green, width: 1.5),
+                borderSide: const BorderSide(
+                  color: AppColors.green,
+                  width: 1.5,
+                ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -587,7 +585,10 @@ class _FieldCard extends StatelessWidget {
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+                borderSide: const BorderSide(
+                  color: AppColors.error,
+                  width: 1.5,
+                ),
               ),
               hintText: 'Pendiente de capturar...',
               hintStyle: const TextStyle(color: AppColors.subtle, fontSize: 13),
@@ -613,7 +614,6 @@ class _ManualVaccineCard extends StatelessWidget {
   final List<String> dosisOpts;
   final VoidCallback onRemove;
   final Function(String?, String?) onChanged;
-
   const _ManualVaccineCard({
     required this.index,
     required this.vacuna,
@@ -622,11 +622,9 @@ class _ManualVaccineCard extends StatelessWidget {
     required this.onRemove,
     required this.onChanged,
   });
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -664,10 +662,9 @@ class _ManualVaccineCard extends StatelessWidget {
               labelText: 'Nombre de la Vacuna',
               isDense: true,
             ),
-            items:
-                vacunasOpts
-                    .map((v) => DropdownMenuItem(value: v, child: Text(v)))
-                    .toList(),
+            items: vacunasOpts
+                .map((v) => DropdownMenuItem(value: v, child: Text(v)))
+                .toList(),
             onChanged: (v) => onChanged(v, vacuna.dosis),
             validator: (v) => v == null ? 'Seleccione vacuna' : null,
           ),
@@ -679,10 +676,9 @@ class _ManualVaccineCard extends StatelessWidget {
               labelText: 'Dosis',
               isDense: true,
             ),
-            items:
-                dosisOpts
-                    .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                    .toList(),
+            items: dosisOpts
+                .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                .toList(),
             onChanged: (d) => onChanged(vacuna.vacuna, d),
             validator: (v) => v == null ? 'Seleccione dosis' : null,
           ),

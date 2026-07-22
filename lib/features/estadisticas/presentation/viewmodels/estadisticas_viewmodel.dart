@@ -7,35 +7,26 @@ enum EstadisticasStatus { initial, loading, loaded, error }
 
 class EstadisticasViewModel extends ChangeNotifier {
   final EstadisticasRepository repository;
-
   EstadisticasViewModel({required this.repository});
-
   EstadisticasStatus _resumenStatus = EstadisticasStatus.initial;
   ResumenEstadisticas? _resumen;
   String? _resumenError;
-
   EstadisticasStatus _productividadStatus = EstadisticasStatus.initial;
   List<ProductividadEntrevistador> _productividad = [];
   String? _productividadError;
-
-  // Getters Resumen
   EstadisticasStatus get resumenStatus => _resumenStatus;
   ResumenEstadisticas? get resumen => _resumen;
   String? get resumenError => _resumenError;
   bool get isResumenLoading => _resumenStatus == EstadisticasStatus.loading;
-
-  // Getters Productividad
   EstadisticasStatus get productividadStatus => _productividadStatus;
   List<ProductividadEntrevistador> get productividad => _productividad;
   String? get productividadError => _productividadError;
   bool get isProductividadLoading =>
       _productividadStatus == EstadisticasStatus.loading;
-
   Future<void> fetchResumen() async {
     _resumenStatus = EstadisticasStatus.loading;
     _resumenError = null;
     notifyListeners();
-
     try {
       _resumen = await repository.getMisCedulasResumen();
       _resumenStatus = EstadisticasStatus.loaded;
@@ -50,7 +41,6 @@ class EstadisticasViewModel extends ChangeNotifier {
     _productividadStatus = EstadisticasStatus.loading;
     _productividadError = null;
     notifyListeners();
-
     try {
       _productividad = await repository.getProductividadEntrevistadores();
       _productividadStatus = EstadisticasStatus.loaded;

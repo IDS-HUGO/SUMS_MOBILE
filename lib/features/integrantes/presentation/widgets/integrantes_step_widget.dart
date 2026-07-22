@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
 import '../viewmodels/integrantes_viewmodel.dart';
@@ -10,21 +9,14 @@ import '../../../familia/presentation/viewmodels/familia_viewmodel.dart';
 
 class IntegrantesStepWidget extends ConsumerWidget {
   const IntegrantesStepWidget({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Solo nos suscribimos a lo "estructural" (cargando / error / cuántos
-    // integrantes hay). Escribir en un campo de un integrante NO cambia
-    // ninguno de estos 3 valores, así que esta pantalla ya no se reconstruye
-    // completa en cada tecla — ver ListenableBuilder en _MemberCard, que es
-    // quien ahora reacciona a los cambios de CADA integrante por separado.
     ref.watch(
       integrantesViewModelProvider.select(
         (v) => (v.isLoading, v.errorMessage, v.integrantes.length),
       ),
     );
     final vm = ref.read(integrantesViewModelProvider);
-
     if (vm.isLoading) {
       return const Center(
         child: Padding(
@@ -33,7 +25,6 @@ class IntegrantesStepWidget extends ConsumerWidget {
         ),
       );
     }
-
     if (vm.errorMessage != null) {
       return Center(
         child: Text(
@@ -42,7 +33,6 @@ class IntegrantesStepWidget extends ConsumerWidget {
         ),
       );
     }
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -57,9 +47,6 @@ class IntegrantesStepWidget extends ConsumerWidget {
                 canRemove: vm.integrantes.length > 1,
                 onRemove: () => vm.removeMemberForm(i),
                 onChanged: () {
-                  // Notifica primero al propio integrante (rebuild acotado a
-                  // su tarjeta) y luego al vm completo (compatibilidad con
-                  // quien más escuche este vm, ej. VacunacionStepWidget).
                   vm.integrantes[i].touch();
                   vm.updateForm();
                 },
@@ -95,7 +82,6 @@ class _MemberCard extends ConsumerWidget {
   final bool canRemove;
   final VoidCallback onRemove;
   final VoidCallback onChanged;
-
   final List<String> roles,
       sexoOpts,
       edoCivilOpts,
@@ -107,9 +93,7 @@ class _MemberCard extends ConsumerWidget {
       freqSaludOpts,
       toxicomaniasOpts,
       cronicasOpts;
-
   final void Function(Set<String>, String) toggleSet;
-
   const _MemberCard({
     required this.index,
     required this.form,
@@ -129,13 +113,8 @@ class _MemberCard extends ConsumerWidget {
     required this.cronicasOpts,
     required this.toggleSet,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Reconstruye esta tarjeta cuando ESTE integrante cambia (form es su
-    // propio ChangeNotifier), sin depender de que el widget padre vuelva a
-    // ejecutar build() — así escribir en el integrante 3 no reconstruye las
-    // tarjetas de los demás integrantes.
     return ListenableBuilder(
       listenable: form,
       builder: (context, _) => _buildCard(context, ref),
@@ -651,7 +630,6 @@ class _MemberCard extends ConsumerWidget {
     if (picked != null) {
       controller.text =
           "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-
       final now = DateTime.now();
       int anos = now.year - picked.year;
       if (now.month < picked.month ||
@@ -718,7 +696,6 @@ class _MemberCard extends ConsumerWidget {
     onChanged: onChanged,
     validator: validator,
   );
-
   Widget _daysField(TextEditingController c, String label) => SumsTextField(
     controller: c,
     label: label,
@@ -728,7 +705,6 @@ class _MemberCard extends ConsumerWidget {
     inputFormatters: digitsOnly,
     validator: (v) => requiredText(v) ?? intRange(0, 7)(v),
   );
-
   Widget _buildYesNo(
     BuildContext context,
     String label,
@@ -746,7 +722,6 @@ class _MemberCard extends ConsumerWidget {
       onSelectionChanged: (s) => onChange(s.first),
     ),
   );
-
   Widget _chipGroup(
     BuildContext context,
     List<String> options,
@@ -778,7 +753,6 @@ class _MemberCard extends ConsumerWidget {
 class _SubLabel extends ConsumerWidget {
   final String text;
   const _SubLabel({required this.text});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) => Text(
     text.toUpperCase(),

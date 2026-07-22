@@ -5,8 +5,7 @@ class User {
   final bool activo;
   final int? unidadSaludId;
   final int? datosLaboralesId;
-  final int? entrevistadorId; // ← nuevo: lo usa la cédula formal
-
+  final int? entrevistadorId;
   const User({
     required this.id,
     required this.nombreUsuario,
@@ -16,7 +15,6 @@ class User {
     this.datosLaboralesId,
     this.entrevistadorId,
   });
-
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: _asInt(json['id']) ?? 0,
@@ -28,7 +26,6 @@ class User {
       entrevistadorId: _asInt(json['entrevistador_id']),
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,

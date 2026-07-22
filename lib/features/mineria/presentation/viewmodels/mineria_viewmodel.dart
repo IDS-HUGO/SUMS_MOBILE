@@ -15,23 +15,14 @@ class MineriaViewModel extends ChangeNotifier {
   final CheckSaludUseCase checkSaludUseCase;
   final GetCatalogosUseCase getCatalogosUseCase;
   final PredecirRiesgoUseCase predecirRiesgoUseCase;
-
   MineriaViewModel({
     required this.procesarPdfUseCase,
     required this.checkSaludUseCase,
     required this.getCatalogosUseCase,
     required this.predecirRiesgoUseCase,
   });
-
-  /// Tamaño máximo permitido para el PDF antes de enviarlo al microservicio
-  /// OCR (protege memoria/ancho de banda contra archivos maliciosamente
-  /// grandes).
-  static const int maxFileSizeBytes = 20 * 1024 * 1024; // 20 MB
-
-  /// Firma mágica de un PDF válido: los bytes ASCII de "%PDF-".
+  static const int maxFileSizeBytes = 20 * 1024 * 1024;
   static const List<int> _pdfMagicBytes = [0x25, 0x50, 0x44, 0x46, 0x2D];
-
-  // ── Estado ────────────────────────────────────────────────────────────────
   MineriaStatus _status = MineriaStatus.initial;
   bool _healthOk = false;
   OcrResult? _result;
@@ -45,20 +36,10 @@ class MineriaViewModel extends ChangeNotifier {
   // Catálogos
   List<String> vacunasOpts = [];
   List<String> dosisOpts = [];
-
-  // Vacunas seleccionadas manualmente
   final List<VacunaAplicada> vacunasSeleccionadas = [];
-
-  // Llave del formulario para validaciones Regex
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
-  // Mapa de controladores para edición
   final Map<String, TextEditingController> _controllers = {};
-
-  // Mapeo de grupos para reconstruir el payload original (BaseKey -> List of original sub-keys)
   final Map<String, List<String>> _groupRegistry = {};
-
-  // ── Getters ───────────────────────────────────────────────────────────────
   MineriaStatus get status => _status;
   bool get healthOk => _healthOk;
   OcrResult? get result => _result;
@@ -71,14 +52,9 @@ class MineriaViewModel extends ChangeNotifier {
   bool get isLoading => _status == MineriaStatus.loading;
   bool get isSaving => _status == MineriaStatus.saving;
   Map<String, TextEditingController> get controllers => _controllers;
-
-  // ── Acciones ──────────────────────────────────────────────────────────────
-
-  /// Verifica si el servicio está disponible y carga catálogos.
   Future<void> init() async {
     _healthOk = await checkSaludUseCase();
-    if (!hasListeners) return; // Evita error si el widget se cerró
-
+    if (!hasListeners) return;
     if (_healthOk) {
       try {
         final catalogos = await getCatalogosUseCase();
@@ -92,14 +68,10 @@ class MineriaViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Establece el archivo PDF seleccionado, validando tamaño y firma mágica
-  /// (%PDF-) ANTES de habilitar su envío al microservicio OCR. Si la
-  /// validación falla, no se guarda el archivo como seleccionado.
   Future<void> setFile(File file) async {
     _errorMessage = null;
     _selectedFile = null;
     notifyListeners();
-
     try {
       final length = await file.length();
       if (length <= 0) {
@@ -113,7 +85,6 @@ class MineriaViewModel extends ChangeNotifier {
         );
         return;
       }
-
       final raf = await file.open();
       List<int> header;
       try {
@@ -130,7 +101,6 @@ class MineriaViewModel extends ChangeNotifier {
         );
         return;
       }
-
       _selectedFile = file;
       _errorMessage = null;
       notifyListeners();
@@ -147,17 +117,14 @@ class MineriaViewModel extends ChangeNotifier {
     return true;
   }
 
-  /// Envía el archivo al OCR.
   Future<void> procesar() async {
     if (_selectedFile == null) {
       _setError('Selecciona un archivo PDF primero.');
       return;
     }
-
     _status = MineriaStatus.loading;
     _errorMessage = null;
     notifyListeners();
-
     try {
       _result = await procesarPdfUseCase(_selectedFile!);
       AppLogger.info(
@@ -171,41 +138,30 @@ class MineriaViewModel extends ChangeNotifier {
     }
   }
 
-  /// Inicializa los controladores con los valores extraídos.
-  /// Mapeo 1:1 para asegurar que se muestren todos los campos (aprox. 45).
   void _initControllers() {
     _disposeControllers();
     _groupRegistry.clear();
     if (_result == null) return;
-
-    // Ordenar llaves alfabéticamente para consistencia visual
     final sortedKeys = _result!.campos.keys.toList()..sort();
-
     for (var key in sortedKeys) {
       final field = _result!.campos[key]!;
       String value = field.value.trim();
       final lowerValue = value.toLowerCase();
       final cleanKey = key.toLowerCase();
-
-      // Registrar grupos para el mapeo consolidado posterior
-      if (cleanKey.contains('material_') || 
-          cleanKey.contains('manejo_excretas') || 
+      if (cleanKey.contains('material_') ||
+          cleanKey.contains('manejo_excretas') ||
           cleanKey.contains('tenencia')) {
         final baseKey = _getBaseKey(cleanKey);
         _groupRegistry.putIfAbsent(baseKey, () => []).add(key);
       }
-
-      // Sanitización y mejora de visualización
       if (lowerValue == 'true') {
         value = key.split('.').last.replaceAll('_', ' ').toUpperCase();
       } else if (lowerValue == 'false' || lowerValue == '[vacío]') {
         value = '';
       }
-
       if (value.contains('%')) {
         value = value.split(RegExp(r'\d+%')).first.trim();
       }
-
       _controllers[key] = TextEditingController(text: value);
     }
   }
@@ -219,7 +175,6 @@ class MineriaViewModel extends ChangeNotifier {
     return parts.length > 1 ? parts[parts.length - 2] : parts[0];
   }
 
-  // Gestión de Vacunas
   void addVacuna() {
     vacunasSeleccionadas.add(VacunaAplicada());
     notifyListeners();
@@ -236,22 +191,15 @@ class MineriaViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Valida y guarda los datos editados + vacunas.
   Future<bool> guardarCambios() async {
     if (_result == null) return false;
-
-    // Ejecutar validaciones Regex
     if (!(formKey.currentState?.validate() ?? false)) {
       _setError('Por favor, corrija los errores en el formulario.');
       return false;
     }
-
     _status = MineriaStatus.saving;
     notifyListeners();
-
     try {
-      // 1. Construir payload para FamiliaFeatures (Python)
-      // Inicializamos con valores por defecto seguros
       final payload = <String, dynamic>{
         "numero_cuartos": 2,
         "numero_habitantes": 4,
@@ -290,22 +238,16 @@ class MineriaViewModel extends ChangeNotifier {
         // formulario dedicado todavía para capturarla, se envía en false.
         "tiene_mascota_sin_vacunar": false,
       };
-
-      // Mapeamos los 45 campos del OCR al payload consolidado
       _controllers.forEach((key, controller) {
         final value = controller.text.trim();
         final upperValue = value.toUpperCase();
         final cleanKey = key.toLowerCase();
-
-        // Mapeo de campos numéricos
         if (cleanKey.contains('numero_cuartos')) {
           payload['numero_cuartos'] = int.tryParse(value) ?? 2;
         }
         if (cleanKey.contains('numero_habitantes')) {
           payload['numero_habitantes'] = int.tryParse(value) ?? 4;
         }
-
-        // Mapeo de booleanos
         if (cleanKey.contains('agua_entubada.si') && value.isNotEmpty) {
           payload['agua_entubada'] = true;
         }
@@ -318,8 +260,6 @@ class MineriaViewModel extends ChangeNotifier {
         if (cleanKey.contains('energia_electrica.no') && value.isNotEmpty) {
           payload['energia_electrica'] = false;
         }
-
-        // Mapeo de Categorías (Materiales)
         if (cleanKey.contains('material_techo') && value.isNotEmpty) {
           if (upperValue.contains('CONCRETO')) {
             payload['material_techo'] = 'Concreto o cemento';
@@ -329,7 +269,6 @@ class MineriaViewModel extends ChangeNotifier {
             payload['material_techo'] = 'Madera';
           }
         }
-
         if (cleanKey.contains('material_paredes') && value.isNotEmpty) {
           if (upperValue.contains('CONCRETO')) {
             payload['material_paredes'] = 'Concreto o cemento';
@@ -337,7 +276,6 @@ class MineriaViewModel extends ChangeNotifier {
             payload['material_paredes'] = 'Madera';
           }
         }
-
         if (cleanKey.contains('material_piso') && value.isNotEmpty) {
           if (upperValue.contains('CONCRETO')) {
             payload['material_piso'] = 'Concreto o cemento';
@@ -345,7 +283,6 @@ class MineriaViewModel extends ChangeNotifier {
             payload['material_piso'] = 'Tierra';
           }
         }
-
         if (cleanKey.contains('manejo_excretas') && value.isNotEmpty) {
           if (upperValue.contains('WC')) {
             payload['manejo_excretas'] = 'WC';
@@ -354,15 +291,13 @@ class MineriaViewModel extends ChangeNotifier {
           }
         }
       });
-
-      // 2. Añadir vacunas
-      payload['vacunas'] =
-          vacunasSeleccionadas
-              .where((v) => v.isValid)
-              .map((v) => v.toJson())
-              .toList();
-
-      AppLogger.info('MineriaOCR: Enviando Payload Consolidado a /riesgo/predecir...');
+      payload['vacunas'] = vacunasSeleccionadas
+          .where((v) => v.isValid)
+          .map((v) => v.toJson())
+          .toList();
+      AppLogger.info(
+        'MineriaOCR: Enviando Payload Consolidado a /riesgo/predecir...',
+      );
       final response = await predecirRiesgoUseCase(payload);
       AppLogger.info('Respuesta Riesgo: $response');
 
@@ -383,7 +318,6 @@ class MineriaViewModel extends ChangeNotifier {
     }
   }
 
-  /// Limpia el estado para un nuevo procesamiento.
   void reset() {
     _status = MineriaStatus.initial;
     _result = null;
@@ -398,7 +332,6 @@ class MineriaViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
   void _setError(String message) {
     _status = MineriaStatus.error;
     _errorMessage = message;

@@ -21,7 +21,6 @@ class SumsTextField extends ConsumerWidget {
   final bool autocorrect;
   final bool enableInteractiveSelection;
   final int? maxLength;
-
   const SumsTextField({
     super.key,
     required this.controller,
@@ -43,7 +42,6 @@ class SumsTextField extends ConsumerWidget {
     this.enableInteractiveSelection = true,
     this.maxLength,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return TextFormField(

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-
 import '../../domain/entities/catalog_item.dart';
 
 class CatalogSelect extends ConsumerWidget {
@@ -11,7 +10,6 @@ class CatalogSelect extends ConsumerWidget {
   final Map<String, List<CatalogItem>> catalogs;
   final ValueChanged<int?> onChanged;
   final String? Function(int?)? validator;
-
   const CatalogSelect({
     super.key,
     required this.label,
@@ -22,14 +20,10 @@ class CatalogSelect extends ConsumerWidget {
     this.icon,
     this.validator,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final items = catalogs[catalogKey] ?? const <CatalogItem>[];
-
-    // Safety check to ensure the current value exists in the catalog items
     final effectiveValue = items.any((item) => item.id == value) ? value : null;
-
     return DropdownButtonFormField<int>(
       isExpanded: true,
       initialValue: effectiveValue,

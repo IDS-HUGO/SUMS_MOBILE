@@ -3,7 +3,6 @@ import '../../domain/repositories/familia_repository.dart';
 
 class FamiliaViewModel extends ChangeNotifier {
   final FamiliaRepository repository;
-
   final informanteNombre = TextEditingController();
   String? informanteSexo;
   final domicilio = TextEditingController();
@@ -22,22 +21,17 @@ class FamiliaViewModel extends ChangeNotifier {
   List<String> roles = [];
   bool isLoadingRoles = true;
   String? errorMessage;
-
   FamiliaViewModel({required this.repository}) {
     _loadRoles();
   }
-
   Future<void> _loadRoles() async {
     try {
       isLoadingRoles = true;
       notifyListeners();
-
-      // Consultar el catálogo de la API
       final items = await repository.getCatalog('parentesco');
       roles = items.map((e) => e.nombre).toList();
     } catch (e) {
       errorMessage = e.toString();
-      // Fallback a hardcoded en caso de error, o dejar vacío.
       roles = ['Madre', 'Padre', 'Hijo(a)', 'Abuelo(a)'];
     } finally {
       isLoadingRoles = false;

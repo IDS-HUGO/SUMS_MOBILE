@@ -8,12 +8,10 @@ import '../../../../core/storage/token_storage.dart';
 class AdminRepositoryImpl implements AdminRepository {
   final AdminRemoteDataSource remoteDataSource;
   final TokenStorage tokenStorage;
-
   const AdminRepositoryImpl({
     required this.remoteDataSource,
     required this.tokenStorage,
   });
-
   @override
   Future<List<AdminUserEntity>> getUsers() async {
     final token = await tokenStorage.readToken();
@@ -79,6 +77,13 @@ class AdminRepositoryImpl implements AdminRepository {
     } catch (e) {
       return false;
     }
+  }
+
+  @override
+  Future<List<String>> getCatalogKeys() async {
+    final token = await tokenStorage.readToken();
+    final data = await remoteDataSource.getCatalogKeys(token: token);
+    return data.map((e) => e.toString()).toList();
   }
 
   @override

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 import '../../domain/entities/unidad_salud_entity.dart';
 import '../viewmodels/admin_unidades_viewmodel.dart';
@@ -9,7 +10,6 @@ import '../viewmodels/admin_unidades_viewmodel.dart';
 class AdminUnidadFormPage extends ConsumerStatefulWidget {
   final UnidadSaludEntity? unidad;
   const AdminUnidadFormPage({super.key, this.unidad});
-
   @override
   ConsumerState<AdminUnidadFormPage> createState() =>
       _AdminUnidadFormPageState();
@@ -19,7 +19,6 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _cluesController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -38,29 +37,22 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-
     final vm = ref.read(adminUnidadesViewModelProvider);
-
     final body = {
       'nombre': _nombreController.text.trim(),
       'clues': _cluesController.text.trim().toUpperCase(),
     };
-
-    // Mostrar loader
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
-
     final isEditing = widget.unidad != null;
     final success = isEditing
         ? await vm.updateUnidad(widget.unidad!.id, body)
         : await vm.createUnidad(body);
-
     if (!mounted) return;
-    Navigator.pop(context); // Cerrar loader
-
+    context.pop();
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -72,7 +64,7 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
           backgroundColor: AppColors.green,
         ),
       );
-      Navigator.pop(context); // Regresar a la lista
+      context.pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -121,9 +113,6 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Requerido';
-                    // Formato oficial CLUES: 5 letras (institución + estado)
-                    // seguidas de 6 dígitos, 11 caracteres en total
-                    // (ej. CSSMA000001).
                     final clues = v.trim().toUpperCase();
                     final cluesRegex = RegExp(r'^[A-Z]{5}[0-9]{6}$');
                     if (!cluesRegex.hasMatch(clues)) {
@@ -133,7 +122,6 @@ class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
                   },
                 ),
                 const SizedBox(height: 32),
-
                 ElevatedButton(
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(

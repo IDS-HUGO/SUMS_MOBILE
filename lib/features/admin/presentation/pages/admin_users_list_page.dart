@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 import '../../../auth/domain/entities/user_role.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../viewmodels/admin_users_viewmodel.dart';
 import 'admin_user_form_page.dart';
 
 class AdminUsersListPage extends ConsumerStatefulWidget {
   const AdminUsersListPage({super.key});
-
   @override
   ConsumerState<AdminUsersListPage> createState() => _AdminUsersListPageState();
 }
@@ -26,7 +27,6 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
   @override
   Widget build(BuildContext context) {
     final vm = ref.watch(adminUsersViewModelProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestión de Usuarios'),
@@ -34,10 +34,7 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AdminUserFormPage()),
-          );
+          context.push(AppRoutes.adminUserForm);
         },
         backgroundColor: AppColors.rolAdmin,
         child: const Icon(Icons.add, color: Colors.white),
@@ -50,7 +47,6 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
     if (vm.status == AdminUsersStatus.loading && vm.users.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-
     if (vm.status == AdminUsersStatus.error && vm.users.isEmpty) {
       return Center(
         child: Text(
@@ -59,11 +55,9 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
         ),
       );
     }
-
     if (vm.users.isEmpty) {
       return const Center(child: Text('No hay usuarios registrados'));
     }
-
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: vm.users.length,
@@ -95,12 +89,7 @@ class _AdminUsersListPageState extends ConsumerState<AdminUsersListPage> {
             trailing: PopupMenuButton<String>(
               onSelected: (value) async {
                 if (value == 'edit') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AdminUserFormPage(user: user),
-                    ),
-                  );
+                  context.push(AppRoutes.adminUserForm, extra: user);
                 } else if (value == 'toggle') {
                   final success = await ref
                       .read(adminUsersViewModelProvider)
