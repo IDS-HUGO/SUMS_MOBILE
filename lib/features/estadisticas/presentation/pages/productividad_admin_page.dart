@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/estadisticas_viewmodel.dart';
 
-class ProductividadAdminPage extends StatefulWidget {
+class ProductividadAdminPage extends ConsumerStatefulWidget {
   const ProductividadAdminPage({super.key});
-
   @override
-  State<ProductividadAdminPage> createState() => _ProductividadAdminPageState();
+  ConsumerState<ProductividadAdminPage> createState() =>
+      _ProductividadAdminPageState();
 }
 
-class _ProductividadAdminPageState extends State<ProductividadAdminPage> {
+class _ProductividadAdminPageState
+    extends ConsumerState<ProductividadAdminPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EstadisticasViewModel>().fetchProductividad();
+      ref.read(estadisticasViewModelProvider).fetchProductividad();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<EstadisticasViewModel>();
-
+    final vm = ref.watch(estadisticasViewModelProvider);
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Productividad de Entrevistadores'),
         actions: [
@@ -42,7 +42,6 @@ class _ProductividadAdminPageState extends State<ProductividadAdminPage> {
     if (vm.isProductividadLoading && vm.productividad.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-
     if (vm.productividadError != null && vm.productividad.isEmpty) {
       return Center(
         child: Padding(
@@ -72,7 +71,6 @@ class _ProductividadAdminPageState extends State<ProductividadAdminPage> {
         ),
       );
     }
-
     return RefreshIndicator(
       onRefresh: () => vm.fetchProductividad(),
       child: SingleChildScrollView(
@@ -80,22 +78,61 @@ class _ProductividadAdminPageState extends State<ProductividadAdminPage> {
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
-            headingRowColor: WidgetStateProperty.all(AppColors.greenDark.withOpacity(0.05)),
+            headingRowColor: WidgetStateProperty.all(
+              AppColors.greenDark.withOpacity(0.05),
+            ),
             columns: const [
-              DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Entrevistador', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Hoy', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Semana', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Mes', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Última Act.', style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                label: Text('#', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+              DataColumn(
+                label: Text(
+                  'Entrevistador',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Hoy',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Semana',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Mes',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Total',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Última Act.',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
             rows: List.generate(vm.productividad.length, (index) {
               final p = vm.productividad[index];
               return DataRow(
                 cells: [
                   DataCell(Text('${index + 1}')),
-                  DataCell(Text(p.nombre, style: const TextStyle(fontWeight: FontWeight.w600))),
+                  DataCell(
+                    Text(
+                      p.nombre,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
                   DataCell(Text('${p.hoy}')),
                   DataCell(Text('${p.semana}')),
                   DataCell(Text('${p.mes}')),

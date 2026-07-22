@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/admin_catalogos_viewmodel.dart';
 
-class AdminCatalogosPage extends StatefulWidget {
+class AdminCatalogosPage extends ConsumerStatefulWidget {
   const AdminCatalogosPage({super.key});
-
   @override
-  State<AdminCatalogosPage> createState() => _AdminCatalogosPageState();
+  ConsumerState<AdminCatalogosPage> createState() => _AdminCatalogosPageState();
 }
 
-class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
+class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
   String? _selectedCatalog;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = context.read<AdminCatalogosViewModel>();
+      final vm = ref.read(adminCatalogosViewModelProvider);
       vm.fetchAllCatalogs();
       if (vm.catalogKeys.isNotEmpty) {
         setState(() {
@@ -30,10 +30,8 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
 
   void _showAddDialog(BuildContext context, AdminCatalogosViewModel vm) {
     if (_selectedCatalog == null) return;
-    
     final nombreController = TextEditingController();
     final descController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (ctx) {
@@ -49,40 +47,42 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
               const SizedBox(height: 10),
               TextField(
                 controller: descController,
-                decoration: const InputDecoration(labelText: 'Descripción (Opcional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Descripción (Opcional)',
+                ),
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx),
+              onPressed: () => ctx.pop(),
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () async {
                 final nombre = nombreController.text.trim();
                 if (nombre.isEmpty) return;
-                
-                Navigator.pop(ctx); // close dialog
-                
+                ctx.pop();
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (_) => const Center(child: CircularProgressIndicator()),
+                  builder: (_) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
-
                 final success = await vm.createCatalogItem(
                   _selectedCatalog!,
                   nombre,
                   descController.text.trim(),
                 );
-                
                 if (!mounted) return;
-                Navigator.pop(context); // close loader
-                
+                context.pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(success ? 'Añadido exitosamente' : (vm.errorMessage ?? 'Error')),
+                    content: Text(
+                      success
+                          ? 'Añadido exitosamente'
+                          : (vm.errorMessage ?? 'Error'),
+                    ),
                     backgroundColor: success ? AppColors.green : Colors.red,
                   ),
                 );
@@ -92,15 +92,16 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
           ],
         );
       },
-    );
+    ).then((_) {
+      nombreController.dispose();
+      descController.dispose();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AdminCatalogosViewModel>();
-
+    final vm = ref.watch(adminCatalogosViewModelProvider);
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
         title: const Text('Gestión de Catálogos'),
         backgroundColor: AppColors.terracota,
@@ -120,25 +121,40 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
             )
           : null,
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
-            child: DropdownButtonFormField<String>(
-              value: _selectedCatalog,
-              decoration: const InputDecoration(
-                labelText: 'Selecciona un catálogo',
-                border: OutlineInputBorder(),
+            color: Theme.of(context).colorScheme.surface,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: vm.catalogKeys.map((k) {
+                  final isSelected = _selectedCatalog == k;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(k.toUpperCase()),
+                      selected: isSelected,
+                      selectedColor: AppColors.terracota.withOpacity(0.2),
+                      labelStyle: TextStyle(
+                        color: isSelected ? AppColors.terracota : AppColors.ink,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                      onSelected: (selected) {
+                        if (selected) setState(() => _selectedCatalog = k);
+                      },
+                    ),
+                  );
+                }).toList(),
               ),
-              items: vm.catalogKeys.map((k) {
-                return DropdownMenuItem(value: k, child: Text(k.toUpperCase()));
-              }).toList(),
-              onChanged: (v) => setState(() => _selectedCatalog = v),
             ),
           ),
-          Expanded(
-            child: _buildList(vm),
-          ),
+          const Divider(height: 1),
+          Expanded(child: _buildList(vm)),
         ],
       ),
     );
@@ -148,17 +164,13 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
     if (vm.status == AdminCatalogosStatus.loading && vm.catalogos.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-
     if (_selectedCatalog == null) {
       return const Center(child: Text('Selecciona un catálogo arriba'));
     }
-
     final list = vm.catalogos[_selectedCatalog!] ?? [];
-
     if (list.isEmpty) {
       return const Center(child: Text('El catálogo está vacío.'));
     }
-
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: list.length,
@@ -169,10 +181,15 @@ class _AdminCatalogosPageState extends State<AdminCatalogosPage> {
           margin: const EdgeInsets.only(bottom: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            side: const BorderSide(color: AppColors.line),
+            side: BorderSide(
+              color: Theme.of(context).dividerTheme.color ?? AppColors.line,
+            ),
           ),
           child: ListTile(
-            leading: const Icon(Icons.label_important, color: AppColors.terracota),
+            leading: const Icon(
+              Icons.label_important,
+              color: AppColors.terracota,
+            ),
             title: Text(item.nombre),
             subtitle: Text('ID: ${item.id}'),
           ),

@@ -14,7 +14,6 @@ dependencies:
 
   # --- UI & State Management ---
   cupertino_icons: ^1.0.8
-  provider: ^6.1.5
   sqflite: ^2.3.0
 
   # --- Networking & Background ---
@@ -22,14 +21,33 @@ dependencies:
   connectivity_plus: ^7.1.1
   workmanager: ^0.9.0+3
   shared_preferences: ^2.5.5
+  file_picker: ^9.0.3
 
   # --- Database (Drift / SQLite) & Paths ---
+  # sqlite3_flutter_libs (^0.6.0+eol) fue removido: su propio changelog dice
+  # "Not used anymore, update to version 3.x of package:sqlite3 instead".
+  # Desde drift 2.32.0, todas las plataformas Flutter/Dart nativas se
+  # soportan sin necesidad de ese paquete: drift ya depende de sqlite3 ^3.4.0
+  # (que bundlea SQLite vía hooks), y este proyecto ya está en drift ^2.34.0.
+  # Ver https://pub.dev/packages/sqlite3_flutter_libs y el changelog de
+  # drift 2.32.0.
   drift: ^2.34.0
-  sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.6
   path: ^1.9.1
   flutter_secure_storage: ^10.3.1
   flutter_jailbreak_detection: ^1.10.0
+  get_it: ^9.2.1
+  flutter_riverpod: ^2.6.1
+
+  # --- Security ---
+  # Hash del password para permitir validar el login offline sin guardar la
+  # contraseña en claro (ver token_storage.dart).
+  crypto: ^3.0.6
+  # Cifrado AES-256-GCM de los campos JSON sensibles de la BD local
+  # (ver core/storage/local_db_encryption.dart). Paquete puro Dart
+  # (PointyCastle), sin código nativo — no requiere tocar el motor SQLite.
+  encrypt: ^5.0.3
+  go_router: ^17.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

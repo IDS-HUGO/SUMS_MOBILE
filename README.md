@@ -1,43 +1,34 @@
-# sums
+# SUMS - Sistema Único de Microdiagnóstico en Salud (Mobile)
 
-Aplicacion Flutter para mobile y otras plataformas soportadas por Flutter.
+Aplicación móvil desarrollada en Flutter para la captura y gestión de datos de IMSS-Bienestar.
+
+## Arquitectura y Tecnologías Principales
+
+- **Arquitectura**: Clean Architecture / Hexagonal Architecture. El código está altamente modularizado separando responsabilidades (UI, ViewModels, Dominio, Repositorios, Servicios Externos).
+- **Inyección de Dependencias (DI)**: Gestionada a través de `get_it` para inyectar servicios, repositorios y ViewModels.
+- **Gestión del Estado**: Implementado con **Riverpod** (`ConsumerWidget`, `ConsumerStatefulWidget`, `ChangeNotifierProvider.autoDispose`), garantizando correcta gestión del ciclo de vida de la memoria y disposición de los estados al cambiar de vista.
+- **Diseño (UI/UX)**: Diseño basado en Material Design 3, soporte nativo de **Modo Claro / Modo Oscuro** gestionado con `ColorScheme.fromSeed` y `AppTheme`.
+- **Capacidades Offline (Offline-First)**: Arquitectura preparada para recolectar, almacenar y sincronizar datos de forma local cuando el dispositivo no tiene red y sincronizarlos cuando la conexión es reestablecida.
 
 ## Requisitos
 
-- Flutter SDK instalado y en la variable `PATH`
+- Flutter SDK instalado (estable) y en la variable `PATH`
 - Git instalado
 - Android Studio, Xcode o el SDK de la plataforma que vayas a usar para compilar
 
-## Configuracion inicial
+## Configuración inicial
 
-### Clonar el repositorio
+### Clonar el repositorio e instalar dependencias
 
 ```bash
 git clone <url-del-repositorio>
 cd sums
-```
-
-### Si ya tienes el repositorio
-
-```bash
-git pull
-```
-
-### Descargar dependencias
-
-```bash
 flutter pub get
 ```
 
-## Como compilar y ejecutar
+## Ejecución
 
-### Verificar el entorno
-
-```bash
-flutter doctor
-```
-
-### Ejecutar en modo desarrollo
+### Entorno de desarrollo
 
 ```bash
 flutter run
@@ -49,13 +40,7 @@ La app apunta por defecto a `http://localhost:3000/sums`. Para Android emulator 
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000/sums
 ```
 
-Para web, Windows o desktop local:
-
-```bash
-flutter run --dart-define=API_BASE_URL=http://localhost:3000/sums
-```
-
-Para un celular fisico, cambia `localhost` por la IP de tu computadora en la misma red, por ejemplo:
+Para conectarse desde un dispositivo físico (ej: celular) a un servidor local, usa la IP de tu computadora en la red:
 
 ```bash
 flutter run --dart-define=API_BASE_URL=http://192.168.1.50:3000/sums
@@ -63,64 +48,29 @@ flutter run --dart-define=API_BASE_URL=http://192.168.1.50:3000/sums
 
 ## Funcionalidad implementada
 
-- Login y registro conectados a `/login` y `/register`.
-- Navegacion basica con dashboard y formularios de captura.
-- Formularios conectados a cedula, nucleo familiar, persona, vivienda, salud preventiva, servicios de salud, enfermedades cronicas y vacunacion.
-- Diseno basado en colores y logo IMSS-BIENESTAR del manual compartido.
+- **Gestión de roles**: Inicio de sesión (Encuestador, Médico, Analista, Administrador) con navegación e interfaces dedicadas.
+- **Microdiagnóstico Familiar**: Formularios complejos para cédulas, vivienda, núcleo familiar, estado de salud y vacunación.
+- **Sincronización Inteligente**: Detección de conectividad y sincronización de cédulas con historial de capturas locales y manejo de errores (Borrador, Pendiente, Sincronizado, Fallido).
+- **Diseño unificado IMSS-BIENESTAR**: Paleta institucional dinámica según tema claro/oscuro.
 
-Nota: la sesion se conserva en memoria durante la ejecucion de la app. Si quieres persistir el token entre reinicios, habilita Developer Mode en Windows y agrega un storage con plugin, por ejemplo `shared_preferences`.
+## Comandos Útiles
 
-### Analizar el proyecto
-
+**Análisis de código estático:**
 ```bash
 flutter analyze
 ```
 
-### Ejecutar pruebas
-
+**Ejecutar pruebas:**
 ```bash
 flutter test
 ```
 
-## Generar compilaciones
-
-### Android
-
+**Generar APK (Android):**
 ```bash
 flutter build apk
 ```
 
-### iOS
-
-```bash
-flutter build ios
-```
-
-### Web
-
-```bash
-flutter build web
-```
-
-### Windows
-
-```bash
-flutter build windows
-```
-
-### Linux
-
-```bash
-flutter build linux
-```
-
-### macOS
-
-```bash
-flutter build macos
-```
-
-## Documentacion
+## Documentación
 
 - [Flutter documentation](https://docs.flutter.dev/)
-- [Getting started with Flutter](https://docs.flutter.dev/get-started/install)
+- [Riverpod Documentation](https://riverpod.dev/)

@@ -1,7 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class SumsTextField extends StatelessWidget {
+class SumsTextField extends ConsumerWidget {
   final TextEditingController controller;
   final String label;
   final IconData icon;
@@ -19,7 +20,7 @@ class SumsTextField extends StatelessWidget {
   final bool enableSuggestions;
   final bool autocorrect;
   final bool enableInteractiveSelection;
-
+  final int? maxLength;
   const SumsTextField({
     super.key,
     required this.controller,
@@ -39,10 +40,10 @@ class SumsTextField extends StatelessWidget {
     this.enableSuggestions = true,
     this.autocorrect = true,
     this.enableInteractiveSelection = true,
+    this.maxLength,
   });
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
@@ -58,6 +59,7 @@ class SumsTextField extends StatelessWidget {
       enableInteractiveSelection: enableInteractiveSelection,
       minLines: obscureText ? 1 : minLines,
       maxLines: obscureText ? 1 : maxLines,
+      maxLength: maxLength,
       decoration: InputDecoration(
         labelText: label,
         helperText: helperText,

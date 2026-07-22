@@ -1,66 +1,48 @@
 import 'package:flutter/foundation.dart';
-
 import '../../domain/entities/auth_session.dart';
 import '../../domain/entities/user_role.dart';
 import '../../../cedula_orquestador/domain/usecases/load_catalogs_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
-
 import 'package:sums/core/network/app_logger.dart';
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthViewModel extends ChangeNotifier {
-  final LoginUseCase    loginUseCase;
+  final LoginUseCase loginUseCase;
   final RegisterUseCase registerUseCase;
-  final LogoutUseCase   logoutUseCase;
+  final LogoutUseCase logoutUseCase;
   final LoadCatalogsUseCase? loadCatalogsUseCase;
-
   AuthViewModel({
     required this.loginUseCase,
     required this.registerUseCase,
     required this.logoutUseCase,
     this.loadCatalogsUseCase,
   });
-
-  // ── estado ────────────────────────────────────────────────────────────────
-  AuthStatus   _status       = AuthStatus.initial;
+  AuthStatus _status = AuthStatus.initial;
   AuthSession? _session;
-  String?      _errorMessage;
-
-  // ── getters públicos ──────────────────────────────────────────────────────
-  AuthStatus   get status        => _status;
-  AuthSession? get session       => _session;
-  String?      get errorMessage  => _errorMessage;
-  bool         get isLoading     => _status == AuthStatus.loading;
-  bool         get isAuthenticated => _session?.isAuthenticated ?? false;
-
-  /// Rol del usuario autenticado. Null si no hay sesión.
-  UserRole? get role => _session == null
-      ? null
-      : UserRole.fromId(_session!.user.rolId);
-
-  /// Ruta home que corresponde al rol del usuario autenticado.
+  String? _errorMessage;
+  AuthStatus get status => _status;
+  AuthSession? get session => _session;
+  String? get errorMessage => _errorMessage;
+  bool get isLoading => _status == AuthStatus.loading;
+  bool get isAuthenticated => _session?.isAuthenticated ?? false;
+  UserRole? get role =>
+      _session == null ? null : UserRole.fromId(_session!.user.rolId);
   String get homeRoute => role?.homeRoute ?? '/login';
-
-  // ── acciones ──────────────────────────────────────────────────────────────
-
-  /// Inicia sesión. Retorna [true] si fue exitoso.
   Future<bool> login({
     required String nombreUsuario,
     required String contrasena,
   }) async {
     _setLoading();
     try {
-      _session      = await loginUseCase(
+      _session = await loginUseCase(
         nombreUsuario: nombreUsuario,
-        contrasena:    contrasena,
+        contrasena: contrasena,
       );
-      _status       = AuthStatus.authenticated;
+      _status = AuthStatus.authenticated;
       _errorMessage = null;
-
-      // Cargar y guardar catálogos en local después de un login exitoso
       if (loadCatalogsUseCase != null) {
         try {
           await loadCatalogsUseCase!();
@@ -68,7 +50,6 @@ class AuthViewModel extends ChangeNotifier {
           AppLogger.error("Error cargando catálogos en background", e);
         }
       }
-
       notifyListeners();
       return true;
     } catch (error) {
@@ -77,25 +58,23 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  /// Registra un usuario nuevo y hace login automático.
-  /// Se mantiene para uso interno (ej. admin creando usuarios).
   Future<bool> register({
     required String nombreUsuario,
     required String contrasena,
-    required int    rolId,
+    required int rolId,
     int? unidadSaludId,
     int? datosLaboralesId,
   }) async {
     _setLoading();
     try {
-      _session      = await registerUseCase(
-        nombreUsuario:    nombreUsuario,
-        contrasena:       contrasena,
-        rolId:            rolId,
-        unidadSaludId:    unidadSaludId,
+      _session = await registerUseCase(
+        nombreUsuario: nombreUsuario,
+        contrasena: contrasena,
+        rolId: rolId,
+        unidadSaludId: unidadSaludId,
         datosLaboralesId: datosLaboralesId,
       );
-      _status       = AuthStatus.authenticated;
+      _status = AuthStatus.authenticated;
       _errorMessage = null;
       notifyListeners();
       return true;
@@ -105,13 +84,12 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  /// Cierra la sesión activa y elimina el token.
   Future<void> logout() async {
     _setLoading();
     try {
       await logoutUseCase();
-      _session      = null;
-      _status       = AuthStatus.unauthenticated;
+      _session = null;
+      _status = AuthStatus.unauthenticated;
       _errorMessage = null;
       notifyListeners();
     } catch (error) {
@@ -119,22 +97,20 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  /// Limpia el mensaje de error (útil al navegar entre pantallas).
   void clearError() {
     _errorMessage = null;
     if (_status == AuthStatus.error) _status = AuthStatus.initial;
     notifyListeners();
   }
 
-  // ── helpers privados ──────────────────────────────────────────────────────
   void _setLoading() {
-    _status       = AuthStatus.loading;
+    _status = AuthStatus.loading;
     _errorMessage = null;
     notifyListeners();
   }
 
   void _setError(Object error) {
-    _status       = AuthStatus.error;
+    _status = AuthStatus.error;
     _errorMessage = error.toString();
     notifyListeners();
   }

@@ -1,15 +1,22 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 final digitsOnly = [FilteringTextInputFormatter.digitsOnly];
-
+final nameInputFormatters = [
+  FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZÀ-ÖØ-öø-ÿ\s\-']")),
+];
+final freeTextInputFormatters = [
+  FilteringTextInputFormatter.allow(
+    RegExp(r"[a-zA-Z0-9À-ÖØ-öø-ÿ\s\.,#\-/°()]"),
+  ),
+];
 int? optionalInt(String value) {
   if (value.trim().isEmpty) return null;
   return int.tryParse(value.trim());
 }
 
 int requiredInt(String value) => int.parse(value.trim());
-
 String todayIsoDate() {
   final now = DateTime.now();
   final month = now.month.toString().padLeft(2, '0');
@@ -48,25 +55,24 @@ String? Function(String?) intRange(int min, int max) {
   return (String? value) {
     if (value == null || value.trim().isEmpty) return null;
     final parsed = int.tryParse(value);
-    if (parsed == null || parsed < min || parsed > max) return 'Debe estar entre $min y $max';
+    if (parsed == null || parsed < min || parsed > max)
+      return 'Debe estar entre $min y $max';
     return null;
   };
 }
 
-class BooleanSwitch extends StatelessWidget {
+class BooleanSwitch extends ConsumerWidget {
   final String label;
   final bool value;
   final ValueChanged<bool> onChanged;
-
   const BooleanSwitch({
     super.key,
     required this.label,
     required this.value,
     required this.onChanged,
   });
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SwitchListTile.adaptive(
       contentPadding: EdgeInsets.zero,
       title: Text(label),

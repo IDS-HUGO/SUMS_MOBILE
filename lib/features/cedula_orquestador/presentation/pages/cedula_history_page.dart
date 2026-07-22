@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/cedula_viewmodel.dart';
 
-class CedulaHistoryPage extends StatefulWidget {
+class CedulaHistoryPage extends ConsumerStatefulWidget {
   const CedulaHistoryPage({super.key});
-
   @override
-  State<CedulaHistoryPage> createState() => _CedulaHistoryPageState();
+  ConsumerState<CedulaHistoryPage> createState() => _CedulaHistoryPageState();
 }
 
-class _CedulaHistoryPageState extends State<CedulaHistoryPage> {
+class _CedulaHistoryPageState extends ConsumerState<CedulaHistoryPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CedulaViewModel>().refreshSyncCounts();
+      ref.read(cedulaViewModelProvider).refreshSyncCounts();
     });
   }
 
@@ -27,25 +27,33 @@ class _CedulaHistoryPageState extends State<CedulaHistoryPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<CedulaViewModel>().refreshSyncCounts(),
+            onPressed: () =>
+                ref.read(cedulaViewModelProvider).refreshSyncCounts(),
           ),
         ],
       ),
-      body: Consumer<CedulaViewModel>(
-        builder: (context, vm, child) {
+      body: Consumer(
+        builder: (context, ref, child) {
+          final vm = ref.watch(cedulaViewModelProvider);
           if (vm.allLocalRecords.isEmpty) {
             return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.history_edu_outlined, size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.history_edu_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   SizedBox(height: 16),
-                  Text('No hay registros locales aún', style: TextStyle(color: Colors.grey)),
+                  Text(
+                    'No hay registros locales aún',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             );
           }
-
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: vm.allLocalRecords.length,
@@ -61,22 +69,18 @@ class _CedulaHistoryPageState extends State<CedulaHistoryPage> {
   }
 }
 
-class _CedulaHistoryCard extends StatelessWidget {
+class _CedulaHistoryCard extends ConsumerWidget {
   final Map<String, dynamic> record;
-
   const _CedulaHistoryCard({required this.record});
-
   @override
-  Widget build(BuildContext context) {
-    final status = record['_syncStatus'] as int; // 0=DRAFT, 1=PENDING, 2=SYNCED
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = record['_syncStatus'] as int;
     final informante = record['_informante'] ?? 'Sin nombre';
     final fechaStr = record['_createdAt'] ?? '';
     final error = record['_lastSyncError'] as String?;
-    
     Color statusColor;
     String statusText;
     IconData statusIcon;
-
     switch (status) {
       case 0:
         statusColor = Colors.orange;
@@ -98,7 +102,6 @@ class _CedulaHistoryCard extends StatelessWidget {
         statusText = 'Desconocido';
         statusIcon = Icons.help_outline;
     }
-
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -113,7 +116,10 @@ class _CedulaHistoryCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -124,7 +130,11 @@ class _CedulaHistoryCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         statusText,
-                        style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -162,16 +172,22 @@ class _CedulaHistoryCard extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton.icon(
                   onPressed: () async {
-                    final vm = context.read<CedulaViewModel>();
+                    final vm = ref.read(cedulaViewModelProvider);
                     final result = await vm.retrySyncSingle(record['_localId']);
                     if (!context.mounted) return;
                     if (result.success) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Sincronizado correctamente'), backgroundColor: Colors.green),
+                        const SnackBar(
+                          content: Text('Sincronizado correctamente'),
+                          backgroundColor: Colors.green,
+                        ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: ${result.error}'), backgroundColor: Colors.red),
+                        SnackBar(
+                          content: Text('Error: ${result.error}'),
+                          backgroundColor: Colors.red,
+                        ),
                       );
                     }
                   },

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-
 import '../../domain/repositories/integrantes_repository.dart';
 
-class MemberForm {
+class MemberForm extends ChangeNotifier {
   final TextEditingController nombre = TextEditingController();
   final TextEditingController fechaNacimiento = TextEditingController();
   final TextEditingController edad = TextEditingController();
@@ -16,18 +15,24 @@ class MemberForm {
   final TextEditingController fechaCervico = TextEditingController();
   final TextEditingController fechaMama = TextEditingController();
   final TextEditingController motivoSalud = TextEditingController();
-
-  String? sexo, estadoCivil, lengua, parentesco, escolaridad,
-          ingreso, embarazo, tamizajeCervico, tamizajeMama, frecuenciaSalud;
-
+  String? sexo,
+      estadoCivil,
+      lengua,
+      parentesco,
+      escolaridad,
+      ingreso,
+      embarazo,
+      tamizajeCervico,
+      tamizajeMama,
+      frecuenciaSalud;
   bool alfabetizacion = false;
   bool seguridadSocial = false;
-  bool higiene  = false;
+  bool higiene = false;
   bool discapacidad = false;
-
   final toxicomanias = <String>{};
-  final cronicas     = <String>{};
-
+  final cronicas = <String>{};
+  void touch() => notifyListeners();
+  @override
   void dispose() {
     nombre.dispose();
     fechaNacimiento.dispose();
@@ -42,18 +47,16 @@ class MemberForm {
     fechaCervico.dispose();
     fechaMama.dispose();
     motivoSalud.dispose();
+    super.dispose();
   }
 }
 
 class IntegrantesViewModel extends ChangeNotifier {
   final IntegrantesRepository repository;
-
   bool _isLoading = true;
   bool get isLoading => _isLoading;
-
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
-
   List<String> rolesOpts = [];
   List<String> sexoOpts = [];
   List<String> edoCivilOpts = [];
@@ -65,19 +68,15 @@ class IntegrantesViewModel extends ChangeNotifier {
   List<String> freqSaludOpts = [];
   List<String> toxicomaniasOpts = [];
   List<String> cronicasOpts = [];
-
   final List<MemberForm> _integrantes = [];
   List<MemberForm> get integrantes => _integrantes;
-
   IntegrantesViewModel({required this.repository}) {
     _init();
   }
-
   Future<void> _init() async {
     try {
       _isLoading = true;
       notifyListeners();
-
       final results = await Future.wait([
         repository.getCatalogOpts('parentesco'),
         repository.getCatalogOpts('estado-civil'),
@@ -89,7 +88,6 @@ class IntegrantesViewModel extends ChangeNotifier {
         repository.getCatalogOpts('toxicomania'),
         repository.getCatalogOpts('enfermedad-cronica'),
       ]);
-
       rolesOpts = results[0];
       sexoOpts = ['Masculino', 'Femenino'];
       edoCivilOpts = results[1];
@@ -101,14 +99,11 @@ class IntegrantesViewModel extends ChangeNotifier {
       freqSaludOpts = results[6];
       toxicomaniasOpts = results[7];
       cronicasOpts = results[8];
-
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
-
     } catch (e) {
       _errorMessage = e.toString();
-      // Fallback for UI if error occurs
       rolesOpts = ['Madre', 'Padre', 'Hijo(a)'];
       sexoOpts = ['Masculino', 'Femenino'];
       edoCivilOpts = ['Soltero(a)', 'Casado(a)'];
@@ -120,7 +115,6 @@ class IntegrantesViewModel extends ChangeNotifier {
       freqSaludOpts = ['Nunca', 'Anual'];
       toxicomaniasOpts = ['Ninguna', 'Alcohol'];
       cronicasOpts = ['Ninguna', 'Diabetes'];
-      
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
@@ -129,8 +123,6 @@ class IntegrantesViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-
 
   void addMemberForm() {
     _integrantes.add(MemberForm());
@@ -182,39 +174,52 @@ class IntegrantesViewModel extends ChangeNotifier {
     return int.tryParse(text);
   }
 
+  String? _trimmedOrNull(TextEditingController c) {
+    final t = c.text.trim();
+    return t.isEmpty ? null : t;
+  }
+
   List<Map<String, dynamic>> toPayload() {
     return _integrantes.map((i) {
       final isFem = i.sexo == 'Femenino';
       return {
-        "nombre": i.nombre.text,
-        "fecha_nacimiento": i.fechaNacimiento.text,
+        "nombre": i.nombre.text.trim(),
+        "fecha_nacimiento": i.fechaNacimiento.text.trim(),
         "edad": _parseEdad(i.edad.text),
         "sexo": i.sexo,
         "estado_civil": i.estadoCivil,
         "parentesco": i.parentesco,
         "lengua": i.lengua,
-        "lenguaEspecificar": i.lengua == 'Lengua indígena' ? (i.lenguaEsp.text.isEmpty ? null : i.lenguaEsp.text) : null,
+        "lenguaEspecificar": i.lengua == 'Lengua indígena'
+            ? _trimmedOrNull(i.lenguaEsp)
+            : null,
         "escolaridad": i.escolaridad,
-        "ocupacion": i.ocupacion.text,
+        "ocupacion": i.ocupacion.text.trim(),
         "ingreso": i.ingreso,
         "alfabetizacion": i.alfabetizacion,
         "seguridad_social": i.seguridadSocial,
         "higiene": i.higiene,
         "discapacidad": i.discapacidad,
-        "tipoDiscapacidad": i.discapacidad ? (i.tipoDisc.text.isEmpty ? null : i.tipoDisc.text) : null,
-        "proteina": int.tryParse(i.proteina.text),
-        "frutasVerduras": int.tryParse(i.frutasVerd.text),
-        "cereales": int.tryParse(i.cereales.text),
+        "tipoDiscapacidad": i.discapacidad ? _trimmedOrNull(i.tipoDisc) : null,
+        "proteina": int.tryParse(i.proteina.text.trim()),
+        "frutasVerduras": int.tryParse(i.frutasVerd.text.trim()),
+        "cereales": int.tryParse(i.cereales.text.trim()),
         "toxicomanias": i.toxicomanias.toList(),
-        "otraSustancia": i.toxicomanias.contains('Otras sustancias') ? (i.otraSust.text.isEmpty ? null : i.otraSust.text) : null,
+        "otraSustancia": i.toxicomanias.contains('Otras sustancias')
+            ? _trimmedOrNull(i.otraSust)
+            : null,
         "cronicas": i.cronicas.toList(),
         "embarazo": isFem ? i.embarazo : null,
         "tamizajeCervico": isFem ? i.tamizajeCervico : null,
-        "fechaCervico": (isFem && i.tamizajeCervico == 'Sí') ? (i.fechaCervico.text.isEmpty ? null : i.fechaCervico.text) : null,
+        "fechaCervico": (isFem && i.tamizajeCervico == 'Sí')
+            ? _trimmedOrNull(i.fechaCervico)
+            : null,
         "tamizajeMama": isFem ? i.tamizajeMama : null,
-        "fechaMama": (isFem && i.tamizajeMama == 'Sí') ? (i.fechaMama.text.isEmpty ? null : i.fechaMama.text) : null,
+        "fechaMama": (isFem && i.tamizajeMama == 'Sí')
+            ? _trimmedOrNull(i.fechaMama)
+            : null,
         "frecuenciaSalud": i.frecuenciaSalud,
-        "motivoSalud": i.motivoSalud.text,
+        "motivoSalud": i.motivoSalud.text.trim(),
       };
     }).toList();
   }

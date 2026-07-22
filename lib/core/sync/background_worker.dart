@@ -3,40 +3,52 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'sync_engine.dart';
 import '../storage/local_database.dart';
+import '../storage/token_storage.dart';
 import '../../features/cedula_orquestador/data/datasources/local/cedula_local_datasource.dart';
 import '../../features/cedula_orquestador/data/datasources/remote/cedula_remote_datasource.dart';
 import '../network/api_client.dart';
+import '../network/api_endpoints.dart';
+import '../network/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const syncTaskName = "syncPendingCedulasTask";
-
+const syncConsecutiveFailuresKey = 'sync_consecutive_failures';
+const syncNeedsUserAttentionKey = 'sync_needs_user_attention';
+const syncLastErrorKey = 'sync_last_error';
+const syncFailureThreshold = 3;
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    print("Workmanager: Ejecutando tarea $task");
+    AppLogger.info('Workmanager: Ejecutando tarea $task');
     if (task == syncTaskName) {
+      final prefs = await SharedPreferences.getInstance();
       try {
-        final prefs = await SharedPreferences.getInstance();
-        // Usamos una base URL por defecto o la guardada
-        final apiUrl = prefs.getString('api_url') ?? 'http://10.0.2.2:3000';
-
+        final apiUrl = ApiEndpoints.baseUrl;
         final db = AppDatabase();
         final localDataSource = CedulaLocalDataSource(db);
         final httpClient = http.Client();
         final apiClient = ApiClient(client: httpClient, baseUrl: apiUrl);
         final remoteDataSource = CedulaRemoteDataSource(apiClient: apiClient);
-        
+        final tokenStorage = SecureTokenStorage();
         final syncEngine = SyncEngine(
           localDataSource: localDataSource,
           remoteDataSource: remoteDataSource,
           connectivity: Connectivity(),
+          tokenStorage: tokenStorage,
         );
-
         await syncEngine.syncPendingCedulas();
+        await prefs.setInt(syncConsecutiveFailuresKey, 0);
+        await prefs.setBool(syncNeedsUserAttentionKey, false);
         return Future.value(true);
       } catch (e) {
-        print("Workmanager error: $e");
-        return Future.value(false); // Retrying logic handled by OS if false
+        AppLogger.error('Workmanager: error en sincronización', e);
+        final failures = (prefs.getInt(syncConsecutiveFailuresKey) ?? 0) + 1;
+        await prefs.setInt(syncConsecutiveFailuresKey, failures);
+        await prefs.setString(syncLastErrorKey, e.toString());
+        if (failures >= syncFailureThreshold) {
+          await prefs.setBool(syncNeedsUserAttentionKey, true);
+        }
+        return Future.value(false);
       }
     }
     return Future.value(true);
@@ -44,28 +56,19 @@ void callbackDispatcher() {
 }
 
 void initializeBackgroundSync() {
-  Workmanager().initialize(
-    callbackDispatcher,
-    isInDebugMode: true, // Cambiar a false en prod
-  );
-
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
   Workmanager().registerPeriodicTask(
     "1",
     syncTaskName,
     frequency: const Duration(minutes: 15),
-    constraints: Constraints(
-      networkType: NetworkType.connected, // Solo ejecutar cuando hay red
-    ),
+    constraints: Constraints(networkType: NetworkType.connected),
   );
-
-  // Escuchar activamente cuando la app esta abierta
-  Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> result) async {
+  Connectivity().onConnectivityChanged.listen((
+    List<ConnectivityResult> result,
+  ) async {
     if (!result.contains(ConnectivityResult.none)) {
-      // Intentar sincronizar cuando vuelve el internet estando la app abierta
-      // NOTA: Para producción, ideal no inicializar la base de datos tantas veces,
-      // pero para este alcance, lanzaremos un workmanager request inmediato.
       Workmanager().registerOneOffTask(
-        "sync_now", 
+        "sync_now",
         syncTaskName,
         constraints: Constraints(networkType: NetworkType.connected),
       );

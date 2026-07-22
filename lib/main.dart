@@ -1,22 +1,25 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'app.dart';
+import 'core/di/injection.dart';
 import 'core/sync/background_worker.dart';
 import 'core/network/app_logger.dart';
-
+import 'core/security/device_security.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initializeBackgroundSync();
-
   bool isSecure = true;
   try {
     final jailbroken = await FlutterJailbreakDetection.jailbroken;
     final developerMode = await FlutterJailbreakDetection.developerMode;
     if (jailbroken) {
       isSecure = false;
-      AppLogger.warn('Dispositivo con Jailbreak/Root detectado (OWASP MASVS-RESILIENCE-1).');
+      AppLogger.warn(
+        'Dispositivo con Jailbreak/Root detectado (OWASP MASVS-RESILIENCE-1).',
+      );
     }
     if (developerMode) {
       AppLogger.warn('Modo desarrollador activo (OWASP MASVS-RESILIENCE-2).');
@@ -24,7 +27,8 @@ void main() async {
   } catch (e) {
     AppLogger.error('Error al verificar integridad de entorno de ejecucion', e);
   }
-
+  DeviceSecurityStatus.isSecure = isSecure;
   final prefs = await SharedPreferences.getInstance();
-  runApp(App(prefs: prefs, isSecureDevice: isSecure));
+  await initInjection(prefs);
+  runApp(ProviderScope(child: App(isSecureDevice: isSecure)));
 }

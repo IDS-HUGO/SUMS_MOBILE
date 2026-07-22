@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../domain/entities/unidad_salud_entity.dart';
 import '../viewmodels/admin_unidades_viewmodel.dart';
 
-class AdminUnidadFormPage extends StatefulWidget {
-  const AdminUnidadFormPage({super.key});
-
+class AdminUnidadFormPage extends ConsumerStatefulWidget {
+  final UnidadSaludEntity? unidad;
+  const AdminUnidadFormPage({super.key, this.unidad});
   @override
-  State<AdminUnidadFormPage> createState() => _AdminUnidadFormPageState();
+  ConsumerState<AdminUnidadFormPage> createState() =>
+      _AdminUnidadFormPageState();
 }
 
-class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
+class _AdminUnidadFormPageState extends ConsumerState<AdminUnidadFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _cluesController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    if (widget.unidad != null) {
+      _nombreController.text = widget.unidad!.nombre;
+      _cluesController.text = widget.unidad!.clues;
+    }
+  }
 
   @override
   void dispose() {
@@ -25,34 +37,40 @@ class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
-    final vm = context.read<AdminUnidadesViewModel>();
-    
+    final vm = ref.read(adminUnidadesViewModelProvider);
     final body = {
       'nombre': _nombreController.text.trim(),
       'clues': _cluesController.text.trim().toUpperCase(),
     };
-
-    // Mostrar loader
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
-
-    final success = await vm.createUnidad(body);
-    
+    final isEditing = widget.unidad != null;
+    final success = isEditing
+        ? await vm.updateUnidad(widget.unidad!.id, body)
+        : await vm.createUnidad(body);
     if (!mounted) return;
-    Navigator.pop(context); // Cerrar loader
-    
+    context.pop();
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unidad creada exitosamente'), backgroundColor: AppColors.green),
+        SnackBar(
+          content: Text(
+            isEditing
+                ? 'Unidad actualizada exitosamente'
+                : 'Unidad creada exitosamente',
+          ),
+          backgroundColor: AppColors.green,
+        ),
       );
-      Navigator.pop(context); // Regresar a la lista
+      context.pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.errorMessage ?? 'Error al crear unidad'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(vm.errorMessage ?? 'Error al guardar unidad'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -60,9 +78,8 @@ class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        title: const Text('Nueva Unidad'),
+        title: Text(widget.unidad != null ? 'Editar Unidad' : 'Nueva Unidad'),
         backgroundColor: AppColors.green,
       ),
       body: SafeArea(
@@ -73,7 +90,10 @@ class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Datos de la Institución', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Datos de la Institución',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _nombreController,
@@ -92,21 +112,28 @@ class _AdminUnidadFormPageState extends State<AdminUnidadFormPage> {
                     border: OutlineInputBorder(),
                   ),
                   validator: (v) {
-                    if (v!.isEmpty) return 'Requerido';
-                    // Validación básica de clues
-                    if (v.length < 11) return 'Debe tener 11 caracteres (ej. CSSMA000001)';
+                    if (v == null || v.isEmpty) return 'Requerido';
+                    final clues = v.trim().toUpperCase();
+                    final cluesRegex = RegExp(r'^[A-Z]{5}[0-9]{6}$');
+                    if (!cluesRegex.hasMatch(clues)) {
+                      return 'CLUES inválida. Formato: 5 letras + 6 dígitos (ej. CSSMA000001)';
+                    }
                     return null;
                   },
                 ),
                 const SizedBox(height: 32),
-                
                 ElevatedButton(
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.green,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Crear Unidad de Salud', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  child: Text(
+                    widget.unidad != null
+                        ? 'Actualizar Unidad de Salud'
+                        : 'Crear Unidad de Salud',
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
               ],
             ),

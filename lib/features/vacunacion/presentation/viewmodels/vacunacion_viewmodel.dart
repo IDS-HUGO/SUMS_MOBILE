@@ -1,38 +1,34 @@
 import 'package:flutter/material.dart';
-
 import '../../domain/repositories/vacunacion_repository.dart';
 
-class VaccineForm {
+class VaccineForm extends ChangeNotifier {
   final TextEditingController paciente = TextEditingController();
   final TextEditingController fechaNacimiento = TextEditingController();
   final TextEditingController edad = TextEditingController();
   final TextEditingController otraVacuna = TextEditingController();
   String? tipo;
   String? dosis;
-
+  void touch() => notifyListeners();
+  @override
   void dispose() {
     paciente.dispose();
     fechaNacimiento.dispose();
     edad.dispose();
     otraVacuna.dispose();
+    super.dispose();
   }
 }
 
 class VacunacionViewModel extends ChangeNotifier {
   final VacunacionRepository repository;
-
   bool _isLoading = true;
   bool get isLoading => _isLoading;
-
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
-
   List<String> _vacunasOpts = [];
   List<String> get vacunasOpts => _vacunasOpts;
-
   List<String> _dosisOpts = [];
   List<String> get dosisOpts => _dosisOpts;
-
   bool _seAplicoVacuna = false;
   bool get seAplicoVacuna => _seAplicoVacuna;
   set seAplicoVacuna(bool val) {
@@ -42,33 +38,26 @@ class VacunacionViewModel extends ChangeNotifier {
 
   final List<VaccineForm> _vacunas = [];
   List<VaccineForm> get vacunas => _vacunas;
-
   VacunacionViewModel({required this.repository}) {
     _init();
   }
-
   Future<void> _init() async {
     try {
       _isLoading = true;
       notifyListeners();
-
       final results = await Future.wait([
         repository.getVacunasOpts(),
         repository.getDosisOpts(),
       ]);
-
       _vacunasOpts = results[0];
       _dosisOpts = results[1];
-
       if (_vacunas.isEmpty) {
         addVaccineForm();
       }
-
     } catch (e) {
       _errorMessage = e.toString();
       _vacunasOpts = ['Influenza estacional', 'COVID-19', 'Otra'];
       _dosisOpts = ['Única', '1era', '2da', '3era', 'Refuerzo'];
-      
       if (_vacunas.isEmpty) {
         addVaccineForm();
       }
@@ -77,8 +66,6 @@ class VacunacionViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-
 
   void addVaccineForm() {
     _vacunas.add(VaccineForm());
@@ -92,7 +79,7 @@ class VacunacionViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   void updateForm() {
     notifyListeners();
   }
@@ -117,14 +104,22 @@ class VacunacionViewModel extends ChangeNotifier {
   Map<String, dynamic> toPayload() {
     return {
       "se_aplico_vacuna": _seAplicoVacuna,
-      "vacunas": _seAplicoVacuna ? _vacunas.map((v) => {
-        "paciente": v.paciente.text,
-        "fecha_nacimiento": v.fechaNacimiento.text,
-        "edad": _parseEdad(v.edad.text),
-        "vacuna": v.tipo,
-        "otraVacuna": v.tipo == 'Otra' ? (v.otraVacuna.text.isEmpty ? null : v.otraVacuna.text) : null,
-        "dosis": v.dosis,
-      }).toList() : [],
+      "vacunas": _seAplicoVacuna
+          ? _vacunas
+                .map(
+                  (v) => {
+                    "paciente": v.paciente.text,
+                    "fecha_nacimiento": v.fechaNacimiento.text,
+                    "edad": _parseEdad(v.edad.text),
+                    "vacuna": v.tipo,
+                    "otraVacuna": v.tipo == 'Otra'
+                        ? (v.otraVacuna.text.isEmpty ? null : v.otraVacuna.text)
+                        : null,
+                    "dosis": v.dosis,
+                  },
+                )
+                .toList()
+          : [],
     };
   }
 

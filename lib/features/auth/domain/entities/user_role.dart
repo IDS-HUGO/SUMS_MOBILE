@@ -9,7 +9,6 @@ enum UserRole {
 
   final int id;
   const UserRole(this.id);
-
   static UserRole fromId(int rolId) {
     return UserRole.values.firstWhere(
       (r) => r.id == rolId,

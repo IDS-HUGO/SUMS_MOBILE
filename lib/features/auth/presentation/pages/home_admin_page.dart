@@ -1,86 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sums/core/di/providers.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
-import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
-import '../viewmodels/auth_viewmodel.dart';
+import '../../../../shared/widgets/theme_mode_menu_button.dart';
 
-class HomeAdminPage extends StatelessWidget {
+class HomeAdminPage extends ConsumerWidget {
   const HomeAdminPage({super.key});
-
   void _showPendingFeatureMessage(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('La función de $feature estará disponible en la próxima actualización.'),
+        content: Text(
+          'La función de $feature estará disponible en la próxima actualización.',
+        ),
         backgroundColor: AppColors.muted,
       ),
     );
   }
 
-  Future<void> _handleSync(BuildContext context) async {
-    final cedulaVm = context.read<CedulaViewModel>();
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Row(
-          children: [
-            SizedBox(
-              width: 20, height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-            ),
-            SizedBox(width: 16),
-            Text('Sincronizando datos con el servidor...'),
-          ],
-        ),
-        duration: Duration(days: 1), // Mantener abierto hasta completar
-      ),
-    );
-
-    final result = await cedulaVm.syncNow();
-    
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-    if (result.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sincronización completada con éxito'),
-          backgroundColor: AppColors.green,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error de sincronización: ${result.error}'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final auth     = context.watch<AuthViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authViewModelProvider);
     final userName = auth.session?.user.nombreUsuario ?? 'administrador';
-
     return Scaffold(
-      backgroundColor: AppColors.canvas,
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, ref),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // Cabecera de rol
             SliverToBoxAdapter(
               child: _RolHeader(
-                userName:  userName,
-                rolLabel:  'Administrador del sistema',
-                rolColor:  AppColors.rolAdmin,
-                icon:      Icons.admin_panel_settings_outlined,
+                userName: userName,
+                rolLabel: 'Administrador del sistema',
+                rolColor: AppColors.rolAdmin,
+                icon: Icons.admin_panel_settings_outlined,
               ),
             ),
-
-            // Sección: gestión
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               sliver: SliverToBoxAdapter(
@@ -96,45 +52,50 @@ class HomeAdminPage extends StatelessWidget {
                 childAspectRatio: 1.4,
                 children: [
                   _AdminActionCard(
-                    icon:    Icons.people_outline,
-                    label:   'Usuarios',
-                    detail:  'Gestión de cuentas y roles',
-                    color:   AppColors.rolAdmin,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminUsers),
+                    icon: Icons.people_outline,
+                    label: 'Usuarios',
+                    detail: 'Gestión de cuentas y roles',
+                    color: AppColors.rolAdmin,
+                    onTap: () => context.push(AppRoutes.adminUsers),
                   ),
                   _AdminActionCard(
-                    icon:    Icons.local_hospital_outlined,
-                    label:   'Unidades',
-                    detail:  'Unidades de salud registradas',
-                    color:   AppColors.green,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminUnidades),
+                    icon: Icons.local_hospital_outlined,
+                    label: 'Unidades',
+                    detail: 'Unidades de salud registradas',
+                    color: AppColors.green,
+                    onTap: () => context.push(AppRoutes.adminUnidades),
                   ),
                   _AdminActionCard(
-                    icon:    Icons.dataset_outlined,
-                    label:   'Catálogos',
-                    detail:  'Tablas y valores de referencia',
-                    color:   AppColors.terracota,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminCatalogos),
+                    icon: Icons.dataset_outlined,
+                    label: 'Catálogos',
+                    detail: 'Tablas y valores de referencia',
+                    color: AppColors.terracota,
+                    onTap: () => context.push(AppRoutes.adminCatalogos),
                   ),
                   _AdminActionCard(
-                    icon:    Icons.bar_chart_outlined,
-                    label:   'Reportes',
-                    detail:  'Análisis y exportación de datos',
-                    color:   AppColors.gold,
-                    onTap: () => _showPendingFeatureMessage(context, 'Reportes'),
+                    icon: Icons.bar_chart_outlined,
+                    label: 'Reportes',
+                    detail: 'Análisis y exportación de datos',
+                    color: AppColors.gold,
+                    onTap: () => context.push(AppRoutes.adminReportes),
                   ),
                   _AdminActionCard(
-                    icon:    Icons.trending_up_outlined,
-                    label:   'Productividad',
-                    detail:  'Métricas por entrevistador',
-                    color:   AppColors.rolMedico,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.productividadAdmin),
+                    icon: Icons.trending_up_outlined,
+                    label: 'Productividad',
+                    detail: 'Métricas por entrevistador',
+                    color: AppColors.rolMedico,
+                    onTap: () => context.push(AppRoutes.productividadAdmin),
+                  ),
+                  _AdminActionCard(
+                    icon: Icons.document_scanner_outlined,
+                    label: 'Escaneo de Cédulas',
+                    detail: 'Captura automática desde PDF',
+                    color: AppColors.ink,
+                    onTap: () => context.push(AppRoutes.adminMineria),
                   ),
                 ],
               ),
             ),
-
-            // Sección: acceso rápido
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               sliver: SliverToBoxAdapter(
@@ -147,24 +108,20 @@ class HomeAdminPage extends StatelessWidget {
                 child: Column(
                   children: [
                     _QuickLinkRow(
-                      icon:    Icons.assignment_outlined,
-                      label:   'Ver cédulas recientes',
-                      color:   AppColors.green,
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.cedulaHistorial),
+                      icon: Icons.assignment_outlined,
+                      label: 'Cédulas',
+                      color: AppColors.green,
+                      onTap: () => context.push(AppRoutes.adminCedulas),
                     ),
                     const SizedBox(height: 8),
                     _QuickLinkRow(
-                      icon:    Icons.sync_outlined,
-                      label:   'Sincronización de datos',
-                      color:   AppColors.greenDark,
-                      onTap: () => _handleSync(context),
-                    ),
-                    const SizedBox(height: 8),
-                    _QuickLinkRow(
-                      icon:    Icons.tune_outlined,
-                      label:   'Configuración del sistema',
-                      color:   AppColors.muted,
-                      onTap: () => _showPendingFeatureMessage(context, 'Configuración del sistema'),
+                      icon: Icons.tune_outlined,
+                      label: 'Configuración del sistema',
+                      color: AppColors.muted,
+                      onTap: () => _showPendingFeatureMessage(
+                        context,
+                        'Configuración del sistema',
+                      ),
                     ),
                   ],
                 ),
@@ -176,52 +133,52 @@ class HomeAdminPage extends StatelessWidget {
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) => AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 8, height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.rolAdmin, shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text('Administrador'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip:  'Cerrar sesión',
-            icon:     const Icon(Icons.logout_outlined),
-            onPressed: () async {
-              await context.read<AuthViewModel>().logout();
-              if (!context.mounted) return;
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
-            },
+  AppBar _buildAppBar(BuildContext context, WidgetRef ref) => AppBar(
+    title: Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: AppColors.rolAdmin,
+            shape: BoxShape.circle,
           ),
-          const SizedBox(width: 4),
-        ],
-      );
+        ),
+        const SizedBox(width: 8),
+        const Text('Administrador'),
+      ],
+    ),
+    actions: [
+      const ThemeModeMenuButton(),
+      IconButton(
+        tooltip: 'Cerrar sesión',
+        icon: const Icon(Icons.logout_outlined),
+        onPressed: () async {
+          await ref.read(authViewModelProvider).logout();
+          if (!context.mounted) return;
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+        },
+      ),
+      const SizedBox(width: 4),
+    ],
+  );
 }
 
-// ── Cabecera de rol (compartida) ──────────────────────────────────────────────
-
-class _RolHeader extends StatelessWidget {
+class _RolHeader extends ConsumerWidget {
   final String userName;
   final String rolLabel;
   final Color rolColor;
   final IconData icon;
-
   const _RolHeader({
     required this.userName,
     required this.rolLabel,
     required this.rolColor,
     required this.icon,
   });
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       color: AppColors.greenDark,
       padding: const EdgeInsets.all(20),
@@ -244,12 +201,16 @@ class _RolHeader extends StatelessWidget {
                   'Hola, $userName',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18, fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: rolColor.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(20),
@@ -258,7 +219,8 @@ class _RolHeader extends StatelessWidget {
                     rolLabel,
                     style: const TextStyle(
                       color: Colors.white70,
-                      fontSize: 11, fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -271,33 +233,29 @@ class _RolHeader extends StatelessWidget {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
+class _SectionLabel extends ConsumerWidget {
   final String text;
   const _SectionLabel({required this.text});
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Text(
       text.toUpperCase(),
       style: const TextStyle(
-        fontSize:      11,
-        fontWeight:    FontWeight.w700,
-        color:         AppColors.muted,
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: AppColors.muted,
         letterSpacing: 1.0,
       ),
     );
   }
 }
 
-// ── Tarjeta de acción admin ───────────────────────────────────────────────────
-
-class _AdminActionCard extends StatelessWidget {
+class _AdminActionCard extends ConsumerWidget {
   final IconData icon;
-  final String   label;
-  final String   detail;
-  final Color    color;
+  final String label;
+  final String detail;
+  final Color color;
   final VoidCallback? onTap;
-
   const _AdminActionCard({
     required this.icon,
     required this.label,
@@ -305,19 +263,24 @@ class _AdminActionCard extends StatelessWidget {
     required this.color,
     this.onTap,
   });
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
+    final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
     return Material(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
-        onTap:        onTap,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(
+              color: theme.dividerTheme.color ?? AppColors.line,
+            ),
           ),
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -337,16 +300,15 @@ class _AdminActionCard extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w800,
-                      color: AppColors.greenDark,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: titleColor,
                     ),
                   ),
                   Text(
                     detail,
-                    style: const TextStyle(
-                      fontSize: 11, color: AppColors.muted,
-                    ),
+                    style: TextStyle(fontSize: 11, color: mutedColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -360,32 +322,35 @@ class _AdminActionCard extends StatelessWidget {
   }
 }
 
-class _QuickLinkRow extends StatelessWidget {
+class _QuickLinkRow extends ConsumerWidget {
   final IconData icon;
-  final String   label;
-  final Color    color;
+  final String label;
+  final Color color;
   final VoidCallback? onTap;
-
   const _QuickLinkRow({
     required this.icon,
     required this.label,
     required this.color,
     this.onTap,
   });
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final inkColor = isDark ? Colors.white : AppColors.ink;
     return Material(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
-        onTap:        onTap,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(
+              color: theme.dividerTheme.color ?? AppColors.line,
+            ),
           ),
           child: Row(
             children: [
@@ -394,14 +359,18 @@ class _QuickLinkRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600,
-                    color: AppColors.ink,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: inkColor,
                   ),
                 ),
               ),
-              const Icon(Icons.chevron_right,
-                  color: AppColors.subtle, size: 18),
+              const Icon(
+                Icons.chevron_right,
+                color: AppColors.subtle,
+                size: 18,
+              ),
             ],
           ),
         ),
