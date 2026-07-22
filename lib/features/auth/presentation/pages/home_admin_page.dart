@@ -105,6 +105,14 @@ class HomeAdminPage extends ConsumerWidget {
                     onTap: () =>
                         Navigator.pushNamed(context, AppRoutes.adminMineria),
                   ),
+                  _AdminActionCard(
+                    icon: Icons.travel_explore,
+                    label: 'Búsqueda de Notas',
+                    detail: 'Buscar en notas de visita',
+                    color: AppColors.rolAnalista,
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.adminBusqueda),
+                  ),
                 ],
               ),
             ),

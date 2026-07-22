@@ -133,6 +133,7 @@ class CedulaSuccessSheet extends ConsumerWidget {
     final payload = {
       "unidad_salud_id": user.unidadSaludId,
       "entrevistador_id": user.entrevistadorId,
+      "observaciones": familiaVm.observaciones.text.trim(),
       "familia": familiaVm.toPayload(),
       "vivienda": viviendaVm.toPayload(),
       "vacunacion": vacunasVm.toPayload(),

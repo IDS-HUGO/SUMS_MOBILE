@@ -17,6 +17,8 @@ class CedulaDummyData {
     f.setSexo('Masculino');
     if (f.roles.isNotEmpty) f.setRol(f.roles.first);
     f.domicilio.text = 'Calle Prueba 123';
+    f.observaciones.text =
+        'Se requiere visita de seguimiento la próxima semana.';
 
     if (v.matTechoParedesOpts.isNotEmpty) {
       v.setTecho(v.matTechoParedesOpts.first);

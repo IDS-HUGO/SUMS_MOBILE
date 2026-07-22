@@ -16,4 +16,5 @@ class AppRoutes {
   static const productividadAdmin = '/admin/productividad_admin';
   static const adminCedulas = '/admin/cedulas';
   static const adminMineria = '/admin/mineria';
+  static const adminBusqueda = '/admin/busqueda';
 }

@@ -15,6 +15,7 @@ import 'features/admin/presentation/pages/admin_reportes_page.dart';
 import 'features/admin/presentation/pages/admin_productividad_page.dart';
 import 'features/admin/presentation/pages/admin_cedulas_list_page.dart';
 import 'features/mineria/presentation/pages/mineria_page.dart';
+import 'features/busqueda/presentation/pages/busqueda_page.dart';
 
 import 'features/estadisticas/presentation/pages/productividad_admin_page.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
@@ -160,6 +161,8 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
             _guardedAdminRoute(() => const ProductividadAdminPage()),
         AppRoutes.adminMineria: (_) =>
             _guardedAdminRoute(() => const MineriaPage()),
+        AppRoutes.adminBusqueda: (_) =>
+            _guardedAdminRoute(() => const BusquedaPage()),
       },
       // Guarda de ruta: si el usuario no está autenticado, va a login.
       onGenerateRoute: (settings) {

@@ -363,6 +363,15 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
     if (!mounted) return;
 
     if (success) {
+      if (vm.nivelRiesgo != null) {
+        await _showResultadoRiesgoDialog(
+          vm.nivelRiesgo!,
+          vm.probabilidadAlto,
+          vm.prioridadVisita,
+          vm.motivoPrioridad,
+        );
+        if (!mounted) return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('✓ Datos guardados correctamente.'),
@@ -379,6 +388,109 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
         ),
       );
     }
+  }
+
+  Future<void> _showResultadoRiesgoDialog(
+    String nivelRiesgo,
+    double? probabilidadAlto,
+    String? prioridadVisita,
+    String? motivoPrioridad,
+  ) {
+    final nivelUpper = nivelRiesgo.toUpperCase();
+    final Color colorRiesgo = switch (nivelUpper) {
+      'ALTO' => AppColors.error,
+      'MEDIO' => AppColors.warning,
+      'BAJO' => AppColors.green,
+      _ => AppColors.muted,
+    };
+    final probabilidadTexto =
+        probabilidadAlto != null
+            ? 'Probabilidad de riesgo alto: '
+                '${(probabilidadAlto * 100).round()}%'
+            : null;
+    final esUrgente = prioridadVisita == 'URGENTE';
+
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Resultado de la clasificación de riesgo'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Banda de prioridad urgente: puede activarse aunque el nivel de
+              // riesgo ML sea BAJO/MEDIO -- una familia con buena vivienda
+              // pero con una embarazada sin control prenatal SÍ necesita
+              // visita pronto, y el modelo (agregados) no lo ve por sí solo.
+              if (esUrgente)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.error,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'VISITA URGENTE',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      if (motivoPrioridad != null)
+                        Text(
+                          motivoPrioridad,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              Text(
+                nivelUpper,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  color: colorRiesgo,
+                ),
+              ),
+              if (probabilidadTexto != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  probabilidadTexto,
+                  style: const TextStyle(fontSize: 14, color: AppColors.muted),
+                ),
+              ],
+              if (!esUrgente && motivoPrioridad != null && motivoPrioridad.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  motivoPrioridad,
+                  style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Entendido'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildInfoRow(String label, String value, {Color? color}) {

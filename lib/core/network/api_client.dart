@@ -11,11 +11,23 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Hosts de desarrollo local (loopback / emulador Android). Fuera de estos
-/// hosts nunca se permite HTTP sin cifrar, ni siquiera en modo debug.
+/// Host adicional permitido para pruebas en LAN (ej. la IP de tu PC al
+/// probar desde un celular físico conectado a la misma red). Vacío por
+/// defecto -- solo tiene efecto si se pasa explícitamente
+/// --dart-define=ALLOWED_DEV_HOST=<tu-ip> al compilar/correr, y únicamente
+/// en kDebugMode (ver enforceSecureScheme). No afecta builds release ni a
+/// quien no defina esta bandera.
+const _allowedDevHost = String.fromEnvironment('ALLOWED_DEV_HOST');
+
+/// Hosts de desarrollo local (loopback / emulador Android / LAN explícita).
+/// Fuera de estos hosts nunca se permite HTTP sin cifrar, ni siquiera en
+/// modo debug.
 bool isLoopbackDevHost(String host) {
   final h = host.toLowerCase();
-  return h == 'localhost' || h == '127.0.0.1' || h == '10.0.2.2' || h == '::1';
+  if (h == 'localhost' || h == '127.0.0.1' || h == '10.0.2.2' || h == '::1') {
+    return true;
+  }
+  return _allowedDevHost.isNotEmpty && h == _allowedDevHost.toLowerCase();
 }
 
 /// Punto único de aplicación de la política de esquema seguro

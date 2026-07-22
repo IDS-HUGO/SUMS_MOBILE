@@ -37,6 +37,10 @@ class MineriaViewModel extends ChangeNotifier {
   OcrResult? _result;
   String? _errorMessage;
   File? _selectedFile;
+  String? _nivelRiesgo;
+  double? _probabilidadAlto;
+  String? _prioridadVisita;
+  String? _motivoPrioridad;
 
   // Catálogos
   List<String> vacunasOpts = [];
@@ -60,6 +64,10 @@ class MineriaViewModel extends ChangeNotifier {
   OcrResult? get result => _result;
   String? get errorMessage => _errorMessage;
   File? get selectedFile => _selectedFile;
+  String? get nivelRiesgo => _nivelRiesgo;
+  double? get probabilidadAlto => _probabilidadAlto;
+  String? get prioridadVisita => _prioridadVisita;
+  String? get motivoPrioridad => _motivoPrioridad;
   bool get isLoading => _status == MineriaStatus.loading;
   bool get isSaving => _status == MineriaStatus.saving;
   Map<String, TextEditingController> get controllers => _controllers;
@@ -268,6 +276,19 @@ class MineriaViewModel extends ChangeNotifier {
         "fosa_septica": false,
         "vacunacion_completa": true,
         "seguridad_social_jefe": false,
+        // Banderas de grupos vulnerables (grupos_vulnerables.py en el backend):
+        // no son features del modelo ML, se combinan con el nivel de riesgo
+        // para decidir prioridad_visita. Sin un formulario dedicado en la app
+        // para capturarlas todavía, se envían en false por defecto (mismo
+        // comportamiento que tenía el endpoint antes de que existieran).
+        "tiene_embarazada": false,
+        "tiene_menor_1_anio": false,
+        "tiene_menor_5_sin_vacunas": false,
+        "tiene_adulto_mayor_solo": false,
+        // 5ta bandera (riesgo zoonótico): mascota en la vivienda sin
+        // vacunación al corriente. Igual que las 4 anteriores, no hay
+        // formulario dedicado todavía para capturarla, se envía en false.
+        "tiene_mascota_sin_vacunar": false,
       };
 
       // Mapeamos los 45 campos del OCR al payload consolidado
@@ -345,6 +366,12 @@ class MineriaViewModel extends ChangeNotifier {
       final response = await predecirRiesgoUseCase(payload);
       AppLogger.info('Respuesta Riesgo: $response');
 
+      _nivelRiesgo = response['nivel_riesgo'] as String?;
+      final probRaw = response['probabilidad_alto'];
+      _probabilidadAlto = probRaw is num ? probRaw.toDouble() : null;
+      _prioridadVisita = response['prioridad_visita'] as String?;
+      _motivoPrioridad = response['motivo_prioridad'] as String?;
+
       _status = MineriaStatus.success;
       notifyListeners();
       return true;
@@ -362,6 +389,10 @@ class MineriaViewModel extends ChangeNotifier {
     _result = null;
     _errorMessage = null;
     _selectedFile = null;
+    _nivelRiesgo = null;
+    _probabilidadAlto = null;
+    _prioridadVisita = null;
+    _motivoPrioridad = null;
     vacunasSeleccionadas.clear();
     _disposeControllers();
     notifyListeners();

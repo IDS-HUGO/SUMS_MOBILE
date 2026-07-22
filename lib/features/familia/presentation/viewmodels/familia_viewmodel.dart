@@ -11,6 +11,13 @@ class FamiliaViewModel extends ChangeNotifier {
   final manzana = TextEditingController();
   final viviendaRef = TextEditingController();
 
+  /// Observaciones libres de la visita (seguimiento, enfermedad rara,
+  /// embarazo, vacunas pendientes, vivienda en mal estado, mascotas sin
+  /// vacunar, etc). NO se envía dentro de "familia": el backend la lee como
+  /// clave raíz del payload (`payload.observaciones`), por eso NO se incluye
+  /// en [toPayload].
+  final observaciones = TextEditingController();
+
   String? rolInformante;
   List<String> roles = [];
   bool isLoadingRoles = true;
@@ -48,6 +55,18 @@ class FamiliaViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Anexa [frase] al texto actual de [observaciones]: si ya hay texto,
+  /// concatena con un espacio; si está vacío, la frase se vuelve el texto
+  /// inicial. Usado por los chips de categorías rápidas en la UI.
+  void appendObservacion(String frase) {
+    final actual = observaciones.text.trimRight();
+    observaciones.text = actual.isEmpty ? frase : '$actual $frase';
+    observaciones.selection = TextSelection.collapsed(
+      offset: observaciones.text.length,
+    );
+    notifyListeners();
+  }
+
   Map<String, dynamic> toPayload() {
     return {
       "informante_nombre": informanteNombre.text.trim(),
@@ -67,6 +86,7 @@ class FamiliaViewModel extends ChangeNotifier {
     localidad.dispose();
     manzana.dispose();
     viviendaRef.dispose();
+    observaciones.dispose();
     super.dispose();
   }
 }
