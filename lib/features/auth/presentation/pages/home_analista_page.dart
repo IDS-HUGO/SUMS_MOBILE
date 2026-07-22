@@ -11,6 +11,18 @@ import '../viewmodels/auth_viewmodel.dart';
 
 class HomeAnalistaPage extends ConsumerWidget {
   const HomeAnalistaPage({super.key});
+
+  void _showPendingFeatureMessage(BuildContext context, String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'La función de $feature estará disponible en la próxima actualización.',
+        ),
+        backgroundColor: AppColors.muted,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userName =
@@ -43,6 +55,7 @@ class HomeAnalistaPage extends ConsumerWidget {
                     title: 'Estadísticas de vacunación',
                     sub: 'Aplicaciones por vacuna, dosis, edad y sexo.',
                     color: AppColors.green,
+                    onTap: () => _showPendingFeatureMessage(context, 'Estadísticas de vacunación'),
                   ),
                   const SizedBox(height: 12),
                   _card(
@@ -51,6 +64,7 @@ class HomeAnalistaPage extends ConsumerWidget {
                     title: 'Núcleos familiares',
                     sub: 'Composición y distribución por localidad.',
                     color: AppColors.greenDark,
+                    onTap: () => _showPendingFeatureMessage(context, 'Núcleos familiares'),
                   ),
                   const SizedBox(height: 12),
                   _card(
@@ -59,6 +73,7 @@ class HomeAnalistaPage extends ConsumerWidget {
                     title: 'Condiciones de vivienda',
                     sub: 'Materiales, servicios básicos y saneamiento.',
                     color: AppColors.burgundy,
+                    onTap: () => _showPendingFeatureMessage(context, 'Condiciones de vivienda'),
                   ),
                   const SizedBox(height: 12),
                   _card(
@@ -67,6 +82,7 @@ class HomeAnalistaPage extends ConsumerWidget {
                     title: 'Salud preventiva',
                     sub: 'Tamizajes, enfermedades crónicas y toxicomanías.',
                     color: AppColors.gold,
+                    onTap: () => _showPendingFeatureMessage(context, 'Salud preventiva'),
                   ),
                 ],
               ),
@@ -83,9 +99,10 @@ class HomeAnalistaPage extends ConsumerWidget {
     required String title,
     required String sub,
     required Color color,
+    required VoidCallback onTap,
   }) => Card(
     child: InkWell(
-      onTap: () {},
+      onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.all(18),

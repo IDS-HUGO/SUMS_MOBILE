@@ -10,6 +10,18 @@ import '../viewmodels/auth_viewmodel.dart';
 
 class HomeMedicoPage extends ConsumerWidget {
   const HomeMedicoPage({super.key});
+
+  void _showPendingFeatureMessage(BuildContext context, String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'La función de $feature estará disponible en la próxima actualización.',
+        ),
+        backgroundColor: AppColors.muted,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userName =
@@ -46,6 +58,7 @@ class HomeMedicoPage extends ConsumerWidget {
                     title: m.title,
                     subtitle: m.subtitle,
                     color: m.color,
+                    onTap: () => _showPendingFeatureMessage(context, m.title),
                   );
                 },
               ),
@@ -129,11 +142,13 @@ class _ModuleRow extends ConsumerWidget {
   final String title;
   final String subtitle;
   final Color color;
+  final VoidCallback onTap;
   const _ModuleRow({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.color,
+    required this.onTap,
   });
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -145,7 +160,7 @@ class _ModuleRow extends ConsumerWidget {
       color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
         child: Container(
           decoration: BoxDecoration(
