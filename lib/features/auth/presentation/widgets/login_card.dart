@@ -9,7 +9,6 @@ class LoginCard extends ConsumerWidget {
   final TextEditingController userController;
   final TextEditingController passwordController;
   final VoidCallback onSubmit;
-
   const LoginCard({
     super.key,
     required this.formKey,
@@ -17,12 +16,10 @@ class LoginCard extends ConsumerWidget {
     required this.passwordController,
     required this.onSubmit,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.watch(authViewModelProvider);
     final theme = Theme.of(context);
-
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -74,12 +71,10 @@ class LoginCard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 28),
-
             if (viewModel.errorMessage != null) ...[
               _ErrorBanner(message: viewModel.errorMessage!),
               const SizedBox(height: 16),
             ],
-
             SumsTextField(
               controller: userController,
               label: 'Nombre de usuario',
@@ -102,7 +97,6 @@ class LoginCard extends ConsumerWidget {
               enableInteractiveSelection: false,
             ),
             const SizedBox(height: 24),
-
             FilledButton.icon(
               onPressed: viewModel.isLoading ? null : onSubmit,
               icon: viewModel.isLoading
@@ -116,7 +110,6 @@ class LoginCard extends ConsumerWidget {
                   : const Icon(Icons.login_outlined, size: 18),
               label: Text(viewModel.isLoading ? 'Verificando…' : 'Entrar'),
             ),
-
             const SizedBox(height: 20),
             const Divider(),
             const SizedBox(height: 14),
@@ -153,7 +146,6 @@ class LoginCard extends ConsumerWidget {
 class _ErrorBanner extends ConsumerWidget {
   final String message;
   const _ErrorBanner({required this.message});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);

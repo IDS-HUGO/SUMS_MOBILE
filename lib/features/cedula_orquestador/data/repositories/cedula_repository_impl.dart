@@ -12,13 +12,11 @@ class CedulaRepositoryImpl implements CedulaRepository {
   final CedulaRemoteDataSource remoteDataSource;
   final CedulaLocalDataSource? localDataSource;
   final TokenStorage tokenStorage;
-
   const CedulaRepositoryImpl({
     required this.remoteDataSource,
     this.localDataSource,
     required this.tokenStorage,
   });
-
   @override
   Future<List<String>> getCatalogKeys() async {
     try {
@@ -38,7 +36,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
         'material',
         'manejo-excretas',
         'animal',
-      ]; // Fallback keys
+      ];
     }
   }
 
@@ -51,8 +49,6 @@ class CedulaRepositoryImpl implements CedulaRepository {
           .whereType<Map<String, dynamic>>()
           .map(CatalogItem.fromJson)
           .toList();
-
-      // Caching
       if (localDataSource != null) {
         final jsonStr = jsonEncode(
           list
@@ -101,10 +97,9 @@ class CedulaRepositoryImpl implements CedulaRepository {
     Map<String, dynamic> body, {
     bool isDraft = false,
   }) async {
-    // Si es explícitamente un borrador, guardar directamente en BD local y retornar éxito simulado
     if (isDraft) {
       if (localDataSource != null) {
-        final localId = await localDataSource!.saveCedula(body, 0); // 0 = DRAFT
+        final localId = await localDataSource!.saveCedula(body, 0);
         return {
           'cedula_id': null,
           '_local_id': localId,
@@ -114,21 +109,15 @@ class CedulaRepositoryImpl implements CedulaRepository {
       }
       throw Exception('Almacenamiento local no configurado');
     }
-
     final token = await tokenStorage.readToken();
     try {
-      // Intentar enviar al servidor
       return await remoteDataSource.postCapturaCompleta(body, token: token);
     } catch (e) {
-      // Si falla por red u otro error, hacer fallback a SQLite
       AppLogger.warn(
         'Fallo red, guardando localmente. (OWASP MASVS-STORAGE-3)',
       );
       if (localDataSource != null) {
-        final localId = await localDataSource!.saveCedula(
-          body,
-          1,
-        ); // 1 = PENDING_SYNC
+        final localId = await localDataSource!.saveCedula(body, 1);
         return {
           'cedula_id': null,
           '_local_id': localId,
@@ -163,7 +152,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
   @override
   Future<int> getPendingSyncCount() async {
     if (localDataSource != null) {
-      return await localDataSource!.countCedulasByStatus(1); // 1 = PENDING_SYNC
+      return await localDataSource!.countCedulasByStatus(1);
     }
     return 0;
   }
@@ -171,7 +160,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
   @override
   Future<int> getDraftCount() async {
     if (localDataSource != null) {
-      return await localDataSource!.countCedulasByStatus(0); // 0 = DRAFT
+      return await localDataSource!.countCedulasByStatus(0);
     }
     return 0;
   }
@@ -189,22 +178,17 @@ class CedulaRepositoryImpl implements CedulaRepository {
     if (localDataSource == null) {
       return const SyncResult(error: 'Sin almacenamiento local');
     }
-
-    final pending = await localDataSource!.getCedulasByStatus(
-      1,
-    ); // 1 = PENDING_SYNC
+    final pending = await localDataSource!.getCedulasByStatus(1);
     if (pending.isEmpty) return const SyncResult(synced: 0, failed: 0);
-
     final token = await tokenStorage.readToken();
     int synced = 0;
     int failed = 0;
-
     for (final record in pending) {
       final localId = record['_localId'] as int;
       final payload = Map<String, dynamic>.from(record)..remove('_localId');
       try {
         await remoteDataSource.postCapturaCompleta(payload, token: token);
-        await localDataSource!.updateSyncStatus(localId, 2); // 2 = SYNCED
+        await localDataSource!.updateSyncStatus(localId, 2);
         synced++;
       } catch (e) {
         failed++;
@@ -215,10 +199,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
         );
       }
     }
-
-    // Purgar antiguos sincronizados (>7 días)
     await localDataSource!.deleteOldSynced(7);
-
     return SyncResult(synced: synced, failed: failed);
   }
 
@@ -226,29 +207,23 @@ class CedulaRepositoryImpl implements CedulaRepository {
   Future<SyncResult> syncSingleCedula(int localId) async {
     if (localDataSource == null)
       return const SyncResult(error: 'Sin almacenamiento local');
-
-    // Obtener la cédula específica reconstruyendo el payload
     final allPending = await localDataSource!.getCedulasByStatus(1);
     final record = allPending.firstWhere(
       (r) => r['_localId'] == localId,
       orElse: () => {},
     );
-
     if (record.isEmpty)
       return const SyncResult(
         error: 'Registro no encontrado o no está pendiente',
       );
-
     final token = await tokenStorage.readToken();
     final payload = Map<String, dynamic>.from(record)..remove('_localId');
-
     try {
       await remoteDataSource.postCapturaCompleta(payload, token: token);
-      await localDataSource!.updateSyncStatus(localId, 2); // 2 = SYNCED
+      await localDataSource!.updateSyncStatus(localId, 2);
       return const SyncResult(synced: 1);
     } catch (e) {
       String errorMsg = e.toString();
-      // Estrategia mínima para duplicados (409 Conflict o similar)
       if (errorMsg.contains('409') ||
           errorMsg.toLowerCase().contains('duplicado')) {
         errorMsg =

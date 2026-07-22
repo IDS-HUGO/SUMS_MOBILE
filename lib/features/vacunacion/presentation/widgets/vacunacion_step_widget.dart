@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
 import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
@@ -10,18 +9,12 @@ import '../viewmodels/vacunacion_viewmodel.dart';
 
 class VacunacionStepWidget extends ConsumerWidget {
   const VacunacionStepWidget({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Solo nos suscribimos a lo "estructural" (cargando / error / si se
-    // aplicó vacuna / cuántas vacunas hay). Escribir en un campo de una
-    // vacuna NO cambia ninguno de estos 4 valores, así que esta pantalla ya
-    // no se reconstruye completa en cada tecla — ver ListenableBuilder en
-    // _VaccineCard, que es quien ahora reacciona a los cambios de CADA
-    // vacuna por separado.
     ref.watch(
       vacunacionViewModelProvider.select(
-        (v) => (v.isLoading, v.errorMessage, v.seAplicoVacuna, v.vacunas.length),
+        (v) =>
+            (v.isLoading, v.errorMessage, v.seAplicoVacuna, v.vacunas.length),
       ),
     );
     final vm = ref.read(vacunacionViewModelProvider);
@@ -29,8 +22,6 @@ class VacunacionStepWidget extends ConsumerWidget {
     final pacientesOpts = intVm.integrantes
         .where((i) => i.nombre.text.isNotEmpty)
         .toList();
-
-    // Synchronize vaccine card fields with Integrantes step
     for (final v in vm.vacunas) {
       if (v.paciente.text.isNotEmpty) {
         final match = pacientesOpts.cast<MemberForm?>().firstWhere(
@@ -44,14 +35,12 @@ class VacunacionStepWidget extends ConsumerWidget {
             v.edad.text = match.edad.text;
           }
         } else {
-          // Patient not found in list (deleted or renamed), so clear fields
           v.paciente.text = '';
           v.fechaNacimiento.text = '';
           v.edad.text = '';
         }
       }
     }
-
     if (vm.isLoading) {
       return const Center(
         child: Padding(
@@ -60,7 +49,6 @@ class VacunacionStepWidget extends ConsumerWidget {
         ),
       );
     }
-
     if (vm.errorMessage != null) {
       return Center(
         child: Text(
@@ -69,7 +57,6 @@ class VacunacionStepWidget extends ConsumerWidget {
         ),
       );
     }
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -101,9 +88,6 @@ class VacunacionStepWidget extends ConsumerWidget {
                   dosisOpts: vm.dosisOpts,
                   pacientesOpts: pacientesOpts,
                   onChanged: () {
-                    // Notifica primero a la propia vacuna (rebuild acotado a
-                    // su tarjeta) y luego al vm completo (compatibilidad con
-                    // quien más escuche este vm).
                     vm.vacunas[i].touch();
                     vm.updateForm();
                   },
@@ -140,14 +124,12 @@ class _StepPanel extends ConsumerWidget {
   final IconData icon;
   final Color color;
   final List<Widget> children;
-
   const _StepPanel({
     required this.title,
     required this.icon,
     required this.color,
     required this.children,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
@@ -211,7 +193,6 @@ class _VaccineCard extends ConsumerWidget {
   final List<String> dosisOpts;
   final List<MemberForm> pacientesOpts;
   final VoidCallback onChanged;
-
   const _VaccineCard({
     required this.index,
     required this.form,
@@ -222,13 +203,8 @@ class _VaccineCard extends ConsumerWidget {
     required this.pacientesOpts,
     required this.onChanged,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Reconstruye esta tarjeta cuando ESTA vacuna cambia (form es su propio
-    // ChangeNotifier), sin depender de que el widget padre vuelva a
-    // ejecutar build() — así escribir en la vacuna 3 no reconstruye las
-    // tarjetas de las demás vacunas.
     return ListenableBuilder(
       listenable: form,
       builder: (context, _) => _buildCard(context, ref),

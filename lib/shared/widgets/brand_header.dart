@@ -2,14 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// Header de marca SUMS/IMSS-Bienestar.
-/// La firma visual: franja verde izquierda + badge institucional.
 class BrandHeader extends ConsumerWidget {
   final String title;
   final String subtitle;
   final bool compact;
   final Color? accentColor;
-
   const BrandHeader({
     super.key,
     required this.title,
@@ -17,20 +14,15 @@ class BrandHeader extends ConsumerWidget {
     this.compact = false,
     this.accentColor,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final accent = accentColor ?? AppColors.green;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // En oscuro, greenDark es casi invisible sobre un fondo casi negro:
-    // se usa un verde más claro para que el título siga siendo legible.
     final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
     final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Logo con badge de estado
         Row(
           children: [
             Image.asset(
@@ -43,7 +35,6 @@ class BrandHeader extends ConsumerWidget {
           ],
         ),
         SizedBox(height: compact ? 16 : 24),
-        // Borde acento izquierdo — firma única del diseño
         IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -89,7 +80,6 @@ class BrandHeader extends ConsumerWidget {
 class _StatusBadge extends ConsumerWidget {
   final Color color;
   const _StatusBadge({required this.color});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
@@ -122,7 +112,6 @@ class _StatusBadge extends ConsumerWidget {
   }
 }
 
-/// Tarjeta de sección con borde izquierdo de color — firma del diseño.
 class SectionCard extends ConsumerWidget {
   final String title;
   final String? subtitle;
@@ -130,7 +119,6 @@ class SectionCard extends ConsumerWidget {
   final Color accentColor;
   final List<Widget> children;
   final EdgeInsetsGeometry? padding;
-
   const SectionCard({
     super.key,
     required this.title,
@@ -140,30 +128,23 @@ class SectionCard extends ConsumerWidget {
     this.subtitle,
     this.padding,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
     final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
-
     return Container(
       decoration: BoxDecoration(
-        // scheme.surface SÍ cambia entre claro/oscuro (a diferencia de un
-        // Colors.white fijo, que dejaba la tarjeta siempre clara).
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        border: Border.all(
-          color: theme.dividerTheme.color ?? AppColors.line,
-        ),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Borde de color izquierdo — firma del diseño
             Container(width: 4, color: accentColor),
             Expanded(
               child: Padding(

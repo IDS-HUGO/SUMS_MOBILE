@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import '../../../../core/routes/app_routes.dart';
@@ -7,7 +9,6 @@ import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dar
 
 class AdminCedulasListPage extends ConsumerStatefulWidget {
   const AdminCedulasListPage({super.key});
-
   @override
   ConsumerState<AdminCedulasListPage> createState() =>
       _AdminCedulasListPageState();
@@ -16,7 +17,6 @@ class AdminCedulasListPage extends ConsumerStatefulWidget {
 class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-
   @override
   void initState() {
     super.initState();
@@ -41,7 +41,6 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () {
-              // TODO: Mostrar opciones de filtro
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Filtros próximamente')),
               );
@@ -82,7 +81,6 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
                       .toLowerCase();
                   return informante.contains(_searchQuery);
                 }).toList();
-
                 if (records.isEmpty) {
                   return const Center(
                     child: Text(
@@ -91,7 +89,6 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
                     ),
                   );
                 }
-
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: records.length,
@@ -101,10 +98,8 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
                     final informante = record['_informante'] ?? 'Sin nombre';
                     final fechaStr = record['_createdAt'] ?? '';
                     final status = record['_syncStatus'] as int;
-
                     String statusText;
                     Color statusColor;
-
                     if (status == 0) {
                       statusText = 'Borrador';
                       statusColor = Colors.orange;
@@ -115,7 +110,6 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
                       statusText = 'Sincronizado';
                       statusColor = AppColors.green;
                     }
-
                     return Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -141,9 +135,7 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
                         trailing: PopupMenuButton<String>(
                           onSelected: (value) {
                             if (value == 'edit') {
-                              // Cargar cédula y navegar al formulario
-                              // TODO: Implementar lógica de carga en el ViewModel si es necesario
-                              Navigator.pushNamed(context, AppRoutes.cedula);
+                              context.push(AppRoutes.cedula);
                             }
                           },
                           itemBuilder: (context) => [

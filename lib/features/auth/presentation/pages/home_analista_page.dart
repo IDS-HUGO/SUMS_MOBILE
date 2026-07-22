@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/brand_header.dart';
@@ -10,13 +11,11 @@ import '../viewmodels/auth_viewmodel.dart';
 
 class HomeAnalistaPage extends ConsumerWidget {
   const HomeAnalistaPage({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userName =
         ref.watch(authViewModelProvider).session?.user.nombreUsuario ??
         'analista';
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('SUMS · Analista'),
@@ -125,7 +124,6 @@ class HomeAnalistaPage extends ConsumerWidget {
       ),
     ),
   );
-
   Widget _logoutButton(BuildContext context, WidgetRef ref) => IconButton(
     tooltip: 'Cerrar sesión',
     icon: const Icon(Icons.logout_outlined),

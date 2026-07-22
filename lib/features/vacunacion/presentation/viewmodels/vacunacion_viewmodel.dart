@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../../domain/repositories/vacunacion_repository.dart';
 
-/// Representa el formulario de UNA vacuna. Extiende ChangeNotifier para que
-/// su propia tarjeta (_VaccineCard) pueda reconstruirse sola cuando esta
-/// vacuna cambia, sin necesidad de reconstruir las tarjetas de las demás
-/// vacunas (antes, cualquier tecla en cualquier vacuna reconstruía la
-/// pantalla completa vía VacunacionViewModel.notifyListeners()).
 class VaccineForm extends ChangeNotifier {
   final TextEditingController paciente = TextEditingController();
   final TextEditingController fechaNacimiento = TextEditingController();
@@ -14,12 +8,7 @@ class VaccineForm extends ChangeNotifier {
   final TextEditingController otraVacuna = TextEditingController();
   String? tipo;
   String? dosis;
-
-  /// Notifica solo a quien escucha ESTA vacuna (su propia tarjeta), sin
-  /// tocar a las demás. `notifyListeners()` es protegido en `ChangeNotifier`;
-  /// este método público es la forma correcta de dispararlo desde fuera.
   void touch() => notifyListeners();
-
   @override
   void dispose() {
     paciente.dispose();
@@ -32,19 +21,14 @@ class VaccineForm extends ChangeNotifier {
 
 class VacunacionViewModel extends ChangeNotifier {
   final VacunacionRepository repository;
-
   bool _isLoading = true;
   bool get isLoading => _isLoading;
-
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
-
   List<String> _vacunasOpts = [];
   List<String> get vacunasOpts => _vacunasOpts;
-
   List<String> _dosisOpts = [];
   List<String> get dosisOpts => _dosisOpts;
-
   bool _seAplicoVacuna = false;
   bool get seAplicoVacuna => _seAplicoVacuna;
   set seAplicoVacuna(bool val) {
@@ -54,24 +38,19 @@ class VacunacionViewModel extends ChangeNotifier {
 
   final List<VaccineForm> _vacunas = [];
   List<VaccineForm> get vacunas => _vacunas;
-
   VacunacionViewModel({required this.repository}) {
     _init();
   }
-
   Future<void> _init() async {
     try {
       _isLoading = true;
       notifyListeners();
-
       final results = await Future.wait([
         repository.getVacunasOpts(),
         repository.getDosisOpts(),
       ]);
-
       _vacunasOpts = results[0];
       _dosisOpts = results[1];
-
       if (_vacunas.isEmpty) {
         addVaccineForm();
       }
@@ -79,7 +58,6 @@ class VacunacionViewModel extends ChangeNotifier {
       _errorMessage = e.toString();
       _vacunasOpts = ['Influenza estacional', 'COVID-19', 'Otra'];
       _dosisOpts = ['Única', '1era', '2da', '3era', 'Refuerzo'];
-
       if (_vacunas.isEmpty) {
         addVaccineForm();
       }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
 import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
@@ -10,11 +9,9 @@ import '../../../integrantes/presentation/viewmodels/integrantes_viewmodel.dart'
 
 class FamiliaStepWidget extends ConsumerWidget {
   const FamiliaStepWidget({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vm = ref.watch(familiaViewModelProvider);
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: _StepPanel(
@@ -171,14 +168,12 @@ class _StepPanel extends ConsumerWidget {
   final IconData icon;
   final Color color;
   final List<Widget> children;
-
   const _StepPanel({
     required this.title,
     required this.icon,
     required this.color,
     required this.children,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(

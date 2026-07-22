@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../viewmodels/admin_unidades_viewmodel.dart';
 import 'admin_unidad_form_page.dart';
 
 class AdminUnidadesListPage extends ConsumerStatefulWidget {
   const AdminUnidadesListPage({super.key});
-
   @override
   ConsumerState<AdminUnidadesListPage> createState() =>
       _AdminUnidadesListPageState();
@@ -26,7 +27,6 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
   @override
   Widget build(BuildContext context) {
     final vm = ref.watch(adminUnidadesViewModelProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Unidades de Salud'),
@@ -34,10 +34,7 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AdminUnidadFormPage()),
-          );
+          context.push(AppRoutes.adminUnidadForm);
         },
         backgroundColor: AppColors.green,
         child: const Icon(Icons.add, color: Colors.white),
@@ -50,7 +47,6 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
     if (vm.status == AdminUnidadesStatus.loading && vm.unidades.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-
     if (vm.status == AdminUnidadesStatus.error && vm.unidades.isEmpty) {
       return Center(
         child: Text(
@@ -59,11 +55,9 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
         ),
       );
     }
-
     if (vm.unidades.isEmpty) {
       return const Center(child: Text('No hay unidades registradas'));
     }
-
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: vm.unidades.length,
@@ -98,12 +92,7 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
             trailing: PopupMenuButton<String>(
               onSelected: (value) async {
                 if (value == 'edit') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AdminUnidadFormPage(unidad: unidad),
-                    ),
-                  );
+                  context.push(AppRoutes.adminUnidadForm, extra: unidad);
                 } else if (value == 'delete') {
                   final confirm = await showDialog<bool>(
                     context: context,
@@ -114,11 +103,11 @@ class _AdminUnidadesListPageState extends ConsumerState<AdminUnidadesListPage> {
                       ),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
+                          onPressed: () => ctx.pop(false),
                           child: const Text('Cancelar'),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.pop(ctx, true),
+                          onPressed: () => ctx.pop(true),
                           child: const Text(
                             'Eliminar',
                             style: TextStyle(color: Colors.red),

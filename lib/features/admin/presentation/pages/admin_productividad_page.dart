@@ -4,7 +4,6 @@ import '../../../../shared/theme/app_theme.dart';
 
 class AdminProductividadPage extends ConsumerStatefulWidget {
   const AdminProductividadPage({super.key});
-
   @override
   ConsumerState<AdminProductividadPage> createState() =>
       _AdminProductividadPageState();
@@ -15,8 +14,6 @@ class _AdminProductividadPageState
   DateTime? _startDate;
   DateTime? _endDate;
   String _selectedEncuestador = 'Todos';
-
-  // Datos mock para el UI. (Idealmente esto vendría de un ViewModel/Backend)
   final List<Map<String, dynamic>> _datosProductividad = [
     {
       'nombre': 'Juan Pérez',
@@ -43,7 +40,6 @@ class _AdminProductividadPageState
       'tiempo_promedio': '22 min',
     },
   ];
-
   Future<void> _selectDate(BuildContext context, bool isStart) async {
     final picked = await showDatePicker(
       context: context,
@@ -79,7 +75,6 @@ class _AdminProductividadPageState
       ),
       body: Column(
         children: [
-          // Filtros
           Container(
             color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.all(16),
@@ -142,7 +137,6 @@ class _AdminProductividadPageState
             ),
           ),
           const Divider(height: 1),
-          // Resumen
           Container(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -167,7 +161,6 @@ class _AdminProductividadPageState
               ],
             ),
           ),
-          // Lista de resultados
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -264,14 +257,12 @@ class _SummaryBox extends ConsumerWidget {
   final String value;
   final IconData icon;
   final Color color;
-
   const _SummaryBox({
     required this.title,
     required this.value,
     required this.icon,
     required this.color,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -305,13 +296,11 @@ class _StatColumn extends ConsumerWidget {
   final String label;
   final String value;
   final Color color;
-
   const _StatColumn({
     required this.label,
     required this.value,
     required this.color,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(

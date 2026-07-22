@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/cedula_viewmodel.dart';
 import '../../../familia/presentation/viewmodels/familia_viewmodel.dart';
@@ -12,9 +13,7 @@ import '../../../../core/security/device_security.dart';
 
 class CedulaSuccessSheet extends ConsumerWidget {
   final List<GlobalKey<FormState>> formKeys;
-
   const CedulaSuccessSheet({super.key, required this.formKeys});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -50,7 +49,7 @@ class CedulaSuccessSheet extends ConsumerWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                   child: const Text('Revisar'),
                 ),
               ),
@@ -71,17 +70,16 @@ class CedulaSuccessSheet extends ConsumerWidget {
 
   Future<void> _submitCedula(BuildContext context, WidgetRef ref) async {
     if (!DeviceSecurityStatus.isSecure) {
-      Navigator.pop(context);
+      context.pop();
       await showInsecureDeviceDialog(context);
       return;
     }
-
     final authVm = ref.read(authViewModelProvider);
     final user = authVm.session?.user;
     if (user == null ||
         user.entrevistadorId == null ||
         user.entrevistadorId! <= 0) {
-      Navigator.pop(context);
+      context.pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
@@ -92,9 +90,8 @@ class CedulaSuccessSheet extends ConsumerWidget {
       );
       return;
     }
-
     if (user.unidadSaludId == null || user.unidadSaludId! <= 0) {
-      Navigator.pop(context);
+      context.pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
@@ -105,13 +102,12 @@ class CedulaSuccessSheet extends ConsumerWidget {
       );
       return;
     }
-
     bool isValid = true;
     for (var key in formKeys) {
       if (!key.currentState!.validate()) isValid = false;
     }
     if (!isValid) {
-      Navigator.pop(context);
+      context.pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
@@ -122,38 +118,33 @@ class CedulaSuccessSheet extends ConsumerWidget {
       );
       return;
     }
-
-    // Orquestación del Payload Final
     final familiaVm = ref.read(familiaViewModelProvider);
     final viviendaVm = ref.read(viviendaViewModelProvider);
     final vacunasVm = ref.read(vacunacionViewModelProvider);
     final integrantesVm = ref.read(integrantesViewModelProvider);
-
-    // Construir el JSON consolidado
     final payload = {
       "unidad_salud_id": user.unidadSaludId,
       "entrevistador_id": user.entrevistadorId,
+      "fecha_registro": DateTime.now().toIso8601String().split('T')[0],
+      "estado": "sincronizada",
+      "observaciones": "Captura completa desde app móvil",
       "familia": familiaVm.toPayload(),
       "vivienda": viviendaVm.toPayload(),
       "vacunacion": vacunasVm.toPayload(),
       "integrantes": integrantesVm.toPayload(),
     };
-
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
-
     final vm = ref.read(cedulaViewModelProvider);
     final success = await vm.submitCapturaCompleta(payload);
-
     if (!context.mounted) return;
-    Navigator.pop(context); // Cierra loader
-
+    context.pop();
     if (success) {
-      Navigator.pop(context); // Cierra modal
-      Navigator.pop(context); // Regresa
+      context.pop();
+      context.pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(vm.successMessage ?? 'Cédula guardada')),
       );

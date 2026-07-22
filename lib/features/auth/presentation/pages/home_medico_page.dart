@@ -1,11 +1,8 @@
-// ────────────────────────────────────────────────────────────────────────────
-// home_medico_page.dart
-// ────────────────────────────────────────────────────────────────────────────
-
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/theme_mode_menu_button.dart';
@@ -13,13 +10,11 @@ import '../viewmodels/auth_viewmodel.dart';
 
 class HomeMedicoPage extends ConsumerWidget {
   const HomeMedicoPage({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userName =
         ref.watch(authViewModelProvider).session?.user.nombreUsuario ??
         'médico';
-
     return Scaffold(
       appBar: _buildAppBar(context, ref),
       body: SafeArea(
@@ -88,7 +83,6 @@ class HomeMedicoPage extends ConsumerWidget {
       AppColors.terracota,
     ),
   ];
-
   AppBar _buildAppBar(BuildContext context, WidgetRef ref) => AppBar(
     title: Row(
       children: [
@@ -141,14 +135,12 @@ class _ModuleRow extends ConsumerWidget {
     required this.subtitle,
     required this.color,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
     final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
-
     return Material(
       color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
@@ -158,7 +150,9 @@ class _ModuleRow extends ConsumerWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
+            border: Border.all(
+              color: theme.dividerTheme.color ?? AppColors.line,
+            ),
           ),
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -187,10 +181,7 @@ class _ModuleRow extends ConsumerWidget {
                     const SizedBox(height: 3),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: mutedColor,
-                      ),
+                      style: TextStyle(fontSize: 12, color: mutedColor),
                     ),
                   ],
                 ),
@@ -208,8 +199,6 @@ class _ModuleRow extends ConsumerWidget {
   }
 }
 
-// Shared widgets reutilizados aquí también ────────────────────────────────────
-
 class _RolHeader extends ConsumerWidget {
   final String userName, rolLabel;
   final Color rolColor;
@@ -220,7 +209,6 @@ class _RolHeader extends ConsumerWidget {
     required this.rolColor,
     required this.icon,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
@@ -280,7 +268,6 @@ class _RolHeader extends ConsumerWidget {
 class _SectionLabel extends ConsumerWidget {
   final String text;
   const _SectionLabel({required this.text});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) => Text(
     text.toUpperCase(),

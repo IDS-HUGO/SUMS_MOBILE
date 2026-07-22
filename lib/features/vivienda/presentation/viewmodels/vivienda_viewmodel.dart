@@ -3,7 +3,6 @@ import '../../domain/repositories/vivienda_repository.dart';
 
 class ViviendaViewModel extends ChangeNotifier {
   final ViviendaRepository repository;
-
   String? techo;
   String? paredes;
   String? piso;
@@ -12,7 +11,6 @@ class ViviendaViewModel extends ChangeNotifier {
   final pisoOtro = TextEditingController();
   final cuartos = TextEditingController();
   final habitantes = TextEditingController();
-
   bool aguaEntubada = false;
   bool energiaElect = false;
   String? cocina;
@@ -20,40 +18,32 @@ class ViviendaViewModel extends ChangeNotifier {
   String? excretas;
   bool alcantarillado = false;
   bool fosaSeptica = false;
-
   bool perrosGatos = false;
   bool animVacunas = false;
   bool esterilizados = false;
   final otrosAnimales = <String>{};
   final animalOtro = TextEditingController();
   final animalObs = TextEditingController();
-
-  // Catalogos
   List<String> matTechoParedesOpts = [];
   List<String> matPisoOpts = [];
   List<String> cocinasOpts = [];
   List<String> excretasOpts = [];
   List<String> otrosAnimalesOpts = [];
-
   bool isLoadingCatalogs = true;
   String? errorMessage;
-
   ViviendaViewModel({required this.repository}) {
     _loadCatalogs();
   }
-
   Future<void> _loadCatalogs() async {
     try {
       isLoadingCatalogs = true;
       notifyListeners();
-
       final futures = await Future.wait([
         repository.getCatalog('material'),
         repository.getCatalog('material'),
         repository.getCatalog('manejo-excretas'),
         repository.getCatalog('animal'),
       ]);
-
       matTechoParedesOpts = futures[0]
           .where((e) => e.nombre != 'Tierra')
           .map((e) => e.nombre)
@@ -67,7 +57,6 @@ class ViviendaViewModel extends ChangeNotifier {
       otrosAnimalesOpts = futures[3].map((e) => e.nombre).toList();
     } catch (e) {
       errorMessage = e.toString();
-      // Fallback
       matTechoParedesOpts = [
         'Concreto o cemento',
         'Madera',
@@ -184,7 +173,6 @@ class ViviendaViewModel extends ChangeNotifier {
     if (piso == 'Otros (especifique)' && pisoOtro.text.trim().isNotEmpty)
       parts.add('Piso: ${pisoOtro.text.trim()}');
     final materialOtrosStr = parts.join(', ');
-
     return {
       "techo": techo,
       "paredes": paredes,

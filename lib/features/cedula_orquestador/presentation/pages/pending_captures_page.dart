@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 import '../viewmodels/cedula_viewmodel.dart';
 
 class PendingCapturesPage extends ConsumerStatefulWidget {
   const PendingCapturesPage({super.key});
-
   @override
   ConsumerState<PendingCapturesPage> createState() =>
       _PendingCapturesPageState();
@@ -32,7 +30,6 @@ class _PendingCapturesPageState extends ConsumerState<PendingCapturesPage> {
           final pending = vm.allLocalRecords
               .where((r) => r['_syncStatus'] == 1)
               .toList();
-
           return Column(
             children: [
               if (vm.syncFailureWarning != null)
@@ -70,8 +67,7 @@ class _PendingCapturesPageState extends ConsumerState<PendingCapturesPage> {
                     : ListView.separated(
                         padding: const EdgeInsets.all(16),
                         itemCount: pending.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 12),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final record = pending[index];
                           return Card(
@@ -90,9 +86,8 @@ class _PendingCapturesPageState extends ConsumerState<PendingCapturesPage> {
                                       Icons.sync,
                                       color: AppColors.green,
                                     ),
-                                    onPressed: () => vm.retrySyncSingle(
-                                      record['_localId'],
-                                    ),
+                                    onPressed: () =>
+                                        vm.retrySyncSingle(record['_localId']),
                                   ),
                                 ],
                               ),

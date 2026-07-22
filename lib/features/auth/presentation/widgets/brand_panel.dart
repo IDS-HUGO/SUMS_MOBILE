@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 class BrandPanel extends ConsumerWidget {
   const BrandPanel({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
@@ -80,7 +79,6 @@ class BrandPanel extends ConsumerWidget {
 
 class MobileLoginHeader extends ConsumerWidget {
   const MobileLoginHeader({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
@@ -122,7 +120,6 @@ class _InfoBadge extends ConsumerWidget {
   final IconData icon;
   final String text;
   const _InfoBadge({required this.icon, required this.text});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(

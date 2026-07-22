@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
 import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
@@ -9,11 +8,9 @@ import '../viewmodels/vivienda_viewmodel.dart';
 
 class ViviendaStepWidget extends ConsumerWidget {
   const ViviendaStepWidget({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vm = ref.watch(viviendaViewModelProvider);
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -191,8 +188,6 @@ class ViviendaStepWidget extends ConsumerWidget {
     );
   }
 
-  // ── Helpers locales ─────────────────────────────────────────────────────────
-
   Widget _fieldGrid(List<Widget> children) {
     return LayoutBuilder(
       builder: (_, c) {
@@ -256,7 +251,6 @@ class ViviendaStepWidget extends ConsumerWidget {
       Expanded(child: Divider(color: AppColors.line)),
     ],
   );
-
   Widget _select({
     required String label,
     required IconData icon,
@@ -292,7 +286,6 @@ class ViviendaStepWidget extends ConsumerWidget {
     onChanged: onChanged,
     validator: validator,
   );
-
   Widget _yesNo(String label, bool value, ValueChanged<bool> onChanged) =>
       InputDecorator(
         decoration: InputDecoration(labelText: label),
@@ -306,7 +299,6 @@ class ViviendaStepWidget extends ConsumerWidget {
           onSelectionChanged: (s) => onChanged(s.first),
         ),
       );
-
   Widget _chipGroup({
     required String label,
     required List<String> options,
@@ -327,7 +319,6 @@ class ViviendaStepWidget extends ConsumerWidget {
       ],
     ),
   );
-
   Widget _numberField(TextEditingController c, String label, IconData icon) =>
       SumsTextField(
         controller: c,
@@ -344,14 +335,12 @@ class _StepPanel extends ConsumerWidget {
   final IconData icon;
   final Color color;
   final List<Widget> children;
-
   const _StepPanel({
     required this.title,
     required this.icon,
     required this.color,
     required this.children,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(

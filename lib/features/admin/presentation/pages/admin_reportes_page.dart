@@ -1,11 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 
 class AdminReportesPage extends ConsumerWidget {
   const AdminReportesPage({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -24,10 +25,9 @@ class AdminReportesPage extends ConsumerWidget {
                   'Análisis del rendimiento de los encuestadores y cédulas completadas',
               color: AppColors.rolEncuestador,
               onTap: () {
-                Navigator.pushNamed(context, AppRoutes.adminProductividad);
+                context.push(AppRoutes.adminProductividad);
               },
             ),
-            // Más reportes pueden ir aquí en el futuro
           ],
         ),
       ),
@@ -41,7 +41,6 @@ class _ReportCard extends ConsumerWidget {
   final String description;
   final Color color;
   final VoidCallback onTap;
-
   const _ReportCard({
     required this.icon,
     required this.title,
@@ -49,7 +48,6 @@ class _ReportCard extends ConsumerWidget {
     required this.color,
     required this.onTap,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(

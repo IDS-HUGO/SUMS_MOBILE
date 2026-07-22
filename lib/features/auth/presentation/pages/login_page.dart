@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import 'package:flutter/services.dart';
-
 import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/brand_panel.dart';
 import '../widgets/login_card.dart';
@@ -11,7 +12,6 @@ import '../../../../core/security/device_security.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
-
   @override
   ConsumerState<LoginPage> createState() => _LoginPageState();
 }
@@ -20,7 +20,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _userController = TextEditingController();
   final _passwordController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -28,14 +27,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   static const platform = MethodChannel('com.kazedev.sums/security');
-
   void _initScreenProtector() async {
     if (Platform.isAndroid) {
       try {
         await platform.invokeMethod('secureScreen');
-      } catch (e) {
-        // Ignore
-      }
+      } catch (e) {}
     }
   }
 
@@ -44,9 +40,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (Platform.isAndroid) {
       try {
         platform.invokeMethod('unsecureScreen');
-      } catch (e) {
-        // Ignore
-      }
+      } catch (e) {}
     }
     _userController.dispose();
     _passwordController.dispose();
@@ -65,11 +59,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       contrasena: _passwordController.text,
     );
     if (!mounted) return;
-
     if (success) {
       await _showSuccessDialog();
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(viewModel.homeRoute);
+      context.go(viewModel.homeRoute);
     } else {
       await _showErrorDialog(viewModel);
     }
@@ -96,7 +89,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         content: const Text('Inicio de sesión exitoso. Bienvenido a SUMS.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text(
               'Continuar',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -115,7 +108,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         errorMsg.contains('network') ||
         errorMsg.contains('socket') ||
         errorMsg.contains('timeout');
-
     final title = isConnection ? 'Falla de conexión' : 'Contraseña incorrecta';
     final msg = isConnection
         ? 'No pudimos conectarnos al servidor. Revisa tu conexión a internet.'
@@ -124,7 +116,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final iconColor = isConnection
         ? theme.colorScheme.error
         : theme.colorScheme.error;
-
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -144,7 +135,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         content: Text(msg),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Intentar de nuevo'),
           ),
         ],

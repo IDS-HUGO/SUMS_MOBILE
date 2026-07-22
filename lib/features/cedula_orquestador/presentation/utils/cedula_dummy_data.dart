@@ -12,12 +12,10 @@ class CedulaDummyData {
     final v = ref.read(viviendaViewModelProvider);
     final i = ref.read(integrantesViewModelProvider);
     final vac = ref.read(vacunacionViewModelProvider);
-
     f.informanteNombre.text = 'Juan Perez Dummy';
     f.setSexo('Masculino');
     if (f.roles.isNotEmpty) f.setRol(f.roles.first);
     f.domicilio.text = 'Calle Prueba 123';
-
     if (v.matTechoParedesOpts.isNotEmpty) {
       v.setTecho(v.matTechoParedesOpts.first);
       v.setParedes(v.matTechoParedesOpts.first);
@@ -35,7 +33,6 @@ class CedulaDummyData {
     v.perrosGatos = false;
     v.animVacunas = false;
     v.esterilizados = false;
-
     if (i.integrantes.isEmpty) i.addMemberForm();
     final m = i.integrantes[0];
     m.nombre.text = 'Juan Perez Dummy';
@@ -60,7 +57,6 @@ class CedulaDummyData {
     m.cronicas.add('Ninguna');
     if (i.freqSaludOpts.isNotEmpty) m.frecuenciaSalud = i.freqSaludOpts.first;
     i.updateForm();
-
     vac.seAplicoVacuna = false;
     vac.updateForm();
   }

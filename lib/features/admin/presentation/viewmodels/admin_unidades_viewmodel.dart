@@ -6,21 +6,16 @@ enum AdminUnidadesStatus { initial, loading, loaded, error }
 
 class AdminUnidadesViewModel extends ChangeNotifier {
   final AdminRepository repository;
-
   AdminUnidadesViewModel({required this.repository});
-
   AdminUnidadesStatus _status = AdminUnidadesStatus.initial;
   List<UnidadSaludEntity> _unidades = [];
   String? _errorMessage;
-
   AdminUnidadesStatus get status => _status;
   List<UnidadSaludEntity> get unidades => _unidades;
   String? get errorMessage => _errorMessage;
-
   Future<void> fetchUnidades() async {
     _status = AdminUnidadesStatus.loading;
     notifyListeners();
-
     try {
       _unidades = await repository.getUnidadesSalud();
       _status = AdminUnidadesStatus.loaded;
@@ -35,7 +30,6 @@ class AdminUnidadesViewModel extends ChangeNotifier {
   Future<bool> createUnidad(Map<String, dynamic> body) async {
     _status = AdminUnidadesStatus.loading;
     notifyListeners();
-
     try {
       final nuevaUnidad = await repository.createUnidadSalud(body);
       _unidades.add(nuevaUnidad);
@@ -54,7 +48,6 @@ class AdminUnidadesViewModel extends ChangeNotifier {
   Future<bool> updateUnidad(int id, Map<String, dynamic> body) async {
     _status = AdminUnidadesStatus.loading;
     notifyListeners();
-
     try {
       final updatedUnidad = await repository.updateUnidadSalud(id, body);
       final index = _unidades.indexWhere((u) => u.id == id);
@@ -76,7 +69,6 @@ class AdminUnidadesViewModel extends ChangeNotifier {
   Future<bool> deleteUnidad(int id) async {
     _status = AdminUnidadesStatus.loading;
     notifyListeners();
-
     try {
       final success = await repository.deleteUnidadSalud(id);
       if (success) {

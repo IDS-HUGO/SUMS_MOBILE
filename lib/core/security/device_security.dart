@@ -1,21 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-/// Estado de integridad del dispositivo, calculado una única vez en `main()`
-/// (ver `FlutterJailbreakDetection` en `lib/main.dart`) antes de levantar la
-/// app. Se expone como valor estático simple para que cualquier punto de la
-/// app (login, guardado de cédulas) pueda BLOQUEAR la acción si el
-/// dispositivo no es confiable, en vez de solo mostrar una advertencia
-/// pasiva (OWASP MASVS-RESILIENCE-1).
 class DeviceSecurityStatus {
   DeviceSecurityStatus._();
-
-  /// `true` mientras no se detecte jailbreak/root. Se actualiza una sola vez
-  /// al arrancar la app, antes de `runApp`.
   static bool isSecure = true;
 }
 
-/// Muestra un diálogo bloqueante explicando por qué la acción (login o
-/// guardado de una cédula) fue denegada por motivos de seguridad.
 Future<void> showInsecureDeviceDialog(BuildContext context) {
   return showDialog<void>(
     context: context,
@@ -32,7 +22,7 @@ Future<void> showInsecureDeviceDialog(BuildContext context) {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
+          onPressed: () => ctx.pop(),
           child: const Text('Entendido'),
         ),
       ],
