@@ -3,7 +3,6 @@ import '../../domain/repositories/familia_repository.dart';
 
 class FamiliaViewModel extends ChangeNotifier {
   final FamiliaRepository repository;
-
   final informanteNombre = TextEditingController();
   String? informanteSexo;
   final domicilio = TextEditingController();
@@ -11,26 +10,28 @@ class FamiliaViewModel extends ChangeNotifier {
   final manzana = TextEditingController();
   final viviendaRef = TextEditingController();
 
+  /// Observaciones libres de la visita (seguimiento, enfermedad rara,
+  /// embarazo, vacunas pendientes, vivienda en mal estado, mascotas sin
+  /// vacunar, etc). NO se envía dentro de "familia": el backend la lee como
+  /// clave raíz del payload (`payload.observaciones`), por eso NO se incluye
+  /// en [toPayload].
+  final observaciones = TextEditingController();
+
   String? rolInformante;
   List<String> roles = [];
   bool isLoadingRoles = true;
   String? errorMessage;
-
   FamiliaViewModel({required this.repository}) {
     _loadRoles();
   }
-
   Future<void> _loadRoles() async {
     try {
       isLoadingRoles = true;
       notifyListeners();
-
-      // Consultar el catálogo de la API
       final items = await repository.getCatalog('parentesco');
       roles = items.map((e) => e.nombre).toList();
     } catch (e) {
       errorMessage = e.toString();
-      // Fallback a hardcoded en caso de error, o dejar vacío.
       roles = ['Madre', 'Padre', 'Hijo(a)', 'Abuelo(a)'];
     } finally {
       isLoadingRoles = false;
@@ -45,6 +46,18 @@ class FamiliaViewModel extends ChangeNotifier {
 
   void setSexo(String? sexo) {
     informanteSexo = sexo;
+    notifyListeners();
+  }
+
+  /// Anexa [frase] al texto actual de [observaciones]: si ya hay texto,
+  /// concatena con un espacio; si está vacío, la frase se vuelve el texto
+  /// inicial. Usado por los chips de categorías rápidas en la UI.
+  void appendObservacion(String frase) {
+    final actual = observaciones.text.trimRight();
+    observaciones.text = actual.isEmpty ? frase : '$actual $frase';
+    observaciones.selection = TextSelection.collapsed(
+      offset: observaciones.text.length,
+    );
     notifyListeners();
   }
 
@@ -67,6 +80,7 @@ class FamiliaViewModel extends ChangeNotifier {
     localidad.dispose();
     manzana.dispose();
     viviendaRef.dispose();
+    observaciones.dispose();
     super.dispose();
   }
 }

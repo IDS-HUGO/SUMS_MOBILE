@@ -5,7 +5,6 @@ class UnidadSaludEntity {
   final String? distrito;
   final int? municipioId;
   final int? numeroNucleos;
-
   const UnidadSaludEntity({
     required this.id,
     required this.clues,
@@ -14,7 +13,6 @@ class UnidadSaludEntity {
     this.municipioId,
     this.numeroNucleos,
   });
-
   factory UnidadSaludEntity.fromJson(Map<String, dynamic> json) {
     return UnidadSaludEntity(
       id: json['id'] as int,
@@ -25,7 +23,6 @@ class UnidadSaludEntity {
       numeroNucleos: json['numero_nucleos'] as int?,
     );
   }
-
   Map<String, dynamic> toJson() => {
     'clues': clues,
     'nombre': nombre,

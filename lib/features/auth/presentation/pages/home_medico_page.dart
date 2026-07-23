@@ -1,11 +1,8 @@
-// ────────────────────────────────────────────────────────────────────────────
-// home_medico_page.dart
-// ────────────────────────────────────────────────────────────────────────────
-
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/theme_mode_menu_button.dart';
@@ -14,12 +11,22 @@ import '../viewmodels/auth_viewmodel.dart';
 class HomeMedicoPage extends ConsumerWidget {
   const HomeMedicoPage({super.key});
 
+  void _showPendingFeatureMessage(BuildContext context, String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'La función de $feature estará disponible en la próxima actualización.',
+        ),
+        backgroundColor: AppColors.muted,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userName =
         ref.watch(authViewModelProvider).session?.user.nombreUsuario ??
         'médico';
-
     return Scaffold(
       appBar: _buildAppBar(context, ref),
       body: SafeArea(
@@ -51,6 +58,7 @@ class HomeMedicoPage extends ConsumerWidget {
                     title: m.title,
                     subtitle: m.subtitle,
                     color: m.color,
+                    onTap: () => _showPendingFeatureMessage(context, m.title),
                   );
                 },
               ),
@@ -88,7 +96,6 @@ class HomeMedicoPage extends ConsumerWidget {
       AppColors.terracota,
     ),
   ];
-
   AppBar _buildAppBar(BuildContext context, WidgetRef ref) => AppBar(
     title: Row(
       children: [
@@ -112,9 +119,7 @@ class HomeMedicoPage extends ConsumerWidget {
         onPressed: () async {
           await ref.read(authViewModelProvider).logout();
           if (!context.mounted) return;
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+          context.go(AppRoutes.login);
         },
       ),
       const SizedBox(width: 4),
@@ -135,30 +140,32 @@ class _ModuleRow extends ConsumerWidget {
   final String title;
   final String subtitle;
   final Color color;
+  final VoidCallback onTap;
   const _ModuleRow({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.color,
+    required this.onTap,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
     final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
-
     return Material(
       color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
+            border: Border.all(
+              color: theme.dividerTheme.color ?? AppColors.line,
+            ),
           ),
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -187,10 +194,7 @@ class _ModuleRow extends ConsumerWidget {
                     const SizedBox(height: 3),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: mutedColor,
-                      ),
+                      style: TextStyle(fontSize: 12, color: mutedColor),
                     ),
                   ],
                 ),
@@ -208,8 +212,6 @@ class _ModuleRow extends ConsumerWidget {
   }
 }
 
-// Shared widgets reutilizados aquí también ────────────────────────────────────
-
 class _RolHeader extends ConsumerWidget {
   final String userName, rolLabel;
   final Color rolColor;
@@ -220,7 +222,6 @@ class _RolHeader extends ConsumerWidget {
     required this.rolColor,
     required this.icon,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
@@ -280,7 +281,6 @@ class _RolHeader extends ConsumerWidget {
 class _SectionLabel extends ConsumerWidget {
   final String text;
   const _SectionLabel({required this.text});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) => Text(
     text.toUpperCase(),

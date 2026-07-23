@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import 'package:flutter/services.dart';
-
 import '../../../familia/presentation/widgets/familia_step_widget.dart';
 import '../../../vivienda/presentation/widgets/vivienda_step_widget.dart';
 import '../../../vacunacion/presentation/widgets/vacunacion_step_widget.dart';
@@ -15,14 +16,12 @@ import '../../../vivienda/presentation/viewmodels/vivienda_viewmodel.dart';
 import '../../../vacunacion/presentation/viewmodels/vacunacion_viewmodel.dart';
 import '../../../integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
-
 import '../utils/cedula_dummy_data.dart';
 import '../widgets/cedula_success_sheet.dart';
 import '../../../../core/security/device_security.dart';
 
 class CedulaFormPage extends ConsumerStatefulWidget {
   const CedulaFormPage({super.key});
-
   @override
   ConsumerState<CedulaFormPage> createState() => _CedulaFormPageState();
 }
@@ -37,16 +36,13 @@ class _WizardStep {
 class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
     with TickerProviderStateMixin {
   int _currentStep = 0;
-
   final List<GlobalKey<FormState>> _formKeys = [
     GlobalKey<FormState>(),
     GlobalKey<FormState>(),
     GlobalKey<FormState>(),
     GlobalKey<FormState>(),
   ];
-
   late List<_WizardStep> _steps;
-
   @override
   void initState() {
     super.initState();
@@ -69,19 +65,16 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
         'Vacunación',
         Icons.vaccines_outlined,
         theme.colorScheme.error,
-      ), // fallback
+      ),
     ];
   }
 
   static const platform = MethodChannel('com.kazedev.sums/security');
-
   void _initScreenProtector() async {
     if (Platform.isAndroid) {
       try {
         await platform.invokeMethod('secureScreen');
-      } catch (e) {
-        // Ignore
-      }
+      } catch (e) {}
     }
   }
 
@@ -90,9 +83,7 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
     if (Platform.isAndroid) {
       try {
         platform.invokeMethod('unsecureScreen');
-      } catch (e) {
-        // Ignore
-      }
+      } catch (e) {}
     }
     super.dispose();
   }
@@ -149,7 +140,6 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
       );
       return;
     }
-
     if (user.unidadSaludId == null || user.unidadSaludId! <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -162,7 +152,6 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
       );
       return;
     }
-
     bool isValid = true;
     for (var key in _formKeys) {
       if (!key.currentState!.validate()) isValid = false;
@@ -179,35 +168,32 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
       );
       return;
     }
-
     final familiaVm = ref.read(familiaViewModelProvider);
     final viviendaVm = ref.read(viviendaViewModelProvider);
     final vacunasVm = ref.read(vacunacionViewModelProvider);
     final integrantesVm = ref.read(integrantesViewModelProvider);
-
     final payload = {
       "unidad_salud_id": user.unidadSaludId,
       "entrevistador_id": user.entrevistadorId,
+      "fecha_registro": DateTime.now().toIso8601String().split('T')[0],
+      "estado": "borrador",
+      "observaciones": familiaVm.observaciones.text.trim(),
       "familia": familiaVm.toPayload(),
       "vivienda": viviendaVm.toPayload(),
       "vacunacion": vacunasVm.toPayload(),
       "integrantes": integrantesVm.toPayload(),
     };
-
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
-
     final vm = ref.read(cedulaViewModelProvider);
     final success = await vm.saveDraft(payload);
-
     if (!mounted) return;
-    Navigator.pop(context); // Cierra loader
-
+    context.pop();
     if (success) {
-      Navigator.pop(context); // Regresa
+      context.pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(vm.successMessage ?? 'Borrador guardado')),
       );
@@ -229,15 +215,10 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
       appBar: AppBar(
         title: const Text('Microdiagnóstico Familiar'),
         actions: [
-          // Solo visible en builds de debug: nunca debe llegar a producción
-          // un atajo que rellena la cédula con datos ficticios.
           if (kDebugMode)
             IconButton(
               onPressed: () => CedulaDummyData.apply(ref),
-              icon: Icon(
-                Icons.bug_report,
-                color: theme.colorScheme.onPrimary,
-              ),
+              icon: Icon(Icons.bug_report, color: theme.colorScheme.onPrimary),
               tooltip: 'Llenar datos de prueba',
             ),
           TextButton.icon(

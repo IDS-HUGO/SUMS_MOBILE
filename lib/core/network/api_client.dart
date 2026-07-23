@@ -11,25 +11,39 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Hosts de desarrollo local (loopback / emulador Android). Fuera de estos
-/// hosts nunca se permite HTTP sin cifrar, ni siquiera en modo debug.
-bool isLoopbackDevHost(String host) {
+/// Host adicional permitido para pruebas en LAN fuera de los rangos privados
+/// habituales (ej. un dominio/IP de staging). Vacío por defecto -- solo tiene
+/// efecto si se pasa explícitamente --dart-define=ALLOWED_DEV_HOST=<host> al
+/// compilar/correr, y únicamente en kDebugMode (ver enforceSecureScheme). No
+/// afecta builds release ni a quien no defina esta bandera.
+const _allowedDevHost = String.fromEnvironment('ALLOWED_DEV_HOST');
+
+/// Hosts permitidos para HTTP sin cifrar solo en desarrollo.
+/// Incluye loopback, emuladores, rangos de red privada para dispositivos
+/// físicos, y el host explícito de [_allowedDevHost] si se configuró.
+bool isAllowedHttpHost(String host) {
   final h = host.toLowerCase();
-  return h == 'localhost' || h == '127.0.0.1' || h == '10.0.2.2' || h == '::1';
+  if (h == 'localhost' || h == '127.0.0.1' || h == '10.0.2.2' || h == '::1') {
+    return true;
+  }
+  // Permitir rangos de IP privada para pruebas en red local con dispositivos
+  // físicos: 192.168.x.x, 172.16.x.x - 172.31.x.x, 10.x.x.x
+  if (h.startsWith('192.168.') ||
+      h.startsWith('10.') ||
+      RegExp(r'^172\.(1[6-9]|2[0-9]|3[0-1])\.').hasMatch(h)) {
+    return true;
+  }
+  return _allowedDevHost.isNotEmpty && h == _allowedDevHost.toLowerCase();
 }
 
 /// Punto único de aplicación de la política de esquema seguro
 /// (OWASP MASVS-NETWORK-1): bloquea cualquier esquema distinto de `https`,
-/// salvo cuando el host es un host de desarrollo local (loopback/emulador)
+/// salvo cuando el host es un host de desarrollo permitido (local/red privada)
 /// Y la app corre en modo debug (`kDebugMode`). En builds de release, HTTP
 /// SIEMPRE se bloquea, sin excepción.
-///
-/// Cualquier cliente HTTP de la app (el [ApiClient] principal, o clientes
-/// propios como el de minería/OCR) debe pasar sus URIs por aquí antes de
-/// usarlas, para no abrir una puerta trasera que evada este control.
 Uri enforceSecureScheme(Uri uri) {
   if (uri.scheme == 'https') return uri;
-  if (kDebugMode && isLoopbackDevHost(uri.host)) {
+  if (kDebugMode && isAllowedHttpHost(uri.host)) {
     return uri;
   }
   throw const ApiException(

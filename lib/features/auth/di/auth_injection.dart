@@ -24,7 +24,7 @@ void registerAuthDependencies(GetIt sl) {
   sl.registerLazySingleton<RegisterUseCase>(() => RegisterUseCase(sl()));
   sl.registerLazySingleton<LogoutUseCase>(() => LogoutUseCase(sl()));
 
-  sl.registerFactory<AuthViewModel>(
+  sl.registerLazySingleton<AuthViewModel>(
     () => AuthViewModel(
       loginUseCase: sl(),
       registerUseCase: sl(),

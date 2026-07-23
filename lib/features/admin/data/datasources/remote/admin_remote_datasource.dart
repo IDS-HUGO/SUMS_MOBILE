@@ -2,10 +2,11 @@ import '../../../../../core/network/api_client.dart';
 
 class AdminRemoteDataSource {
   final ApiClient apiClient;
-
   const AdminRemoteDataSource({required this.apiClient});
+  Future<List<dynamic>> getCatalogKeys({String? token}) async {
+    return apiClient.getList('/catalogos', token: token);
+  }
 
-  // Usuarios
   Future<List<dynamic>> getUsers({String? token}) async {
     return apiClient.getList('/users', token: token);
   }
@@ -14,9 +15,6 @@ class AdminRemoteDataSource {
     Map<String, dynamic> body, {
     String? token,
   }) async {
-    // Para roles que no sean entrevistador, usamos admin/register.
-    // Opcionalmente podemos usar /register-entrevistador si es necesario.
-    // Asumiremos /users/admin/register como dijo el subagente.
     return apiClient.post('/users/admin/register', body: body, token: token);
   }
 
@@ -28,7 +26,6 @@ class AdminRemoteDataSource {
     return apiClient.put('/users/$id', body: body, token: token);
   }
 
-  // Unidades de Salud
   Future<List<dynamic>> getUnidadesSalud({String? token}) async {
     return apiClient.getList('/unidadSalud', token: token);
   }
@@ -55,7 +52,6 @@ class AdminRemoteDataSource {
     return apiClient.delete('/unidadSalud/$id', token: token);
   }
 
-  // Catálogos
   Future<List<dynamic>> getCatalog(String key, {String? token}) async {
     return apiClient.getList('/catalogos/$key', token: token);
   }
@@ -65,7 +61,6 @@ class AdminRemoteDataSource {
     Map<String, dynamic> body, {
     String? token,
   }) async {
-    // La API Node no tiene esto aún, pero la crearemos.
     return apiClient.post('/catalogos/$catalogName', body: body, token: token);
   }
 }

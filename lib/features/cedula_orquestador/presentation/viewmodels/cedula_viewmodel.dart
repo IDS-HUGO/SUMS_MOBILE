@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../domain/entities/catalog_item.dart';
 import '../../domain/usecases/load_catalogs_usecase.dart';
 import '../../domain/usecases/submit_record_usecase.dart';
@@ -15,7 +14,6 @@ import '../../../../core/sync/background_worker.dart'
 
 enum CedulaStatus { initial, loading, success, error }
 
-/// Resultado de una captura completa exitosa.
 class CapturaCompletaResult {
   final int? cedulaId;
   final int nucleoFamiliarId;
@@ -24,7 +22,6 @@ class CapturaCompletaResult {
   final int integrantesCreados;
   final int vacunasCreadas;
   final List<String> warnings;
-
   const CapturaCompletaResult({
     required this.cedulaId,
     required this.nucleoFamiliarId,
@@ -34,7 +31,6 @@ class CapturaCompletaResult {
     required this.vacunasCreadas,
     required this.warnings,
   });
-
   factory CapturaCompletaResult.fromJson(Map<String, dynamic> json) {
     final integrantes = (json['integrantes'] as List?)?.length ?? 0;
     final inmunizaciones = (json['inmunizaciones'] as List?)?.length ?? 0;
@@ -50,7 +46,6 @@ class CapturaCompletaResult {
       warnings: warnings,
     );
   }
-
   static int? _asInt(dynamic v) {
     if (v == null) return null;
     if (v is int) return v;
@@ -61,7 +56,6 @@ class CapturaCompletaResult {
 class CedulaViewModel extends ChangeNotifier {
   final LoadCatalogsUseCase loadCatalogsUseCase;
   final SubmitRecordUseCase submitRecordUseCase;
-
   CedulaViewModel({
     required this.loadCatalogsUseCase,
     required this.submitRecordUseCase,
@@ -72,10 +66,8 @@ class CedulaViewModel extends ChangeNotifier {
     _checkSyncFailureWarning();
     _listenConnectivity();
   }
-
   final CedulaRepository cedulaRepository;
   final SharedPreferences prefs;
-
   int _pendingSyncCount = 0;
   int _draftCount = 0;
   List<Map<String, dynamic>> _allLocalRecords = [];
@@ -83,20 +75,12 @@ class CedulaViewModel extends ChangeNotifier {
   bool _isOnline = true;
   String? _syncFailureWarning;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
-
   int get pendingSyncCount => _pendingSyncCount;
   int get draftCount => _draftCount;
   List<Map<String, dynamic>> get allLocalRecords => _allLocalRecords;
   bool get isSyncing => _isSyncing;
   bool get isOnline => _isOnline;
-
-  /// Mensaje visible para el usuario cuando la sincronización en segundo
-  /// plano (ver background_worker.dart) lleva varios intentos fallidos
-  /// consecutivos. `null` si no hay ningún aviso pendiente.
   String? get syncFailureWarning => _syncFailureWarning;
-
-  /// Revisa si Workmanager marcó que la sincronización en segundo plano
-  /// necesita atención del usuario (ver [syncNeedsUserAttentionKey]).
   void _checkSyncFailureWarning() {
     final needsAttention = prefs.getBool(syncNeedsUserAttentionKey) ?? false;
     if (needsAttention) {
@@ -110,8 +94,6 @@ class CedulaViewModel extends ChangeNotifier {
     }
   }
 
-  /// Descarta el aviso de fallos repetidos de sincronización (ej. cuando el
-  /// usuario ya lo vio o reintentó manualmente).
   Future<void> dismissSyncFailureWarning() async {
     _syncFailureWarning = null;
     await prefs.setBool(syncNeedsUserAttentionKey, false);
@@ -126,12 +108,10 @@ class CedulaViewModel extends ChangeNotifier {
       final wasOffline = !_isOnline;
       _isOnline = online;
       notifyListeners();
-      // Si acabamos de recuperar la conexión y hay cédulas pendientes → sincronizar
       if (online && wasOffline && _pendingSyncCount > 0) {
         await syncNow();
       }
     });
-    // También verificar el estado inicial de conectividad
     Connectivity().checkConnectivity().then((results) {
       _isOnline = !results.contains(ConnectivityResult.none);
       notifyListeners();
@@ -146,7 +126,6 @@ class CedulaViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Sincronización manual/automática en foreground
   Future<SyncResult> syncNow() async {
     if (_isSyncing)
       return const SyncResult(error: 'Ya hay una sincronización en curso');
@@ -162,7 +141,6 @@ class CedulaViewModel extends ChangeNotifier {
     }
   }
 
-  /// Reintenta la sincronización de un registro específico
   Future<SyncResult> retrySyncSingle(int localId) async {
     _isSyncing = true;
     notifyListeners();
@@ -181,23 +159,16 @@ class CedulaViewModel extends ChangeNotifier {
   String? _successMessage;
   Map<String, List<CatalogItem>> _catalogs = {};
   CapturaCompletaResult? _lastResult;
-
-  // ── IDs guardados para referencia ─────────────────────────────────────────
   int? lastNucleoId;
   int? lastPersonaId;
   int? lastCedulaId;
   int? lastViviendaId;
-
-  // ── Getters ───────────────────────────────────────────────────────────────
   CedulaStatus get status => _status;
   String? get errorMessage => _errorMessage;
   String? get successMessage => _successMessage;
   bool get isLoading => _status == CedulaStatus.loading;
   Map<String, List<CatalogItem>> get catalogs => _catalogs;
   CapturaCompletaResult? get lastResult => _lastResult;
-
-  // ── Catálogos ─────────────────────────────────────────────────────────────
-
   Future<void> loadCatalogs() async {
     _setLoading();
     try {
@@ -210,29 +181,12 @@ class CedulaViewModel extends ChangeNotifier {
     }
   }
 
-  // ── Captura completa ──────────────────────────────────────────────────────
-
-  /// Envía toda la cédula al endpoint POST /sums/cedulas/captura-completa.
-  ///
-  /// El [payload] debe seguir la estructura esperada por el backend:
-  /// ```json
-  /// {
-  ///   "familia":    { informante_nombre, domicilio, localidad, manzana, vivienda_referencia, rol_informante },
-  ///   "vivienda":   { techo, paredes, piso, cuartos, habitantes, agua_entubada, ... },
-  ///   "vacunacion": { se_aplico_vacuna, vacunas: [...] },
-  ///   "integrantes":[ { nombre, sexo, fecha_nacimiento|edad, estado_civil, ... } ],
-  ///   "unidad_salud_id":  <int|null>,
-  ///   "entrevistador_id": <int|null>
-  /// }
-  /// ```
   Future<bool> submitCapturaCompleta(Map<String, dynamic> payload) async {
     _setLoading();
     try {
       final response = await submitRecordUseCase.submitCompleta(
         _clean(payload),
       );
-
-      // Manejar caso de borrador o fallback offline
       if (response['status'] == 'draft' ||
           response['status'] == 'pending_sync') {
         _status = CedulaStatus.success;
@@ -242,20 +196,14 @@ class CedulaViewModel extends ChangeNotifier {
         notifyListeners();
         return true;
       }
-
       _lastResult = CapturaCompletaResult.fromJson(response);
-
-      // Guardar IDs principales
       lastNucleoId = _lastResult?.nucleoFamiliarId;
       lastViviendaId = _lastResult?.viviendaId;
       lastCedulaId = _lastResult?.cedulaId;
-
       _status = CedulaStatus.success;
       _errorMessage = null;
-
       final warnings = _lastResult?.warnings ?? [];
       _successMessage = _buildSuccessMessage(_lastResult!, warnings);
-
       await refreshSyncCounts();
       notifyListeners();
       return true;
@@ -265,7 +213,6 @@ class CedulaViewModel extends ChangeNotifier {
     }
   }
 
-  /// Guarda explícitamente como borrador local sin intentar enviarlo
   Future<bool> saveDraft(Map<String, dynamic> payload) async {
     _setLoading();
     try {
@@ -294,8 +241,6 @@ class CedulaViewModel extends ChangeNotifier {
     if (warnings.isNotEmpty) buf.write('⚠ ${warnings.length} advertencia(s).');
     return buf.toString();
   }
-
-  // ── Submit genérico (flujos secundarios) ──────────────────────────────────
 
   Future<bool> submit({
     required String path,
@@ -335,8 +280,6 @@ class CedulaViewModel extends ChangeNotifier {
     if (_status == CedulaStatus.error) _status = CedulaStatus.initial;
     notifyListeners();
   }
-
-  // ── Helpers privados ──────────────────────────────────────────────────────
 
   Map<String, dynamic> _clean(Map<String, dynamic> body) {
     final cleaned = <String, dynamic>{};

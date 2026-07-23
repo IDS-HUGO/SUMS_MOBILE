@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/brand_header.dart';
@@ -11,12 +12,22 @@ import '../viewmodels/auth_viewmodel.dart';
 class HomeAnalistaPage extends ConsumerWidget {
   const HomeAnalistaPage({super.key});
 
+  void _showPendingFeatureMessage(BuildContext context, String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'La función de $feature estará disponible en la próxima actualización.',
+        ),
+        backgroundColor: AppColors.muted,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userName =
         ref.watch(authViewModelProvider).session?.user.nombreUsuario ??
         'analista';
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('SUMS · Analista'),
@@ -44,6 +55,7 @@ class HomeAnalistaPage extends ConsumerWidget {
                     title: 'Estadísticas de vacunación',
                     sub: 'Aplicaciones por vacuna, dosis, edad y sexo.',
                     color: AppColors.green,
+                    onTap: () => _showPendingFeatureMessage(context, 'Estadísticas de vacunación'),
                   ),
                   const SizedBox(height: 12),
                   _card(
@@ -52,6 +64,7 @@ class HomeAnalistaPage extends ConsumerWidget {
                     title: 'Núcleos familiares',
                     sub: 'Composición y distribución por localidad.',
                     color: AppColors.greenDark,
+                    onTap: () => _showPendingFeatureMessage(context, 'Núcleos familiares'),
                   ),
                   const SizedBox(height: 12),
                   _card(
@@ -60,6 +73,7 @@ class HomeAnalistaPage extends ConsumerWidget {
                     title: 'Condiciones de vivienda',
                     sub: 'Materiales, servicios básicos y saneamiento.',
                     color: AppColors.burgundy,
+                    onTap: () => _showPendingFeatureMessage(context, 'Condiciones de vivienda'),
                   ),
                   const SizedBox(height: 12),
                   _card(
@@ -68,6 +82,7 @@ class HomeAnalistaPage extends ConsumerWidget {
                     title: 'Salud preventiva',
                     sub: 'Tamizajes, enfermedades crónicas y toxicomanías.',
                     color: AppColors.gold,
+                    onTap: () => _showPendingFeatureMessage(context, 'Salud preventiva'),
                   ),
                 ],
               ),
@@ -84,9 +99,10 @@ class HomeAnalistaPage extends ConsumerWidget {
     required String title,
     required String sub,
     required Color color,
+    required VoidCallback onTap,
   }) => Card(
     child: InkWell(
-      onTap: () {},
+      onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -125,16 +141,13 @@ class HomeAnalistaPage extends ConsumerWidget {
       ),
     ),
   );
-
   Widget _logoutButton(BuildContext context, WidgetRef ref) => IconButton(
     tooltip: 'Cerrar sesión',
     icon: const Icon(Icons.logout_outlined),
     onPressed: () async {
       await ref.read(authViewModelProvider).logout();
       if (!context.mounted) return;
-      Navigator.of(
-        context,
-      ).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+      context.go(AppRoutes.login);
     },
   );
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Override SOLO para builds debug (Android usa el recurso de este source set
+  en vez del de src/main/res/xml cuando compilas en modo debug). Permite HTTP
+  sin cifrar para poder apuntar la app a un backend en la LAN local
+  (ej. http://192.168.x.x:8001) durante desarrollo/pruebas. Los builds
+  release siguen usando src/main/res/xml/network_security_config.xml, que
+  exige HTTPS para api-sums.troy.engineer.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

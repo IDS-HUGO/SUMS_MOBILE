@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
-
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/theme_mode_menu_button.dart';
 
 class HomeAdminPage extends ConsumerWidget {
   const HomeAdminPage({super.key});
-
   void _showPendingFeatureMessage(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -24,13 +24,11 @@ class HomeAdminPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authViewModelProvider);
     final userName = auth.session?.user.nombreUsuario ?? 'administrador';
-
     return Scaffold(
       appBar: _buildAppBar(context, ref),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // Cabecera de rol
             SliverToBoxAdapter(
               child: _RolHeader(
                 userName: userName,
@@ -39,8 +37,6 @@ class HomeAdminPage extends ConsumerWidget {
                 icon: Icons.admin_panel_settings_outlined,
               ),
             ),
-
-            // Sección: gestión
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               sliver: SliverToBoxAdapter(
@@ -60,56 +56,53 @@ class HomeAdminPage extends ConsumerWidget {
                     label: 'Usuarios',
                     detail: 'Gestión de cuentas y roles',
                     color: AppColors.rolAdmin,
-                    onTap: () =>
-                        Navigator.pushNamed(context, AppRoutes.adminUsers),
+                    onTap: () => context.push(AppRoutes.adminUsers),
                   ),
                   _AdminActionCard(
                     icon: Icons.local_hospital_outlined,
                     label: 'Unidades',
                     detail: 'Unidades de salud registradas',
                     color: AppColors.green,
-                    onTap: () =>
-                        Navigator.pushNamed(context, AppRoutes.adminUnidades),
+                    onTap: () => context.push(AppRoutes.adminUnidades),
                   ),
                   _AdminActionCard(
                     icon: Icons.dataset_outlined,
                     label: 'Catálogos',
                     detail: 'Tablas y valores de referencia',
                     color: AppColors.terracota,
-                    onTap: () =>
-                        Navigator.pushNamed(context, AppRoutes.adminCatalogos),
+                    onTap: () => context.push(AppRoutes.adminCatalogos),
                   ),
                   _AdminActionCard(
                     icon: Icons.bar_chart_outlined,
                     label: 'Reportes',
                     detail: 'Análisis y exportación de datos',
                     color: AppColors.gold,
-                    onTap: () =>
-                        Navigator.pushNamed(context, AppRoutes.adminReportes),
+                    onTap: () => context.push(AppRoutes.adminReportes),
                   ),
                   _AdminActionCard(
                     icon: Icons.trending_up_outlined,
                     label: 'Productividad',
                     detail: 'Métricas por entrevistador',
                     color: AppColors.rolMedico,
-                    onTap: () => Navigator.pushNamed(
-                      context,
-                      AppRoutes.productividadAdmin,
-                    ),
+                    onTap: () => context.push(AppRoutes.productividadAdmin),
                   ),
                   _AdminActionCard(
                     icon: Icons.document_scanner_outlined,
-                    label: 'Minería OCR',
-                    detail: 'Procesamiento de cédulas PDF',
+                    label: 'Escaneo de Cédulas',
+                    detail: 'Captura automática desde PDF',
                     color: AppColors.ink,
-                    onTap: () =>
-                        Navigator.pushNamed(context, AppRoutes.adminMineria),
+                    onTap: () => context.push(AppRoutes.adminMineria),
+                  ),
+                  _AdminActionCard(
+                    icon: Icons.travel_explore,
+                    label: 'Búsqueda de Notas',
+                    detail: 'Buscar en notas de visita',
+                    color: AppColors.rolAnalista,
+                    onTap: () => context.push(AppRoutes.adminBusqueda),
                   ),
                 ],
               ),
             ),
-
-            // Sección: acceso rápido
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               sliver: SliverToBoxAdapter(
@@ -125,8 +118,7 @@ class HomeAdminPage extends ConsumerWidget {
                       icon: Icons.assignment_outlined,
                       label: 'Cédulas',
                       color: AppColors.green,
-                      onTap: () =>
-                          Navigator.pushNamed(context, AppRoutes.adminCedulas),
+                      onTap: () => context.push(AppRoutes.adminCedulas),
                     ),
                     const SizedBox(height: 8),
                     _QuickLinkRow(
@@ -171,9 +163,7 @@ class HomeAdminPage extends ConsumerWidget {
         onPressed: () async {
           await ref.read(authViewModelProvider).logout();
           if (!context.mounted) return;
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+          context.go(AppRoutes.login);
         },
       ),
       const SizedBox(width: 4),
@@ -181,21 +171,17 @@ class HomeAdminPage extends ConsumerWidget {
   );
 }
 
-// ── Cabecera de rol (compartida) ──────────────────────────────────────────────
-
 class _RolHeader extends ConsumerWidget {
   final String userName;
   final String rolLabel;
   final Color rolColor;
   final IconData icon;
-
   const _RolHeader({
     required this.userName,
     required this.rolLabel,
     required this.rolColor,
     required this.icon,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
@@ -255,7 +241,6 @@ class _RolHeader extends ConsumerWidget {
 class _SectionLabel extends ConsumerWidget {
   final String text;
   const _SectionLabel({required this.text});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Text(
@@ -270,15 +255,12 @@ class _SectionLabel extends ConsumerWidget {
   }
 }
 
-// ── Tarjeta de acción admin ───────────────────────────────────────────────────
-
 class _AdminActionCard extends ConsumerWidget {
   final IconData icon;
   final String label;
   final String detail;
   final Color color;
   final VoidCallback? onTap;
-
   const _AdminActionCard({
     required this.icon,
     required this.label,
@@ -286,14 +268,12 @@ class _AdminActionCard extends ConsumerWidget {
     required this.color,
     this.onTap,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = isDark ? AppColors.greenLight : AppColors.greenDark;
     final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
-
     return Material(
       color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
@@ -303,7 +283,9 @@ class _AdminActionCard extends ConsumerWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
+            border: Border.all(
+              color: theme.dividerTheme.color ?? AppColors.line,
+            ),
           ),
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -331,10 +313,7 @@ class _AdminActionCard extends ConsumerWidget {
                   ),
                   Text(
                     detail,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: mutedColor,
-                    ),
+                    style: TextStyle(fontSize: 11, color: mutedColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -353,20 +332,17 @@ class _QuickLinkRow extends ConsumerWidget {
   final String label;
   final Color color;
   final VoidCallback? onTap;
-
   const _QuickLinkRow({
     required this.icon,
     required this.label,
     required this.color,
     this.onTap,
   });
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final inkColor = isDark ? Colors.white : AppColors.ink;
-
     return Material(
       color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(AppDimens.radiusM),
@@ -377,7 +353,9 @@ class _QuickLinkRow extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimens.radiusM),
-            border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
+            border: Border.all(
+              color: theme.dividerTheme.color ?? AppColors.line,
+            ),
           ),
           child: Row(
             children: [

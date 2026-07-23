@@ -10,18 +10,14 @@ class OcrResultModel extends OcrResult {
     required super.campos,
     required super.resumen,
   });
-
   factory OcrResultModel.fromJson(Map<String, dynamic> json) {
-    // Parsea el mapa de campos
     final camposJson = json['campos'] as Map<String, dynamic>? ?? {};
     final camposMap = <String, OcrField>{};
-
     camposJson.forEach((key, value) {
       if (value is Map<String, dynamic>) {
         camposMap[key] = OcrFieldModel.fromJson(key, value);
       }
     });
-
     return OcrResultModel(
       docId: json['doc_id']?.toString() ?? '',
       archivoOriginal: json['archivo_original']?.toString() ?? '',
@@ -30,7 +26,6 @@ class OcrResultModel extends OcrResult {
       resumen: OcrSummaryModel.fromJson(json['resumen'] ?? {}),
     );
   }
-
   static int? _asInt(dynamic v) {
     if (v == null) return null;
     if (v is int) return v;
@@ -45,7 +40,6 @@ class OcrFieldModel extends OcrField {
     required super.confidence,
     required super.needsReview,
   });
-
   factory OcrFieldModel.fromJson(String key, Map<String, dynamic> json) {
     return OcrFieldModel(
       key: key,
@@ -54,7 +48,6 @@ class OcrFieldModel extends OcrField {
       needsReview: json['needs_review'] == true,
     );
   }
-
   static double? _asDouble(dynamic v) {
     if (v == null) return null;
     if (v is double) return v;
@@ -68,14 +61,12 @@ class OcrSummaryModel extends OcrSummary {
     required super.totalCampos,
     required super.necesitanRevision,
   });
-
   factory OcrSummaryModel.fromJson(Map<String, dynamic> json) {
     return OcrSummaryModel(
       totalCampos: _asInt(json['total_campos']) ?? 0,
       necesitanRevision: _asInt(json['necesitan_revision']) ?? 0,
     );
   }
-
   static int? _asInt(dynamic v) {
     if (v == null) return null;
     if (v is int) return v;

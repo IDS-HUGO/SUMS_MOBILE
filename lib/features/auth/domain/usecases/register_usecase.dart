@@ -1,11 +1,9 @@
 import '../entities/auth_session.dart';
 import '../repositories/auth_repository.dart';
 
-/// Caso de uso: registrar nuevo usuario y autenticarlo de inmediato.
 class RegisterUseCase {
   final AuthRepository repository;
   const RegisterUseCase(this.repository);
-
   Future<AuthSession> call({
     required String nombreUsuario,
     required String contrasena,
