@@ -76,9 +76,7 @@ class CedulaSuccessSheet extends ConsumerWidget {
     }
     final authVm = ref.read(authViewModelProvider);
     final user = authVm.session?.user;
-    if (user == null ||
-        user.entrevistadorId == null ||
-        user.entrevistadorId! <= 0) {
+    if (user == null) {
       context.pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -124,7 +122,7 @@ class CedulaSuccessSheet extends ConsumerWidget {
     final integrantesVm = ref.read(integrantesViewModelProvider);
     final payload = {
       "unidad_salud_id": user.unidadSaludId,
-      "entrevistador_id": user.entrevistadorId,
+      "entrevistador_id": user.id,
       "fecha_registro": DateTime.now().toIso8601String().split('T')[0],
       "estado": "sincronizada",
       "observaciones": familiaVm.observaciones.text.trim(),

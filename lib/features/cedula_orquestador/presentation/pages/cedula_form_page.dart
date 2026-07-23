@@ -126,9 +126,7 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
     }
     final authVm = ref.read(authViewModelProvider);
     final user = authVm.session?.user;
-    if (user == null ||
-        user.entrevistadorId == null ||
-        user.entrevistadorId! <= 0) {
+    if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
@@ -174,7 +172,7 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
     final integrantesVm = ref.read(integrantesViewModelProvider);
     final payload = {
       "unidad_salud_id": user.unidadSaludId,
-      "entrevistador_id": user.entrevistadorId,
+      "entrevistador_id": user.id,
       "fecha_registro": DateTime.now().toIso8601String().split('T')[0],
       "estado": "borrador",
       "observaciones": familiaVm.observaciones.text.trim(),

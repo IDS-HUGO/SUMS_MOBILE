@@ -5,10 +5,10 @@ class ApiEndpoints {
   );
   static const mineriaBaseUrl = String.fromEnvironment(
     'MINERIA_API_BASE_URL',
-    defaultValue: 'http://my-ip:8001',
+    defaultValue: 'https://sums-mineria.troy.engineer',
   );
   static const mineriaApiKey = String.fromEnvironment(
     'MINERIA_API_KEY',
-    defaultValue: 'una-clave-larga-y-secreta',
+    defaultValue: 'v38LrNis5nouLd6XSbp38V9WtPHP08jvjWO7PJjzN-o',
   );
 }

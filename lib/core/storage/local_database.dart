@@ -13,6 +13,11 @@ class Cedulas extends Table {
   TextColumn get informanteNombre =>
       text().nullable().map(nullableEncryptedTextConverter)();
   TextColumn get familiaData => text().map(const EncryptedTextConverter())();
+
+  /// ID del usuario dueño de este registro (BUG 4 — aislamiento de sesión).
+  /// Valor 0 = registros legados migrados desde schema v1 sin propietario
+  /// asignado; serán ignorados por las consultas filtradas de cada sesión.
+  IntColumn get ownerUserId => integer().withDefault(const Constant(0))();
 }
 
 class Viviendas extends Table {
@@ -49,10 +54,21 @@ class CatalogosLocal extends Table {
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
+      onCreate: (m) async {
+        await m.createAll();
+        await customStatement('PRAGMA foreign_keys = ON');
+      },
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          // Migración v1 → v2: añadir columna ownerUserId a Cedulas.
+          // Los registros existentes quedan con ownerUserId = 0 (sin dueño).
+          await m.addColumn(cedulas, cedulas.ownerUserId);
+        }
+      },
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON');
       },

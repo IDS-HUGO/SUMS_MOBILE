@@ -6,6 +6,7 @@ import '../storage/local_database.dart';
 import '../storage/token_storage.dart';
 import '../../features/cedula_orquestador/data/datasources/local/cedula_local_datasource.dart';
 import '../../features/cedula_orquestador/data/datasources/remote/cedula_remote_datasource.dart';
+import '../../features/cedula_orquestador/data/repositories/cedula_repository_impl.dart';
 import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
 import '../network/app_logger.dart';
@@ -30,11 +31,19 @@ void callbackDispatcher() {
         final apiClient = ApiClient(client: httpClient, baseUrl: apiUrl);
         final remoteDataSource = CedulaRemoteDataSource(apiClient: apiClient);
         final tokenStorage = SecureTokenStorage();
+        // Instanciar el repositorio para que el SyncEngine pueda refrescar
+        // los catálogos de sistema antes de validar registros (Bug 2/3).
+        final cedulaRepository = CedulaRepositoryImpl(
+          remoteDataSource: remoteDataSource,
+          localDataSource: localDataSource,
+          tokenStorage: tokenStorage,
+        );
         final syncEngine = SyncEngine(
           localDataSource: localDataSource,
           remoteDataSource: remoteDataSource,
           connectivity: Connectivity(),
           tokenStorage: tokenStorage,
+          cedulaRepository: cedulaRepository,
         );
         await syncEngine.syncPendingCedulas();
         await prefs.setInt(syncConsecutiveFailuresKey, 0);
