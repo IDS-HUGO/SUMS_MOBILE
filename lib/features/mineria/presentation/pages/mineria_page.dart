@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../familia/presentation/widgets/familia_step_widget.dart';
+import '../../../vivienda/presentation/widgets/vivienda_step_widget.dart';
+import '../../domain/entities/ocr_result.dart';
 import '../../domain/entities/vacuna_aplicada.dart';
-import '../utils/mineria_validators.dart';
 import '../viewmodels/mineria_viewmodel.dart';
 
 class MineriaPage extends ConsumerStatefulWidget {
@@ -15,6 +17,17 @@ class MineriaPage extends ConsumerStatefulWidget {
 }
 
 class _MineriaPageState extends ConsumerState<MineriaPage> {
+  // Evita re-precargar en cada rebuild y, sobre todo, evita la carrera con
+  // ChangeNotifierProvider.autoDispose: si se llenan familiaViewModelProvider/
+  // viviendaViewModelProvider ANTES de que FamiliaStepWidget/ViviendaStepWidget
+  // existan (y por lo tanto antes de que haya un ref.watch activo sobre esos
+  // providers), Riverpod desecha esa instancia por falta de listeners y crea
+  // una nueva vacía en cuanto los widgets reales se montan -- los valores
+  // precargados se pierden en silencio. Por eso el precargado se dispara desde
+  // build() (mismo pase que monta los widgets reales) y se difiere con
+  // addPostFrameCallback a JUSTO DESPUÉS de que ese pase terminó de montarlos.
+  String? _prefilledDocId;
+
   @override
   void initState() {
     super.initState();
@@ -35,9 +48,117 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
     }
   }
 
+  // ─── Precarga los formularios REALES de captura (Familia/Vivienda) con lo
+  // que extrajo OCR, en vez de mantener un formulario paralelo propio.
+  // Integrantes/Vacunación no se tocan: el field_map de OCR (backend) solo
+  // cubre la página 1 (familia + vivienda), esas dos pantallas siempre se
+  // capturan a mano igual que en la captura manual normal.
+  void _prefillCedulaForms(OcrResult result) {
+    final campos = result.campos;
+    String texto(String key) => campos[key]?.value.trim() ?? '';
+    bool marcado(String key) =>
+        campos[key]?.value.trim().toLowerCase() == 'true';
+
+    String? opcionMarcada(String base, Map<String, String> sufijoANombre) {
+      for (final entry in sufijoANombre.entries) {
+        if (marcado('$base.${entry.key}')) return entry.value;
+      }
+      return null;
+    }
+
+    final familiaVm = ref.read(familiaViewModelProvider);
+    familiaVm.informanteNombre.text = texto('familia.nombre_informante');
+    familiaVm.domicilio.text = texto('familia.domicilio');
+    familiaVm.localidad.text = texto('familia.localidad');
+    familiaVm.manzana.text = texto('familia.manzana');
+    familiaVm.viviendaRef.text = texto('familia.vivienda');
+    // rol_familiar es texto libre (manuscrito) -- solo se autoselecciona si
+    // coincide razonablemente con el catálogo real; si no, se deja para que
+    // el entrevistador lo capture a mano (más confiable que forzar un match).
+    final rolTexto = texto('familia.rol_familiar').toLowerCase();
+    for (final rol in familiaVm.roles) {
+      final rolBase = rol.toLowerCase().replaceAll(RegExp(r'\(.\)'), '');
+      if (rolBase.isNotEmpty && rolTexto.contains(rolBase)) {
+        familiaVm.setRol(rol);
+        break;
+      }
+    }
+
+    final viviendaVm = ref.read(viviendaViewModelProvider);
+    final techo = opcionMarcada('vivienda.material_techo', {
+      'concreto': 'Concreto o cemento',
+      'madera': 'Madera',
+      'lamina': 'Lámina',
+      'otros': 'Otros (especifique)',
+    });
+    if (techo != null) viviendaVm.setTecho(techo);
+    final paredes = opcionMarcada('vivienda.material_paredes', {
+      'concreto': 'Concreto o cemento',
+      'madera': 'Madera',
+      'lamina': 'Lámina',
+      'otros': 'Otros (especifique)',
+    });
+    if (paredes != null) viviendaVm.setParedes(paredes);
+    final piso = opcionMarcada('vivienda.material_piso', {
+      'concreto': 'Concreto o cemento',
+      'madera': 'Madera',
+      'tierra': 'Tierra',
+      'otros': 'Otros (especifique)',
+    });
+    if (piso != null) viviendaVm.setPiso(piso);
+    if (campos.containsKey('vivienda.numero_cuartos')) {
+      viviendaVm.cuartos.text = texto('vivienda.numero_cuartos');
+    }
+    if (campos.containsKey('vivienda.numero_habitantes')) {
+      viviendaVm.habitantes.text = texto('vivienda.numero_habitantes');
+    }
+    viviendaVm.setAguaEntubada(marcado('vivienda.agua_entubada.si'));
+    viviendaVm.setEnergiaElect(marcado('vivienda.energia_electrica.si'));
+    viviendaVm.setCoccionLena(marcado('vivienda.cocina_lena.si'));
+    final cocina = opcionMarcada('vivienda.cocina_ubicacion', {
+      'fuera_dormitorio': 'Fuera del dormitorio',
+      'dentro_dormitorio': 'Dentro del dormitorio',
+    });
+    if (cocina != null) viviendaVm.setCocina(cocina);
+    final excretas = opcionMarcada('vivienda.excretas', {
+      'wc': 'WC',
+      'letrina': 'Letrina',
+      'ras_suelo': 'Al ras de suelo',
+    });
+    if (excretas != null) viviendaVm.setExcretas(excretas);
+    viviendaVm.setAlcantarillado(marcado('vivienda.red_alcantarillado.si'));
+    viviendaVm.setFosaSeptica(marcado('vivienda.fosa_septica.si'));
+    viviendaVm.setPerrosGatos(marcado('vivienda.perros_gatos_dentro.si'));
+    viviendaVm.setAnimVacunas(marcado('vivienda.mascotas_vacunas.si'));
+    viviendaVm.setEsterilizados(marcado('vivienda.mascotas_esterilizadas.si'));
+    const animalSufijoANombre = {
+      'aves_corral': 'Aves de corral',
+      'bovinos': 'Bovinos',
+      'porcinos': 'Porcinos',
+      'otros': 'Otros',
+    };
+    for (final entry in animalSufijoANombre.entries) {
+      if (marcado('vivienda.animales.${entry.key}')) {
+        viviendaVm.toggleOtroAnimal(entry.value);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = ref.watch(mineriaViewModelProvider);
+
+    // Se dispara en el MISMO pase de build que va a montar FamiliaStepWidget/
+    // ViviendaStepWidget más abajo (ver _buildResults) -- para cuando el
+    // callback corra, esos widgets ya están observando sus providers.
+    final result = vm.result;
+    if (result != null && _prefilledDocId != result.docId) {
+      _prefilledDocId = result.docId;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _prefillCedulaForms(result);
+      });
+    }
+
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
@@ -224,30 +345,9 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: Text(
-                    'CAMPOS EXTRAÍDOS (EDITE SI ES NECESARIO)',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.muted,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final key = vm.controllers.keys.elementAt(index);
-                    final controller = vm.controllers[key];
-                    return _FieldCard(fieldKey: key, controller: controller);
-                  }, childCount: vm.controllers.length),
-                ),
-              ),
+              SliverToBoxAdapter(child: _buildConfidenceBanner(res)),
+              const SliverToBoxAdapter(child: FamiliaStepWidget()),
+              const SliverToBoxAdapter(child: ViviendaStepWidget()),
               const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(20, 24, 20, 8),
@@ -352,7 +452,8 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
   }
 
   Future<void> _handleSave(MineriaViewModel vm) async {
-    final success = await vm.guardarCambios();
+    final viviendaPayload = ref.read(viviendaViewModelProvider).toPayload();
+    final success = await vm.guardarCambios(viviendaPayload);
     if (!mounted) return;
     if (success) {
       if (vm.nivelRiesgo != null) {
@@ -485,6 +586,79 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
     );
   }
 
+  // Los widgets reales de captura (Familia/Vivienda) no tienen badge de
+  // confianza por campo (los usa también la captura manual, que no tiene ese
+  // dato) -- en su lugar, se lista aquí qué campos marcó OCR para revisar.
+  Widget _buildConfidenceBanner(OcrResult res) {
+    final bajaConfianza = res.campos.entries
+        .where((e) => e.value.needsReview)
+        .toList();
+    if (bajaConfianza.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                size: 16,
+                color: AppColors.warning,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '${bajaConfianza.length} campo(s) de baja confianza en los formularios de abajo — revíselos con cuidado',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    color: AppColors.warning,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final e in bajaConfianza)
+                Chip(
+                  label: Text(
+                    _etiquetaCampo(e.key),
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  backgroundColor: AppColors.warning.withOpacity(0.12),
+                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _etiquetaCampo(String key) {
+    const etiquetas = {
+      'familia.nombre_informante': 'Nombre del informante',
+      'familia.rol_familiar': 'Rol familiar',
+      'familia.domicilio': 'Domicilio',
+      'familia.localidad': 'Localidad',
+      'familia.manzana': 'Manzana',
+      'familia.vivienda': 'Vivienda',
+    };
+    return etiquetas[key] ?? key.split('.').last.replaceAll('_', ' ');
+  }
+
   Widget _buildInfoRow(String label, String value, {Color? color}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -508,98 +682,6 @@ class _MineriaPageState extends ConsumerState<MineriaPage> {
                 color: color ?? AppColors.ink,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FieldCard extends StatelessWidget {
-  final String fieldKey;
-  final TextEditingController? controller;
-  const _FieldCard({required this.fieldKey, this.controller});
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final mutedColor = isDark ? Colors.grey[400] : AppColors.muted;
-    final label = fieldKey
-        .toUpperCase()
-        .replaceAll('.', ' > ')
-        .replaceAll('_', ' ');
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              color: mutedColor,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextFormField(
-            controller: controller,
-            validator: (value) => MineriaValidators.validate(fieldKey, value),
-            decoration: InputDecoration(
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 12,
-                horizontal: 12,
-              ),
-              filled: true,
-              fillColor: theme.canvasColor.withOpacity(0.3),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color:
-                      theme.dividerTheme.color?.withOpacity(0.5) ??
-                      AppColors.line.withOpacity(0.5),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(
-                  color: AppColors.green,
-                  width: 1.5,
-                ),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.error, width: 1),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(
-                  color: AppColors.error,
-                  width: 1.5,
-                ),
-              ),
-              hintText: 'Pendiente de capturar...',
-              hintStyle: const TextStyle(color: AppColors.subtle, fontSize: 13),
-            ),
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: theme.textTheme.bodyLarge?.color ?? AppColors.ink,
-            ),
-            maxLines: null,
-            textInputAction: TextInputAction.next,
           ),
         ],
       ),

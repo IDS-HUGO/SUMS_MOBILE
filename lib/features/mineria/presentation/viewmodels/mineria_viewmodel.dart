@@ -38,8 +38,6 @@ class MineriaViewModel extends ChangeNotifier {
   List<String> dosisOpts = [];
   final List<VacunaAplicada> vacunasSeleccionadas = [];
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final Map<String, TextEditingController> _controllers = {};
-  final Map<String, List<String>> _groupRegistry = {};
   MineriaStatus get status => _status;
   bool get healthOk => _healthOk;
   OcrResult? get result => _result;
@@ -51,7 +49,6 @@ class MineriaViewModel extends ChangeNotifier {
   String? get motivoPrioridad => _motivoPrioridad;
   bool get isLoading => _status == MineriaStatus.loading;
   bool get isSaving => _status == MineriaStatus.saving;
-  Map<String, TextEditingController> get controllers => _controllers;
   Future<void> init() async {
     _healthOk = await checkSaludUseCase();
     if (!hasListeners) return;
@@ -130,49 +127,11 @@ class MineriaViewModel extends ChangeNotifier {
       AppLogger.info(
         'MineriaOCR: Extraídos ${_result?.campos.length ?? 0} campos.',
       );
-      _initControllers();
       _status = MineriaStatus.success;
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
     }
-  }
-
-  void _initControllers() {
-    _disposeControllers();
-    _groupRegistry.clear();
-    if (_result == null) return;
-    final sortedKeys = _result!.campos.keys.toList()..sort();
-    for (var key in sortedKeys) {
-      final field = _result!.campos[key]!;
-      String value = field.value.trim();
-      final lowerValue = value.toLowerCase();
-      final cleanKey = key.toLowerCase();
-      if (cleanKey.contains('material_') ||
-          cleanKey.contains('manejo_excretas') ||
-          cleanKey.contains('tenencia')) {
-        final baseKey = _getBaseKey(cleanKey);
-        _groupRegistry.putIfAbsent(baseKey, () => []).add(key);
-      }
-      if (lowerValue == 'true') {
-        value = key.split('.').last.replaceAll('_', ' ').toUpperCase();
-      } else if (lowerValue == 'false' || lowerValue == '[vacío]') {
-        value = '';
-      }
-      if (value.contains('%')) {
-        value = value.split(RegExp(r'\d+%')).first.trim();
-      }
-      _controllers[key] = TextEditingController(text: value);
-    }
-  }
-
-  String _getBaseKey(String key) {
-    if (key.contains('material_techo')) return 'material_techo';
-    if (key.contains('material_paredes')) return 'material_paredes';
-    if (key.contains('material_piso')) return 'material_piso';
-    if (key.contains('manejo_excretas')) return 'manejo_excretas';
-    final parts = key.split('.');
-    return parts.length > 1 ? parts[parts.length - 2] : parts[0];
   }
 
   void addVacuna() {
@@ -191,7 +150,11 @@ class MineriaViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> guardarCambios() async {
+  /// [viviendaPayload] es el resultado de `ViviendaViewModel.toPayload()` --
+  /// el MISMO formulario/estado que usa la captura manual real de cédula
+  /// (ver FamiliaStepWidget/ViviendaStepWidget en mineria_page.dart), no un
+  /// formulario paralelo propio de esta pantalla.
+  Future<bool> guardarCambios(Map<String, dynamic> viviendaPayload) async {
     if (_result == null) return false;
     if (!(formKey.currentState?.validate() ?? false)) {
       _setError('Por favor, corrija los errores en el formulario.');
@@ -201,8 +164,9 @@ class MineriaViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       final payload = <String, dynamic>{
-        "numero_cuartos": 2,
-        "numero_habitantes": 4,
+        // Features que ni OCR ni el formulario de Vivienda capturan hoy
+        // (vienen de Integrantes/estilo de vida, fuera del alcance de esta
+        // pantalla) -- se envían con un valor neutro razonable.
         "personas_por_cuarto": 2.0,
         "count_enfermedades_cronicas": 0,
         "count_toxicomanias": 0,
@@ -212,85 +176,41 @@ class MineriaViewModel extends ChangeNotifier {
         "ingreso_nivel": 2,
         "escolaridad_promedio": 2.0,
         "total_integrantes": 4,
-        "material_techo": "Concreto o cemento",
-        "material_paredes": "Concreto o cemento",
-        "material_piso": "Concreto o cemento",
-        "manejo_excretas": "WC",
-        "cocina_ubicacion": "fuera_del_dormitorio",
-        "agua_entubada": true,
-        "energia_electrica": true,
-        "cocina_con_lena": false,
-        "red_alcantarillado": true,
-        "fosa_septica": false,
         "vacunacion_completa": true,
         "seguridad_social_jefe": false,
-        // Banderas de grupos vulnerables (grupos_vulnerables.py en el backend):
-        // no son features del modelo ML, se combinan con el nivel de riesgo
-        // para decidir prioridad_visita. Sin un formulario dedicado en la app
-        // para capturarlas todavía, se envían en false por defecto (mismo
-        // comportamiento que tenía el endpoint antes de que existieran).
         "tiene_embarazada": false,
         "tiene_menor_1_anio": false,
         "tiene_menor_5_sin_vacunas": false,
         "tiene_adulto_mayor_solo": false,
-        // 5ta bandera (riesgo zoonótico): mascota en la vivienda sin
-        // vacunación al corriente. Igual que las 4 anteriores, no hay
-        // formulario dedicado todavía para capturarla, se envía en false.
-        "tiene_mascota_sin_vacunar": false,
       };
-      _controllers.forEach((key, controller) {
-        final value = controller.text.trim();
-        final upperValue = value.toUpperCase();
-        final cleanKey = key.toLowerCase();
-        if (cleanKey.contains('numero_cuartos')) {
-          payload['numero_cuartos'] = int.tryParse(value) ?? 2;
-        }
-        if (cleanKey.contains('numero_habitantes')) {
-          payload['numero_habitantes'] = int.tryParse(value) ?? 4;
-        }
-        if (cleanKey.contains('agua_entubada.si') && value.isNotEmpty) {
-          payload['agua_entubada'] = true;
-        }
-        if (cleanKey.contains('agua_entubada.no') && value.isNotEmpty) {
-          payload['agua_entubada'] = false;
-        }
-        if (cleanKey.contains('energia_electrica.si') && value.isNotEmpty) {
-          payload['energia_electrica'] = true;
-        }
-        if (cleanKey.contains('energia_electrica.no') && value.isNotEmpty) {
-          payload['energia_electrica'] = false;
-        }
-        if (cleanKey.contains('material_techo') && value.isNotEmpty) {
-          if (upperValue.contains('CONCRETO')) {
-            payload['material_techo'] = 'Concreto o cemento';
-          } else if (upperValue.contains('LAMINA')) {
-            payload['material_techo'] = 'Lámina';
-          } else if (upperValue.contains('MADERA')) {
-            payload['material_techo'] = 'Madera';
-          }
-        }
-        if (cleanKey.contains('material_paredes') && value.isNotEmpty) {
-          if (upperValue.contains('CONCRETO')) {
-            payload['material_paredes'] = 'Concreto o cemento';
-          } else if (upperValue.contains('MADERA')) {
-            payload['material_paredes'] = 'Madera';
-          }
-        }
-        if (cleanKey.contains('material_piso') && value.isNotEmpty) {
-          if (upperValue.contains('CONCRETO')) {
-            payload['material_piso'] = 'Concreto o cemento';
-          } else if (upperValue.contains('TIERRA')) {
-            payload['material_piso'] = 'Tierra';
-          }
-        }
-        if (cleanKey.contains('manejo_excretas') && value.isNotEmpty) {
-          if (upperValue.contains('WC')) {
-            payload['manejo_excretas'] = 'WC';
-          } else if (upperValue.contains('LETRINA')) {
-            payload['manejo_excretas'] = 'Letrina';
-          }
-        }
-      });
+
+      final numeroCuartos = viviendaPayload['cuartos'] as int?;
+      final numeroHabitantes = viviendaPayload['habitantes'] as int?;
+      payload['numero_cuartos'] = numeroCuartos ?? 2;
+      payload['numero_habitantes'] = numeroHabitantes ?? 4;
+      payload['material_techo'] =
+          viviendaPayload['techo'] ?? 'Concreto o cemento';
+      payload['material_paredes'] =
+          viviendaPayload['paredes'] ?? 'Concreto o cemento';
+      payload['material_piso'] =
+          viviendaPayload['piso'] ?? 'Concreto o cemento';
+      payload['manejo_excretas'] = viviendaPayload['excretas'] ?? 'WC';
+      payload['cocina_ubicacion'] = viviendaPayload['cocina'] == 'Dentro del dormitorio'
+          ? 'dentro_del_dormitorio'
+          : 'fuera_del_dormitorio';
+      payload['agua_entubada'] = viviendaPayload['agua_entubada'] ?? true;
+      payload['energia_electrica'] = viviendaPayload['energia_electrica'] ?? true;
+      payload['cocina_con_lena'] = viviendaPayload['coccion_lena'] ?? false;
+      payload['red_alcantarillado'] = viviendaPayload['red_alcantarillado'] ?? true;
+      payload['fosa_septica'] = viviendaPayload['fosa_septica'] ?? false;
+
+      // Riesgo zoonótico: mascota en la vivienda (perros/gatos) sin vacunas
+      // al corriente. "animales_vacunas" en el formulario real significa
+      // "SÍ tienen vacunas al corriente", por eso se niega.
+      final tieneMascotas = viviendaPayload['perros_gatos'] == true;
+      final mascotasVacunadas = viviendaPayload['animales_vacunas'] == true;
+      payload['tiene_mascota_sin_vacunar'] = tieneMascotas && !mascotasVacunadas;
+
       payload['vacunas'] = vacunasSeleccionadas
           .where((v) => v.isValid)
           .map((v) => v.toJson())
@@ -328,7 +248,6 @@ class MineriaViewModel extends ChangeNotifier {
     _prioridadVisita = null;
     _motivoPrioridad = null;
     vacunasSeleccionadas.clear();
-    _disposeControllers();
     notifyListeners();
   }
 
@@ -336,18 +255,5 @@ class MineriaViewModel extends ChangeNotifier {
     _status = MineriaStatus.error;
     _errorMessage = message;
     notifyListeners();
-  }
-
-  void _disposeControllers() {
-    for (var controller in _controllers.values) {
-      controller.dispose();
-    }
-    _controllers.clear();
-  }
-
-  @override
-  void dispose() {
-    _disposeControllers();
-    super.dispose();
   }
 }
