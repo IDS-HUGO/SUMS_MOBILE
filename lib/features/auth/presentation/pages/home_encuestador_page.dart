@@ -331,9 +331,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
         onPressed: () async {
           await ref.read(authViewModelProvider).logout();
           if (!context.mounted) return;
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+          context.go(AppRoutes.login);
         },
       ),
       const SizedBox(width: 4),

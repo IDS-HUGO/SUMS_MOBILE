@@ -93,6 +93,13 @@ class HomeAdminPage extends ConsumerWidget {
                     color: AppColors.ink,
                     onTap: () => context.push(AppRoutes.adminMineria),
                   ),
+                  _AdminActionCard(
+                    icon: Icons.travel_explore,
+                    label: 'Búsqueda de Notas',
+                    detail: 'Buscar en notas de visita',
+                    color: AppColors.rolAnalista,
+                    onTap: () => context.push(AppRoutes.adminBusqueda),
+                  ),
                 ],
               ),
             ),
@@ -156,9 +163,7 @@ class HomeAdminPage extends ConsumerWidget {
         onPressed: () async {
           await ref.read(authViewModelProvider).logout();
           if (!context.mounted) return;
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+          context.go(AppRoutes.login);
         },
       ),
       const SizedBox(width: 4),
