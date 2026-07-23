@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const green = Color(0xff006657);
-  static const greenDark = Color(0xff073b34);
-  static const greenLight = Color(0xff4a9e8e);
+  static const green = Color(0xff006455);
+  static const greenDark = Color(0xff00473a);
+  static const greenLight = Color(0xff1b8875);
   static const terracota = Color(0xff9b4f2e);
   static const gold = Color(0xffbc955c);
   static const burgundy = Color(0xff691c32);
