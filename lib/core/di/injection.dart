@@ -16,6 +16,7 @@ import '../../features/integrantes/di/integrantes_injection.dart';
 import '../../features/admin/di/admin_injection.dart';
 import '../../features/estadisticas/di/estadisticas_injection.dart';
 import '../../features/mineria/di/mineria_injection.dart';
+import '../../features/busqueda/di/busqueda_injection.dart';
 
 final sl = GetIt.instance;
 Future<void> initInjection(SharedPreferences prefs) async {
@@ -42,6 +43,7 @@ Future<void> initInjection(SharedPreferences prefs) async {
   registerAdminDependencies(sl);
   registerEstadisticasDependencies(sl);
   registerMineriaDependencies(sl);
+  registerBusquedaDependencies(sl);
 }
 
 Future<void> disposeInjection() async {

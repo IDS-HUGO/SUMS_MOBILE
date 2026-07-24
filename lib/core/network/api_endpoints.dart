@@ -5,10 +5,10 @@ class ApiEndpoints {
   );
   static const mineriaBaseUrl = String.fromEnvironment(
     'MINERIA_API_BASE_URL',
-    defaultValue: 'http://192.168.100.6:8001',
+    defaultValue: 'http://my-ip:8001',
   );
   static const mineriaApiKey = String.fromEnvironment(
     'MINERIA_API_KEY',
-    defaultValue: 'tu_clave_secreta_aqui',
+    defaultValue: 'una-clave-larga-y-secreta',
   );
 }

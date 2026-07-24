@@ -21,6 +21,7 @@ import '../../features/estadisticas/presentation/pages/productividad_admin_page.
 import '../../features/cedula_orquestador/presentation/pages/cedula_form_page.dart';
 import '../../features/cedula_orquestador/presentation/pages/pending_captures_page.dart';
 import '../../features/cedula_orquestador/presentation/pages/cedula_history_page.dart';
+import '../../features/busqueda/presentation/pages/busqueda_page.dart';
 
 class AppRoutes {
   static const login = '/login';
@@ -40,6 +41,7 @@ class AppRoutes {
   static const productividadAdmin = '/admin/productividad_admin';
   static const adminCedulas = '/admin/cedulas';
   static const adminMineria = '/admin/mineria';
+  static const adminBusqueda = '/admin/busqueda';
   static const adminUnidadForm = '/admin/unidades/form';
   static const adminUserForm = '/admin/users/form';
 }
@@ -63,7 +65,12 @@ final GoRouter appRouter = GoRouter(
     }
 
     if (state.matchedLocation.startsWith('/admin')) {
-      if (authViewModel.role != UserRole.admin) {
+      final allowedRoles = [UserRole.admin];
+      if (state.matchedLocation == AppRoutes.adminMineria) {
+        allowedRoles.add(UserRole.encuestador);
+      }
+      
+      if (!allowedRoles.contains(authViewModel.role)) {
         return authViewModel.homeRoute;
       }
     }
@@ -134,6 +141,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.adminMineria,
       builder: (context, state) => const MineriaPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.adminBusqueda,
+      builder: (context, state) => const BusquedaPage(),
     ),
     GoRoute(
       path: AppRoutes.adminUnidadForm,

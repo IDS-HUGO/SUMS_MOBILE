@@ -127,7 +127,7 @@ class CedulaSuccessSheet extends ConsumerWidget {
       "entrevistador_id": user.entrevistadorId,
       "fecha_registro": DateTime.now().toIso8601String().split('T')[0],
       "estado": "sincronizada",
-      "observaciones": "Captura completa desde app móvil",
+      "observaciones": familiaVm.observaciones.text.trim(),
       "familia": familiaVm.toPayload(),
       "vivienda": viviendaVm.toPayload(),
       "vacunacion": vacunasVm.toPayload(),
