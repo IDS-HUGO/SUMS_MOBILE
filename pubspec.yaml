@@ -2,8 +2,8 @@ name: sums
 description: "Sistema de Captura Operativa SUMS"
 publish_to: 'none'
 
-# 🚀 El cambio vital: subimos de +1 a +2 para que Google Play lo acepte
-version: 1.0.0+2
+# 🚀 El cambio vital: subimos de version para que Google Play lo acepte como nueva version en un sig deploy
+version: 2.1.0+1
 
 environment:
   sdk: ^3.12.0

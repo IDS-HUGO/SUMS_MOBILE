@@ -179,7 +179,7 @@ class _CedulaHistoryCard extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Sincronizado correctamente'),
-                          backgroundColor: Colors.green,
+                          backgroundColor: AppColors.green,
                         ),
                       );
                     } else {

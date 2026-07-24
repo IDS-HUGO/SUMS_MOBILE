@@ -27,7 +27,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
   bool _wasOffline = false;
   bool _showBanner = false;
   String _bannerMessage = '';
-  Color _bannerColor = Colors.green;
+  Color _bannerColor = AppColors.green;
   Timer? _bannerTimer;
 
   @override
@@ -193,7 +193,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
                                           content: Text(
                                             '✅ ${result.synced} cédula(s) sincronizadas correctamente',
                                           ),
-                                          backgroundColor: Colors.green,
+                                          backgroundColor: AppColors.green,
                                         ),
                                       );
                                     } else if (result.failed > 0) {
@@ -501,49 +501,46 @@ class _MetricsRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Transform.translate(
-      offset: const Offset(0, -16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _MetricCard(
-                  value: isLoading ? '...' : '$cedulasHoy',
-                  label: 'Hoy',
-                  icon: Icons.assignment_turned_in_outlined,
-                  color: AppColors.green,
-                ),
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _MetricCard(
+                value: isLoading ? '...' : '$cedulasHoy',
+                label: 'Hoy',
+                icon: Icons.assignment_turned_in_outlined,
+                color: AppColors.green,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _MetricCard(
-                  value: isLoading ? '...' : '$cedulasSemana',
-                  label: 'Semana',
-                  icon: Icons.calendar_view_week_outlined,
-                  color: AppColors.terracota,
-                ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _MetricCard(
+                value: isLoading ? '...' : '$cedulasSemana',
+                label: 'Semana',
+                icon: Icons.calendar_view_week_outlined,
+                color: AppColors.terracota,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _MetricCard(
-                  value: isLoading ? '...' : '$mes',
-                  label: 'Mes',
-                  icon: Icons.calendar_month_outlined,
-                  color: AppColors.gold,
-                ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _MetricCard(
+                value: isLoading ? '...' : '$mes',
+                label: 'Mes',
+                icon: Icons.calendar_month_outlined,
+                color: AppColors.gold,
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          _MetricCardFullWidth(
-            value: isLoading ? '...' : '$total',
-            label: 'Total histórico desde su alta',
-            icon: Icons.history_edu_outlined,
-            color: AppColors.greenDark,
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _MetricCardFullWidth(
+          value: isLoading ? '...' : '$total',
+          label: 'Total histórico desde su alta',
+          icon: Icons.history_edu_outlined,
+          color: AppColors.greenDark,
+        ),
+      ],
     );
   }
 }

@@ -45,3 +45,8 @@ app.*.map.json
 /android/app/release
 
 devtools_options.yaml
+
+# Firmas de Release y Contraseñas (Peligroso subir)
+key.properties
+*.jks
+*.keystore

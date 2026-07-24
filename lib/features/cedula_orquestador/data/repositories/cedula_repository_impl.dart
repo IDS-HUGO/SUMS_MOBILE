@@ -92,6 +92,13 @@ class CedulaRepositoryImpl implements CedulaRepository {
     }
   }
 
+  /// Lee el ID del usuario autenticado actualmente. Devuelve 0 si no hay
+  /// sesión activa, lo que resultará en consultas vacías (sin fuga de datos).
+  Future<int> _currentUserId() async {
+    final session = await tokenStorage.readSession();
+    return session?.user.id ?? 0;
+  }
+
   @override
   Future<Map<String, dynamic>> submitCapturaCompleta(
     Map<String, dynamic> body, {
@@ -99,7 +106,12 @@ class CedulaRepositoryImpl implements CedulaRepository {
   }) async {
     if (isDraft) {
       if (localDataSource != null) {
-        final localId = await localDataSource!.saveCedula(body, 0);
+        final userId = await _currentUserId();
+        final localId = await localDataSource!.saveCedula(
+          body,
+          0,
+          userId: userId,
+        );
         return {
           'cedula_id': null,
           '_local_id': localId,
@@ -117,7 +129,12 @@ class CedulaRepositoryImpl implements CedulaRepository {
         'Fallo red, guardando localmente. (OWASP MASVS-STORAGE-3)',
       );
       if (localDataSource != null) {
-        final localId = await localDataSource!.saveCedula(body, 1);
+        final userId = await _currentUserId();
+        final localId = await localDataSource!.saveCedula(
+          body,
+          1,
+          userId: userId,
+        );
         return {
           'cedula_id': null,
           '_local_id': localId,
@@ -152,7 +169,8 @@ class CedulaRepositoryImpl implements CedulaRepository {
   @override
   Future<int> getPendingSyncCount() async {
     if (localDataSource != null) {
-      return await localDataSource!.countCedulasByStatus(1);
+      final userId = await _currentUserId();
+      return await localDataSource!.countCedulasByStatus(1, userId: userId);
     }
     return 0;
   }
@@ -160,7 +178,8 @@ class CedulaRepositoryImpl implements CedulaRepository {
   @override
   Future<int> getDraftCount() async {
     if (localDataSource != null) {
-      return await localDataSource!.countCedulasByStatus(0);
+      final userId = await _currentUserId();
+      return await localDataSource!.countCedulasByStatus(0, userId: userId);
     }
     return 0;
   }
@@ -168,7 +187,8 @@ class CedulaRepositoryImpl implements CedulaRepository {
   @override
   Future<List<Map<String, dynamic>>> getAllLocalCedulas() async {
     if (localDataSource != null) {
-      return await localDataSource!.getAllCedulas();
+      final userId = await _currentUserId();
+      return await localDataSource!.getAllCedulas(userId: userId);
     }
     return [];
   }
@@ -178,7 +198,11 @@ class CedulaRepositoryImpl implements CedulaRepository {
     if (localDataSource == null) {
       return const SyncResult(error: 'Sin almacenamiento local');
     }
-    final pending = await localDataSource!.getCedulasByStatus(1);
+    final userId = await _currentUserId();
+    final pending = await localDataSource!.getCedulasByStatus(
+      1,
+      userId: userId,
+    );
     if (pending.isEmpty) return const SyncResult(synced: 0, failed: 0);
     final token = await tokenStorage.readToken();
     int synced = 0;
@@ -207,7 +231,11 @@ class CedulaRepositoryImpl implements CedulaRepository {
   Future<SyncResult> syncSingleCedula(int localId) async {
     if (localDataSource == null)
       return const SyncResult(error: 'Sin almacenamiento local');
-    final allPending = await localDataSource!.getCedulasByStatus(1);
+    final userId = await _currentUserId();
+    final allPending = await localDataSource!.getCedulasByStatus(
+      1,
+      userId: userId,
+    );
     final record = allPending.firstWhere(
       (r) => r['_localId'] == localId,
       orElse: () => {},
@@ -231,6 +259,69 @@ class CedulaRepositoryImpl implements CedulaRepository {
       }
       await localDataSource!.updateSyncStatus(localId, 1, error: errorMsg);
       return SyncResult(failed: 1, error: errorMsg);
+    }
+  }
+
+  /// Descarga y persiste los catálogos de sistema (`entrevistador` y
+  /// `unidad-salud`) necesarios para que el SyncEngine pueda validar las
+  /// referencias de cada cédula pendiente antes de subirla.
+  ///
+  /// Falla silenciosamente ante errores de red para no bloquear al usuario.
+  @override
+  Future<bool> refreshUserCatalogs() async {
+    if (localDataSource == null) return false;
+    const systemCatalogs = ['entrevistador', 'unidad-salud'];
+    try {
+      final token = await tokenStorage.readToken();
+      for (final catalogKey in systemCatalogs) {
+        try {
+          final response = await remoteDataSource.getCatalog(
+            catalogKey,
+            token: token,
+          );
+          final list = response
+              .whereType<Map<String, dynamic>>()
+              .map(CatalogItem.fromJson)
+              .toList();
+          final jsonStr = jsonEncode(
+            list
+                .map(
+                  (e) => {
+                    'id': e.id,
+                    'nombre': e.nombre,
+                    'descripcion': e.descripcion,
+                  },
+                )
+                .toList(),
+          );
+          await (localDataSource!.db.delete(
+            localDataSource!.db.catalogosLocal,
+          )..where((tbl) => tbl.tipo.equals(catalogKey))).go();
+          await localDataSource!.db
+              .into(localDataSource!.db.catalogosLocal)
+              .insert(
+                CatalogosLocalCompanion.insert(
+                  tipo: catalogKey,
+                  jsonList: jsonStr,
+                  updatedAt: DateTime.now(),
+                ),
+                mode: InsertMode.insertOrReplace,
+              );
+          AppLogger.info(
+            'CedulaRepository: catálogo "$catalogKey" refrescado '
+            '(${list.length} entradas).',
+          );
+        } catch (e) {
+          // Fallo en un catálogo individual: se registra pero no detiene los demás.
+          AppLogger.warn(
+            'CedulaRepository: no se pudo refrescar catálogo "$catalogKey": $e',
+          );
+        }
+      }
+      return true;
+    } catch (e) {
+      AppLogger.warn('CedulaRepository: refreshUserCatalogs falló: $e');
+      return false;
     }
   }
 }

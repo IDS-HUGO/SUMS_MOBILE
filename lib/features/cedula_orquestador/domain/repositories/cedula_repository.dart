@@ -20,6 +20,13 @@ abstract class CedulaRepository {
   Future<List<Map<String, dynamic>>> getAllLocalCedulas();
   Future<SyncResult> syncPendingCedulas();
   Future<SyncResult> syncSingleCedula(int localId);
+
+  /// Descarga y persiste en SQLite los catálogos de sistema que el
+  /// SyncEngine necesita para validar referencias antes de sincronizar
+  /// (actualmente `entrevistador` y `unidad-salud`).
+  /// Es silencioso ante fallos de red: devuelve false si no pudo refrescar,
+  /// true si completó exitosamente.
+  Future<bool> refreshUserCatalogs();
 }
 
 class SyncResult {

@@ -76,9 +76,7 @@ class CedulaSuccessSheet extends ConsumerWidget {
     }
     final authVm = ref.read(authViewModelProvider);
     final user = authVm.session?.user;
-    if (user == null ||
-        user.entrevistadorId == null ||
-        user.entrevistadorId! <= 0) {
+    if (user == null) {
       context.pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -96,6 +94,18 @@ class CedulaSuccessSheet extends ConsumerWidget {
         SnackBar(
           content: const Text(
             'ID de unidad de salud inválido. No se puede guardar la cédula.',
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+    if (user.entrevistadorId == null || user.entrevistadorId! <= 0) {
+      context.pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'ID de entrevistador inválido. No se puede guardar la cédula.',
           ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),

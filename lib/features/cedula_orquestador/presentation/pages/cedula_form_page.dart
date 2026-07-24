@@ -126,9 +126,7 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
     }
     final authVm = ref.read(authViewModelProvider);
     final user = authVm.session?.user;
-    if (user == null ||
-        user.entrevistadorId == null ||
-        user.entrevistadorId! <= 0) {
+    if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
@@ -145,6 +143,18 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
         SnackBar(
           content: const Text(
             'ID de unidad de salud inválido. No se puede guardar borrador.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+    if (user.entrevistadorId == null || user.entrevistadorId! <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'ID de entrevistador inválido. No se puede guardar borrador.',
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Theme.of(context).colorScheme.error,
