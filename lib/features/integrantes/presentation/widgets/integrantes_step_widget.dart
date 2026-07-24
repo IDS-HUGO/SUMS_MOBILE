@@ -72,6 +72,7 @@ class IntegrantesStepWidget extends ConsumerWidget {
                 freqSaludOpts: vm.freqSaludOpts,
                 toxicomaniasOpts: vm.toxicomaniasOpts,
                 cronicasOpts: vm.cronicasOpts,
+                discapacidadOpts: vm.discapacidadOpts,
                 toggleSet: vm.toggleSet,
               ),
             ),
@@ -103,7 +104,8 @@ class _MemberCard extends ConsumerWidget {
       tamizajeOpts,
       freqSaludOpts,
       toxicomaniasOpts,
-      cronicasOpts;
+      cronicasOpts,
+      discapacidadOpts;
   final void Function(Set<String>, String) toggleSet;
   const _MemberCard({
     required this.index,
@@ -122,6 +124,7 @@ class _MemberCard extends ConsumerWidget {
     required this.freqSaludOpts,
     required this.toxicomaniasOpts,
     required this.cronicasOpts,
+    required this.discapacidadOpts,
     required this.toggleSet,
   });
   @override
@@ -414,7 +417,7 @@ class _MemberCard extends ConsumerWidget {
                             (v) {
                               form.discapacidad = v;
                               if (!v) {
-                                form.tipoDisc.clear();
+                                form.tipoDisc = null;
                               }
                               onChanged();
                             },
@@ -423,13 +426,16 @@ class _MemberCard extends ConsumerWidget {
                         if (form.discapacidad)
                           SizedBox(
                             width: w,
-                            child: SumsTextField(
-                              controller: form.tipoDisc,
+                            child: _select(
                               label: 'Tipo de discapacidad',
                               icon: Icons.accessible_forward_outlined,
+                              value: form.tipoDisc,
+                              options: discapacidadOpts,
+                              onChanged: (v) {
+                                form.tipoDisc = v;
+                                onChanged();
+                              },
                               validator: requiredText,
-                              maxLength: 80,
-                              inputFormatters: freeTextInputFormatters,
                             ),
                           ),
                       ],
@@ -694,8 +700,12 @@ class _MemberCard extends ConsumerWidget {
     String? Function(String?)? validator,
   }) => DropdownButtonFormField<String>(
     isExpanded: true,
-    initialValue: value,
-    decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
+    value: value,
+    decoration: InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      alignLabelWithHint: true,
+    ),
     items: options
         .map(
           (o) => DropdownMenuItem(
@@ -704,7 +714,10 @@ class _MemberCard extends ConsumerWidget {
           ),
         )
         .toList(),
-    onChanged: onChanged,
+    onChanged: (val) {
+      FocusManager.instance.primaryFocus?.unfocus();
+      onChanged(val);
+    },
     validator: validator,
   );
   Widget _daysField(TextEditingController c, String label) => SumsTextField(
@@ -730,7 +743,10 @@ class _MemberCard extends ConsumerWidget {
         ButtonSegment(value: false, label: Text('No')),
       ],
       selected: {value},
-      onSelectionChanged: (s) => onChange(s.first),
+      onSelectionChanged: (s) {
+        FocusScope.of(context).unfocus();
+        onChange(s.first);
+      },
     ),
   );
   Widget _chipGroup(

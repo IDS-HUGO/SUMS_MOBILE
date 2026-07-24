@@ -150,6 +150,18 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
       );
       return;
     }
+    if (user.entrevistadorId == null || user.entrevistadorId! <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'ID de entrevistador inválido. No se puede guardar borrador.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
     bool isValid = true;
     for (var key in _formKeys) {
       if (!key.currentState!.validate()) isValid = false;
@@ -172,7 +184,7 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
     final integrantesVm = ref.read(integrantesViewModelProvider);
     final payload = {
       "unidad_salud_id": user.unidadSaludId,
-      "entrevistador_id": user.id,
+      "entrevistador_id": user.entrevistadorId,
       "fecha_registro": DateTime.now().toIso8601String().split('T')[0],
       "estado": "borrador",
       "observaciones": familiaVm.observaciones.text.trim(),

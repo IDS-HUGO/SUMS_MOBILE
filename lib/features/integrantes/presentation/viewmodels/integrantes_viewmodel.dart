@@ -11,7 +11,6 @@ class MemberForm extends ChangeNotifier {
   final TextEditingController frutasVerd = TextEditingController();
   final TextEditingController cereales = TextEditingController();
   final TextEditingController otraSust = TextEditingController();
-  final TextEditingController tipoDisc = TextEditingController();
   final TextEditingController fechaCervico = TextEditingController();
   final TextEditingController fechaMama = TextEditingController();
   final TextEditingController motivoSalud = TextEditingController();
@@ -24,7 +23,8 @@ class MemberForm extends ChangeNotifier {
       embarazo,
       tamizajeCervico,
       tamizajeMama,
-      frecuenciaSalud;
+      frecuenciaSalud,
+      tipoDisc;
   bool alfabetizacion = false;
   bool seguridadSocial = false;
   bool higiene = false;
@@ -43,7 +43,6 @@ class MemberForm extends ChangeNotifier {
     frutasVerd.dispose();
     cereales.dispose();
     otraSust.dispose();
-    tipoDisc.dispose();
     fechaCervico.dispose();
     fechaMama.dispose();
     motivoSalud.dispose();
@@ -68,6 +67,7 @@ class IntegrantesViewModel extends ChangeNotifier {
   List<String> freqSaludOpts = [];
   List<String> toxicomaniasOpts = [];
   List<String> cronicasOpts = [];
+  List<String> discapacidadOpts = [];
   final List<MemberForm> _integrantes = [];
   List<MemberForm> get integrantes => _integrantes;
   IntegrantesViewModel({required this.repository}) {
@@ -87,6 +87,7 @@ class IntegrantesViewModel extends ChangeNotifier {
         repository.getCatalogOpts('frecuencia-servicio-salud'),
         repository.getCatalogOpts('toxicomania'),
         repository.getCatalogOpts('enfermedad-cronica'),
+        repository.getCatalogOpts('discapacidad'),
       ]);
       rolesOpts = results[0];
       sexoOpts = ['Masculino', 'Femenino'];
@@ -99,11 +100,53 @@ class IntegrantesViewModel extends ChangeNotifier {
       freqSaludOpts = results[6];
       toxicomaniasOpts = results[7];
       cronicasOpts = results[8];
+      
+      // Catálogo local de discapacidades más comunes en México y Chiapas (Suchiapa)
+      // Se define en el front para evitar dependencia de endpoint inexistente.
+      discapacidadOpts = [
+        'Física / Motriz',
+        'Visual',
+        'Auditiva',
+        'Intelectual',
+        'Psicosocial (Mental)',
+        'Habla / Comunicación',
+        'Cuidado Personal',
+        'Múltiple',
+        'Otra'
+      ];
+
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
     } catch (e) {
       _errorMessage = e.toString();
+
+      rolesOpts = ['Madre', 'Padre', 'Hijo(a)'];
+      sexoOpts = ['Masculino', 'Femenino'];
+      edoCivilOpts = ['Soltero(a)', 'Casado(a)'];
+      lenguaOpts = ['Español', 'Indígena'];
+      escolaridadOpts = ['Primaria', 'Secundaria', 'Preparatoria'];
+      ingresoOpts = ['No recibe ingresos', 'Menos de 1 salario'];
+      embarazoOpts = ['Ninguno', 'En control'];
+      tamizajeOpts = ['Sí', 'No', 'No aplica'];
+      freqSaludOpts = ['Nunca', 'Anual'];
+      toxicomaniasOpts = ['Ninguna', 'Alcohol'];
+      cronicasOpts = ['Ninguna', 'Diabetes'];
+      discapacidadOpts = [
+        'Física / Motriz',
+        'Visual',
+        'Auditiva',
+        'Intelectual',
+        'Psicosocial (Mental)',
+        'Habla / Comunicación',
+        'Cuidado Personal',
+        'Múltiple',
+        'Otra'
+      ];
+      if (_integrantes.isEmpty) {
+        addMemberForm();
+      }
+
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -191,7 +234,7 @@ class IntegrantesViewModel extends ChangeNotifier {
         "seguridad_social": i.seguridadSocial,
         "higiene": i.higiene,
         "discapacidad": i.discapacidad,
-        "tipoDiscapacidad": i.discapacidad ? _trimmedOrNull(i.tipoDisc) : null,
+        "tipoDiscapacidad": i.discapacidad ? i.tipoDisc : null,
         "proteina": int.tryParse(i.proteina.text.trim()),
         "frutasVerduras": int.tryParse(i.frutasVerd.text.trim()),
         "cereales": int.tryParse(i.cereales.text.trim()),
