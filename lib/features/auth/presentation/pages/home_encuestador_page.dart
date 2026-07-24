@@ -123,7 +123,7 @@ class _HomeEncuestadorPageState extends ConsumerState<HomeEncuestadorPage> {
 
                   // ── Métricas ────────────────────────────────────────────────────
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
                     sliver: SliverToBoxAdapter(
                       child: _MetricsRow(
                         cedulasHoy: estadisticas.resumen?.hoy ?? 0,
