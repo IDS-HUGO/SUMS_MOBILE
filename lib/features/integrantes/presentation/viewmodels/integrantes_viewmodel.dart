@@ -101,7 +101,9 @@ class IntegrantesViewModel extends ChangeNotifier {
       toxicomaniasOpts = results[7];
       cronicasOpts = results[8];
       discapacidadOpts = results[9];
-      sexoOpts = results[10];
+      sexoOpts = results[10].isNotEmpty
+          ? results[10]
+          : const ['Masculino', 'Femenino', 'Otro'];
       tamizajeOpts = results[11];
 
       if (_integrantes.isEmpty) {
@@ -109,6 +111,9 @@ class IntegrantesViewModel extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = e.toString();
+      if (sexoOpts.isEmpty) {
+        sexoOpts = const ['Masculino', 'Femenino', 'Otro'];
+      }
       if (_integrantes.isEmpty) {
         addMemberForm();
       }

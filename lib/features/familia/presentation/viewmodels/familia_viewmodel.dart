@@ -34,9 +34,15 @@ class FamiliaViewModel extends ChangeNotifier {
         repository.getCatalog('sexo'),
       ]);
       roles = results[0].map((e) => e.nombre).toList();
-      sexoOpts = results[1].map((e) => e.nombre).toList();
+      final loadedSexo = results[1].map((e) => e.nombre).toList();
+      sexoOpts = loadedSexo.isNotEmpty
+          ? loadedSexo
+          : const ['Masculino', 'Femenino', 'Otro'];
     } catch (e) {
       errorMessage = e.toString();
+      if (sexoOpts.isEmpty) {
+        sexoOpts = const ['Masculino', 'Femenino', 'Otro'];
+      }
     } finally {
       isLoadingRoles = false;
       notifyListeners();
