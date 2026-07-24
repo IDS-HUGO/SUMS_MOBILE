@@ -47,4 +47,20 @@ class CedulaRemoteDataSource {
   }) {
     return apiClient.patch(path, body: body, token: token);
   }
+
+  Future<Map<String, dynamic>> getCedulaById(int id, {String? token}) {
+    return apiClient.get('/cedulas/$id', token: token);
+  }
+
+  Future<Map<String, dynamic>> putCedula(
+    int id,
+    Map<String, dynamic> body, {
+    String? token,
+  }) {
+    return apiClient.put('/cedulas/$id', body: body, token: token);
+  }
+
+  Future<Map<String, dynamic>> deleteCedula(int id, {String? token}) {
+    return apiClient.delete('/cedulas/$id', token: token);
+  }
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../cedula_orquestador/domain/entities/catalog_item.dart';
 import '../viewmodels/admin_catalogos_viewmodel.dart';
 
 class AdminCatalogosPage extends ConsumerStatefulWidget {
@@ -96,6 +97,116 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
       nombreController.dispose();
       descController.dispose();
     });
+  }
+
+  void _showEditDialog(BuildContext context, AdminCatalogosViewModel vm, CatalogItem item) {
+    if (_selectedCatalog == null) return;
+    final nombreController = TextEditingController(text: item.nombre);
+    final descController = TextEditingController(text: item.descripcion);
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('Editar en $_selectedCatalog'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nombreController,
+                decoration: const InputDecoration(labelText: 'Nombre / Valor'),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: descController,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción (Opcional)',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => ctx.pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final nombre = nombreController.text.trim();
+                if (nombre.isEmpty) return;
+                ctx.pop();
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(child: CircularProgressIndicator()),
+                );
+                final success = await vm.updateCatalogItem(
+                  _selectedCatalog!,
+                  item.id,
+                  nombre,
+                  descController.text.trim(),
+                );
+                if (!mounted) return;
+                context.pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success ? 'Actualizado exitosamente' : (vm.errorMessage ?? 'Error'),
+                    ),
+                    backgroundColor: success ? AppColors.green : Colors.red,
+                  ),
+                );
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    ).then((_) {
+      nombreController.dispose();
+      descController.dispose();
+    });
+  }
+
+  void _confirmDelete(BuildContext context, AdminCatalogosViewModel vm, CatalogItem item) {
+    if (_selectedCatalog == null) return;
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Confirmar Eliminación'),
+          content: Text('¿Estás seguro de que deseas eliminar "${item.nombre}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => ctx.pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () async {
+                ctx.pop();
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(child: CircularProgressIndicator()),
+                );
+                final success = await vm.deleteCatalogItem(_selectedCatalog!, item.id);
+                if (!mounted) return;
+                context.pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success ? 'Eliminado exitosamente' : (vm.errorMessage ?? 'Error'),
+                    ),
+                    backgroundColor: success ? AppColors.green : Colors.red,
+                  ),
+                );
+              },
+              child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -191,7 +302,32 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
               color: AppColors.terracota,
             ),
             title: Text(item.nombre),
-            subtitle: Text('ID: ${item.id}'),
+            subtitle: Text(item.descripcion != null && item.descripcion!.isNotEmpty 
+                ? 'ID: ${item.id} | ${item.descripcion}' 
+                : 'ID: ${item.id}'),
+            trailing: PopupMenuButton<String>(
+              onSelected: (val) {
+                if (val == 'edit') {
+                  _showEditDialog(context, vm, item);
+                } else if (val == 'delete') {
+                  _confirmDelete(context, vm, item);
+                }
+              },
+              itemBuilder: (ctx) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [Icon(Icons.edit, size: 20), SizedBox(width: 8), Text('Editar')],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [Icon(Icons.delete, color: Colors.red, size: 20), SizedBox(width: 8), Text('Eliminar', style: TextStyle(color: Colors.red))],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
