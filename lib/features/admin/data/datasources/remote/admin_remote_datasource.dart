@@ -63,4 +63,21 @@ class AdminRemoteDataSource {
   }) async {
     return apiClient.post('/catalogos/$catalogName', body: body, token: token);
   }
+
+  Future<Map<String, dynamic>> updateCatalogItem(
+    String catalogName,
+    int id,
+    Map<String, dynamic> body, {
+    String? token,
+  }) async {
+    return apiClient.put('/catalogos/$catalogName/$id', body: body, token: token);
+  }
+
+  Future<Map<String, dynamic>> deleteCatalogItem(
+    String catalogName,
+    int id, {
+    String? token,
+  }) async {
+    return apiClient.delete('/catalogos/$catalogName/$id', token: token);
+  }
 }

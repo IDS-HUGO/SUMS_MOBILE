@@ -39,22 +39,21 @@ class ViviendaViewModel extends ChangeNotifier {
       isLoadingCatalogs = true;
       notifyListeners();
       final futures = await Future.wait([
-        repository.getCatalog('material'),
-        repository.getCatalog('material'),
+        repository.getCatalog('material_muro_techo'),
+        repository.getCatalog('material_piso'),
         repository.getCatalog('manejo-excretas'),
         repository.getCatalog('animal'),
+        repository.getCatalog('ubicacion_cocina'),
       ]);
       matTechoParedesOpts = futures[0]
-          .where((e) => e.nombre != 'Tierra')
           .map((e) => e.nombre)
           .toList();
       matPisoOpts = futures[1]
-          .where((e) => e.nombre != 'Lámina')
           .map((e) => e.nombre)
           .toList();
-      cocinasOpts = ['Fuera del dormitorio', 'Dentro del dormitorio'];
       excretasOpts = futures[2].map((e) => e.nombre).toList();
       otrosAnimalesOpts = futures[3].map((e) => e.nombre).toList();
+      cocinasOpts = futures[4].map((e) => e.nombre).toList();
     } catch (e) {
       errorMessage = e.toString();
     } finally {

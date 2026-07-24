@@ -23,20 +23,8 @@ class CedulaRepositoryImpl implements CedulaRepository {
       final token = await tokenStorage.readToken();
       return await remoteDataSource.getCatalogKeys(token: token);
     } catch (e) {
-      return [
-        'parentesco',
-        'estado-civil',
-        'lengua',
-        'escolaridad',
-        'ingreso-salarial',
-        'atencion-embarazo',
-        'frecuencia-servicio-salud',
-        'toxicomania',
-        'enfermedad-cronica',
-        'material',
-        'manejo-excretas',
-        'animal',
-      ];
+      AppLogger.error('Error obteniendo catalog keys: $e');
+      return [];
     }
   }
 
@@ -346,6 +334,42 @@ class CedulaRepositoryImpl implements CedulaRepository {
     } catch (e) {
       AppLogger.error('Error fetching remote cedulas: $e');
       rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getRemoteCedulaById(int id) async {
+    final token = await tokenStorage.readToken();
+    try {
+      final response = await remoteDataSource.getCedulaById(id, token: token);
+      return response;
+    } catch (e) {
+      AppLogger.error('Error fetching remote cedula by id: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> updateRemoteCedula(int id, Map<String, dynamic> body) async {
+    final token = await tokenStorage.readToken();
+    try {
+      await remoteDataSource.putCedula(id, body, token: token);
+      return true;
+    } catch (e) {
+      AppLogger.error('Error updating remote cedula: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> deleteRemoteCedula(int id) async {
+    final token = await tokenStorage.readToken();
+    try {
+      await remoteDataSource.deleteCedula(id, token: token);
+      return true;
+    } catch (e) {
+      AppLogger.error('Error deleting remote cedula: $e');
+      return false;
     }
   }
 }

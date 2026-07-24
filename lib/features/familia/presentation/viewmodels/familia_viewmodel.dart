@@ -19,6 +19,7 @@ class FamiliaViewModel extends ChangeNotifier {
 
   String? rolInformante;
   List<String> roles = [];
+  List<String> sexoOpts = [];
   bool isLoadingRoles = true;
   String? errorMessage;
   FamiliaViewModel({required this.repository}) {
@@ -28,8 +29,12 @@ class FamiliaViewModel extends ChangeNotifier {
     try {
       isLoadingRoles = true;
       notifyListeners();
-      final items = await repository.getCatalog('parentesco');
-      roles = items.map((e) => e.nombre).toList();
+      final results = await Future.wait([
+        repository.getCatalog('parentesco'),
+        repository.getCatalog('sexo'),
+      ]);
+      roles = results[0].map((e) => e.nombre).toList();
+      sexoOpts = results[1].map((e) => e.nombre).toList();
     } catch (e) {
       errorMessage = e.toString();
     } finally {

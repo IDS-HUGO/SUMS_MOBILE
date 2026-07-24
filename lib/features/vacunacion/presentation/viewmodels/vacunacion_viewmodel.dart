@@ -56,8 +56,6 @@ class VacunacionViewModel extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = e.toString();
-      _vacunasOpts = ['Influenza estacional', 'COVID-19', 'Otra'];
-      _dosisOpts = ['Única', '1era', '2da', '3era', 'Refuerzo'];
       if (_vacunas.isEmpty) {
         addVaccineForm();
       }
@@ -65,6 +63,11 @@ class VacunacionViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> retryInit() async {
+    _errorMessage = null;
+    await _init();
   }
 
   void addVaccineForm() {

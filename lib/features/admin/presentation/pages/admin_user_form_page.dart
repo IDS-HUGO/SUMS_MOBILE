@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../../cedula_orquestador/domain/entities/catalog_item.dart';
 import '../viewmodels/admin_users_viewmodel.dart';
 import '../viewmodels/admin_unidades_viewmodel.dart';
 
@@ -21,6 +22,11 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
   final _passwordController = TextEditingController();
   int _selectedRol = 3;
   int? _selectedUnidadId;
+
+  List<CatalogItem> _roles = [];
+  bool _isLoadingRoles = true;
+  String? _rolesError;
+
   @override
   void initState() {
     super.initState();
@@ -31,7 +37,37 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(adminUnidadesViewModelProvider).fetchUnidades();
+      _loadRoles();
     });
+  }
+
+  Future<void> _loadRoles() async {
+    try {
+      final catalogosVm = ref.read(adminCatalogosViewModelProvider);
+      final repo = catalogosVm.repository;
+      final rolesCatalog = await repo.getCatalog('roles');
+      if (mounted) {
+        setState(() {
+          _roles = rolesCatalog;
+          _isLoadingRoles = false;
+          // If no user is being edited and roles loaded,
+          // default to the first available role if current default not in list
+          if (widget.user == null && _roles.isNotEmpty) {
+            final ids = _roles.map((r) => r.id).toSet();
+            if (!ids.contains(_selectedRol)) {
+              _selectedRol = _roles.last.id; // default to last (lowest privilege)
+            }
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _rolesError = e.toString();
+          _isLoadingRoles = false;
+        });
+      }
+    }
   }
 
   @override
@@ -148,20 +184,39 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<int>(
-                  value: _selectedRol,
-                  decoration: const InputDecoration(
-                    labelText: 'Rol del Sistema',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 1, child: Text('Administrador')),
-                    DropdownMenuItem(value: 2, child: Text('Médico')),
-                    DropdownMenuItem(value: 4, child: Text('Encuestador')),
-                    DropdownMenuItem(value: 3, child: Text('Analista')),
-                  ],
-                  onChanged: (v) => setState(() => _selectedRol = v!),
-                ),
+                _isLoadingRoles
+                    ? const Center(child: CircularProgressIndicator())
+                    : _roles.isEmpty && _rolesError != null
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                'Error al cargar roles: $_rolesError',
+                                style: const TextStyle(color: Colors.red, fontSize: 12),
+                              ),
+                              const SizedBox(height: 8),
+                              OutlinedButton.icon(
+                                onPressed: _loadRoles,
+                                icon: const Icon(Icons.refresh, size: 16),
+                                label: const Text('Reintentar'),
+                              ),
+                            ],
+                          )
+                        : DropdownButtonFormField<int>(
+                            value: _roles.any((r) => r.id == _selectedRol) ? _selectedRol : null,
+                            decoration: const InputDecoration(
+                              labelText: 'Rol del Sistema',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: _roles.map((role) {
+                              return DropdownMenuItem<int>(
+                                value: role.id,
+                                child: Text(role.nombre),
+                              );
+                            }).toList(),
+                            onChanged: (v) => setState(() => _selectedRol = v!),
+                            validator: (v) => v == null ? 'Selecciona un rol' : null,
+                          ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
                   value: _selectedUnidadId,

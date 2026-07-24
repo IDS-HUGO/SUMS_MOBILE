@@ -281,6 +281,25 @@ class CedulaViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> deleteRemoteCedula(int id) async {
+    _setLoading();
+    try {
+      final success = await cedulaRepository.deleteRemoteCedula(id);
+      if (success) {
+        _status = CedulaStatus.success;
+        _successMessage = 'Cédula $id eliminada correctamente';
+        notifyListeners();
+        return true;
+      } else {
+        _setError('No se pudo eliminar la cédula (posible dependencia de llaves foráneas)');
+        return false;
+      }
+    } catch (error) {
+      _setError(error);
+      return false;
+    }
+  }
+
   Map<String, dynamic> _clean(Map<String, dynamic> body) {
     final cleaned = <String, dynamic>{};
     for (final entry in body.entries) {
