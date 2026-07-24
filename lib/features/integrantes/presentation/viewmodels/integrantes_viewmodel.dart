@@ -120,6 +120,7 @@ class IntegrantesViewModel extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = e.toString();
+
       rolesOpts = ['Madre', 'Padre', 'Hijo(a)'];
       sexoOpts = ['Masculino', 'Femenino'];
       edoCivilOpts = ['Soltero(a)', 'Casado(a)'];
@@ -145,10 +146,16 @@ class IntegrantesViewModel extends ChangeNotifier {
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
+
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> retryInit() async {
+    _errorMessage = null;
+    await _init();
   }
 
   void addMemberForm() {

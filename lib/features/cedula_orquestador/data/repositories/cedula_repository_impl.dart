@@ -77,6 +77,7 @@ class CedulaRepositoryImpl implements CedulaRepository {
       }
       return list;
     } catch (e) {
+      AppLogger.error('Error obteniendo catálogo $key desde API: $e');
       if (localDataSource != null) {
         final localResult = await (localDataSource!.db.select(
           localDataSource!.db.catalogosLocal,
@@ -322,6 +323,29 @@ class CedulaRepositoryImpl implements CedulaRepository {
     } catch (e) {
       AppLogger.warn('CedulaRepository: refreshUserCatalogs falló: $e');
       return false;
+    }
+  }
+
+  @override
+  Future<PaginatedCedulas> getRemoteCedulas({int page = 1, int limit = 50, String search = ''}) async {
+    try {
+      final token = await tokenStorage.readToken();
+      final response = await remoteDataSource.getAllCedulas(token: token, page: page, limit: limit, search: search);
+      
+      final dataList = (response['data'] as List?)
+          ?.whereType<Map<String, dynamic>>()
+          .map(CedulaListItem.fromJson)
+          .toList() ?? [];
+          
+      return PaginatedCedulas(
+        data: dataList,
+        total: response['total'] ?? 0,
+        page: response['page'] ?? 1,
+        totalPages: response['totalPages'] ?? 1,
+      );
+    } catch (e) {
+      AppLogger.error('Error fetching remote cedulas: $e');
+      rethrow;
     }
   }
 }

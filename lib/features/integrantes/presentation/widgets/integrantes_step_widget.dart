@@ -27,9 +27,20 @@ class IntegrantesStepWidget extends ConsumerWidget {
     }
     if (vm.errorMessage != null) {
       return Center(
-        child: Text(
-          'Error cargando catálogos: ${vm.errorMessage}',
-          style: const TextStyle(color: Colors.red),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Error cargando catálogos: ${vm.errorMessage}',
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => ref.read(integrantesViewModelProvider).retryInit(),
+              child: const Text('Reintentar'),
+            ),
+          ],
         ),
       );
     }

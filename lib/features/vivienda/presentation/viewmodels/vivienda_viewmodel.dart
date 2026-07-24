@@ -57,31 +57,15 @@ class ViviendaViewModel extends ChangeNotifier {
       otrosAnimalesOpts = futures[3].map((e) => e.nombre).toList();
     } catch (e) {
       errorMessage = e.toString();
-      matTechoParedesOpts = [
-        'Concreto o cemento',
-        'Madera',
-        'Lámina',
-        'Otros (especifique)',
-      ];
-      matPisoOpts = [
-        'Concreto o cemento',
-        'Madera',
-        'Tierra',
-        'Otros (especifique)',
-      ];
-      cocinasOpts = ['Fuera del dormitorio', 'Dentro del dormitorio'];
-      excretasOpts = ['WC', 'Letrina', 'Al ras de suelo'];
-      otrosAnimalesOpts = [
-        'Aves de corral',
-        'Bovinos',
-        'Porcinos',
-        'Otros',
-        'NA',
-      ];
     } finally {
       isLoadingCatalogs = false;
       notifyListeners();
     }
+  }
+
+  Future<void> retryInit() async {
+    errorMessage = null;
+    await _loadCatalogs();
   }
 
   void setTecho(String? value) {
