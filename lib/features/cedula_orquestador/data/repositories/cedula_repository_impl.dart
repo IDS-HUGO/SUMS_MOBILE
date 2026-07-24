@@ -77,6 +77,13 @@ class CedulaRepositoryImpl implements CedulaRepository {
               .toList();
         }
       }
+      if (key == 'sexo') {
+        return const [
+          CatalogItem(id: 1, nombre: 'Masculino'),
+          CatalogItem(id: 2, nombre: 'Femenino'),
+          CatalogItem(id: 3, nombre: 'Otro'),
+        ];
+      }
       return [];
     }
   }

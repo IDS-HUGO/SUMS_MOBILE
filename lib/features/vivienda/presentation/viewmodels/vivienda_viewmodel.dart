@@ -39,8 +39,8 @@ class ViviendaViewModel extends ChangeNotifier {
       isLoadingCatalogs = true;
       notifyListeners();
       final futures = await Future.wait([
-        repository.getCatalog('material_muro_techo'),
-        repository.getCatalog('material_piso'),
+        repository.getCatalog('material'),
+        repository.getCatalog('material'),
         repository.getCatalog('manejo-excretas'),
         repository.getCatalog('animal'),
         repository.getCatalog('ubicacion_cocina'),
