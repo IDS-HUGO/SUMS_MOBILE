@@ -104,24 +104,15 @@ class IntegrantesViewModel extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = e.toString();
-      rolesOpts = ['Madre', 'Padre', 'Hijo(a)'];
-      sexoOpts = ['Masculino', 'Femenino'];
-      edoCivilOpts = ['Soltero(a)', 'Casado(a)'];
-      lenguaOpts = ['Español', 'Indígena'];
-      escolaridadOpts = ['Primaria', 'Secundaria', 'Preparatoria'];
-      ingresoOpts = ['No recibe ingresos', 'Menos de 1 salario'];
-      embarazoOpts = ['Ninguno', 'En control'];
-      tamizajeOpts = ['Sí', 'No', 'No aplica'];
-      freqSaludOpts = ['Nunca', 'Anual'];
-      toxicomaniasOpts = ['Ninguna', 'Alcohol'];
-      cronicasOpts = ['Ninguna', 'Diabetes'];
-      if (_integrantes.isEmpty) {
-        addMemberForm();
-      }
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> retryInit() async {
+    _errorMessage = null;
+    await _init();
   }
 
   void addMemberForm() {

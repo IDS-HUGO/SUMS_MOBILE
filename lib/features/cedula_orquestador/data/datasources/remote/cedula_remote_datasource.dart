@@ -12,6 +12,11 @@ class CedulaRemoteDataSource {
     return apiClient.getList('/catalogos/$key', token: token);
   }
 
+  Future<Map<String, dynamic>> getAllCedulas({String? token, int page = 1, int limit = 50, String search = ''}) {
+    final query = '?page=$page&limit=$limit&search=${Uri.encodeQueryComponent(search)}';
+    return apiClient.get('/cedulas$query', token: token);
+  }
+
   Future<Map<String, dynamic>> postCapturaCompleta(
     Map<String, dynamic> body, {
     String? token,
