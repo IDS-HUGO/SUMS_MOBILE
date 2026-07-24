@@ -100,6 +100,18 @@ class CedulaSuccessSheet extends ConsumerWidget {
       );
       return;
     }
+    if (user.entrevistadorId == null || user.entrevistadorId! <= 0) {
+      context.pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'ID de entrevistador inválido. No se puede guardar la cédula.',
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
     bool isValid = true;
     for (var key in formKeys) {
       if (!key.currentState!.validate()) isValid = false;
@@ -122,7 +134,7 @@ class CedulaSuccessSheet extends ConsumerWidget {
     final integrantesVm = ref.read(integrantesViewModelProvider);
     final payload = {
       "unidad_salud_id": user.unidadSaludId,
-      "entrevistador_id": user.id,
+      "entrevistador_id": user.entrevistadorId,
       "fecha_registro": DateTime.now().toIso8601String().split('T')[0],
       "estado": "sincronizada",
       "observaciones": familiaVm.observaciones.text.trim(),
