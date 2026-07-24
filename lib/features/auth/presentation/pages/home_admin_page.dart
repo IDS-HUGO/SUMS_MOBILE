@@ -49,7 +49,7 @@ class HomeAdminPage extends ConsumerWidget {
                 crossAxisCount: 2,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                childAspectRatio: 1.4,
+                childAspectRatio: 1.1,
                 children: [
                   _AdminActionCard(
                     icon: Icons.people_outline,
