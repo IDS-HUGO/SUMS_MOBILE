@@ -88,61 +88,27 @@ class IntegrantesViewModel extends ChangeNotifier {
         repository.getCatalogOpts('toxicomania'),
         repository.getCatalogOpts('enfermedad-cronica'),
         repository.getCatalogOpts('discapacidad'),
+        repository.getCatalogOpts('sexo'),
+        repository.getCatalogOpts('tamizaje'),
       ]);
       rolesOpts = results[0];
-      sexoOpts = ['Masculino', 'Femenino'];
       edoCivilOpts = results[1];
       lenguaOpts = results[2];
       escolaridadOpts = results[3];
       ingresoOpts = results[4];
       embarazoOpts = results[5];
-      tamizajeOpts = ['Sí', 'No', 'No aplica'];
       freqSaludOpts = results[6];
       toxicomaniasOpts = results[7];
       cronicasOpts = results[8];
-      
-      // Catálogo local de discapacidades más comunes en México y Chiapas (Suchiapa)
-      // Se define en el front para evitar dependencia de endpoint inexistente.
-      discapacidadOpts = [
-        'Física / Motriz',
-        'Visual',
-        'Auditiva',
-        'Intelectual',
-        'Psicosocial (Mental)',
-        'Habla / Comunicación',
-        'Cuidado Personal',
-        'Múltiple',
-        'Otra'
-      ];
+      discapacidadOpts = results[9];
+      sexoOpts = results[10];
+      tamizajeOpts = results[11];
 
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
     } catch (e) {
       _errorMessage = e.toString();
-
-      rolesOpts = ['Madre', 'Padre', 'Hijo(a)'];
-      sexoOpts = ['Masculino', 'Femenino'];
-      edoCivilOpts = ['Soltero(a)', 'Casado(a)'];
-      lenguaOpts = ['Español', 'Indígena'];
-      escolaridadOpts = ['Primaria', 'Secundaria', 'Preparatoria'];
-      ingresoOpts = ['No recibe ingresos', 'Menos de 1 salario'];
-      embarazoOpts = ['Ninguno', 'En control'];
-      tamizajeOpts = ['Sí', 'No', 'No aplica'];
-      freqSaludOpts = ['Nunca', 'Anual'];
-      toxicomaniasOpts = ['Ninguna', 'Alcohol'];
-      cronicasOpts = ['Ninguna', 'Diabetes'];
-      discapacidadOpts = [
-        'Física / Motriz',
-        'Visual',
-        'Auditiva',
-        'Intelectual',
-        'Psicosocial (Mental)',
-        'Habla / Comunicación',
-        'Cuidado Personal',
-        'Múltiple',
-        'Otra'
-      ];
       if (_integrantes.isEmpty) {
         addMemberForm();
       }

@@ -113,7 +113,7 @@ class FamiliaStepWidget extends ConsumerWidget {
                   label: 'Sexo del informante',
                   icon: Icons.wc_outlined,
                   value: vm.informanteSexo,
-                  options: const ['Masculino', 'Femenino'],
+                  options: vm.sexoOpts,
                   onChanged: (v) {
                     vm.setSexo(v);
                     final intVm = ref.read(integrantesViewModelProvider);
@@ -122,6 +122,7 @@ class FamiliaStepWidget extends ConsumerWidget {
                       intVm.updateForm();
                     }
                   },
+                  isLoading: vm.isLoadingRoles,
                   validator: requiredText,
                 ),
                 _select(

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../cedula_orquestador/domain/repositories/cedula_repository.dart';
 import '../../../cedula_orquestador/presentation/viewmodels/cedula_viewmodel.dart';
 
 class AdminCedulasListPage extends ConsumerStatefulWidget {
@@ -267,7 +268,41 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
             trailing: PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'edit') {
-                  context.push(AppRoutes.cedula);
+                  context.push(AppRoutes.adminCedulaDetail, extra: record.id);
+                } else if (value == 'delete') {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Eliminar Cédula'),
+                      content: Text('¿Seguro que deseas eliminar la cédula de $informante?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => ctx.pop(),
+                          child: const Text('Cancelar'),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          onPressed: () async {
+                            ctx.pop();
+                            final vm = ref.read(cedulaViewModelProvider);
+                            final success = await vm.deleteRemoteCedula(record.id);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(success ? 'Cédula eliminada' : (vm.errorMessage ?? 'Error al eliminar')),
+                                  backgroundColor: success ? AppColors.green : Colors.red,
+                                ),
+                              );
+                              if (success) {
+                                _loadRemoteCedulas(isRefresh: true);
+                              }
+                            }
+                          },
+                          child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  );
                 }
               },
               itemBuilder: (context) => [
@@ -282,6 +317,20 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
                       ),
                       SizedBox(width: 8),
                       Text('Ver / Editar Cédula'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.delete,
+                        size: 20,
+                        color: Colors.red,
+                      ),
+                      SizedBox(width: 8),
+                      Text('Eliminar', style: TextStyle(color: Colors.red)),
                     ],
                   ),
                 ),

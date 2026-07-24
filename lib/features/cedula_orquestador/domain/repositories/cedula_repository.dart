@@ -62,6 +62,9 @@ abstract class CedulaRepository {
   Future<int> getDraftCount();
   Future<List<Map<String, dynamic>>> getAllLocalCedulas();
   Future<PaginatedCedulas> getRemoteCedulas({int page = 1, int limit = 50, String search = ''});
+  Future<Map<String, dynamic>> getRemoteCedulaById(int id);
+  Future<bool> updateRemoteCedula(int id, Map<String, dynamic> body);
+  Future<bool> deleteRemoteCedula(int id);
   Future<SyncResult> syncPendingCedulas();
   Future<SyncResult> syncSingleCedula(int localId);
 

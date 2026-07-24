@@ -108,4 +108,26 @@ class AdminRepositoryImpl implements AdminRepository {
       return false;
     }
   }
+
+  @override
+  Future<bool> updateCatalogItem(String catalogName, int id, Map<String, dynamic> body) async {
+    final token = await tokenStorage.readToken();
+    try {
+      await remoteDataSource.updateCatalogItem(catalogName, id, body, token: token);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> deleteCatalogItem(String catalogName, int id) async {
+    final token = await tokenStorage.readToken();
+    try {
+      await remoteDataSource.deleteCatalogItem(catalogName, id, token: token);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

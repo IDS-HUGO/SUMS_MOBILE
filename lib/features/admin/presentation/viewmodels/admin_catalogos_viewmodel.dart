@@ -69,4 +69,59 @@ class AdminCatalogosViewModel extends ChangeNotifier {
       return false;
     }
   }
+  Future<bool> updateCatalogItem(
+    String catalogName,
+    int id,
+    String nombre,
+    String? descripcion,
+  ) async {
+    _status = AdminCatalogosStatus.loading;
+    notifyListeners();
+    try {
+      final body = {
+        'nombre': nombre,
+        if (descripcion != null && descripcion.isNotEmpty)
+          'descripcion': descripcion,
+      };
+      final success = await repository.updateCatalogItem(catalogName, id, body);
+      if (success) {
+        await fetchAllCatalogs();
+        await loadCatalogsUseCase();
+        return true;
+      } else {
+        _status = AdminCatalogosStatus.error;
+        _errorMessage = 'No se pudo actualizar la opción en el catálogo remoto';
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _status = AdminCatalogosStatus.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteCatalogItem(String catalogName, int id) async {
+    _status = AdminCatalogosStatus.loading;
+    notifyListeners();
+    try {
+      final success = await repository.deleteCatalogItem(catalogName, id);
+      if (success) {
+        await fetchAllCatalogs();
+        await loadCatalogsUseCase();
+        return true;
+      } else {
+        _status = AdminCatalogosStatus.error;
+        _errorMessage = 'No se pudo eliminar la opción en el catálogo remoto';
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _status = AdminCatalogosStatus.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
 }

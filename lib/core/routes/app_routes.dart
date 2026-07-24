@@ -14,6 +14,8 @@ import '../../features/admin/presentation/pages/admin_catalogos_page.dart';
 import '../../features/admin/presentation/pages/admin_reportes_page.dart';
 import '../../features/admin/presentation/pages/admin_productividad_page.dart';
 import '../../features/admin/presentation/pages/admin_cedulas_list_page.dart';
+import '../../features/admin/presentation/pages/admin_cedula_detail_page.dart';
+import '../../features/admin/presentation/pages/admin_cedula_form_page.dart';
 import '../../features/admin/presentation/pages/admin_unidad_form_page.dart';
 import '../../features/admin/presentation/pages/admin_user_form_page.dart';
 import '../../features/mineria/presentation/pages/mineria_page.dart';
@@ -44,6 +46,8 @@ class AppRoutes {
   static const adminBusqueda = '/admin/busqueda';
   static const adminUnidadForm = '/admin/unidades/form';
   static const adminUserForm = '/admin/users/form';
+  static const adminCedulaDetail = '/admin/cedulas/detail';
+  static const adminCedulaForm = '/admin/cedulas/form';
 }
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -158,6 +162,23 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         final user = state.extra;
         return AdminUserFormPage(user: user as dynamic);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.adminCedulaDetail,
+      builder: (context, state) {
+        final cedulaId = state.extra as int;
+        return AdminCedulaDetailPage(cedulaId: cedulaId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.adminCedulaForm,
+      builder: (context, state) {
+        final args = state.extra as Map<String, dynamic>;
+        return AdminCedulaFormPage(
+          cedulaId: args['cedulaId'] as int,
+          initialData: args['data'] as Map<String, dynamic>,
+        );
       },
     ),
   ],

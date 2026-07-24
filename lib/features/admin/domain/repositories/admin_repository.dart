@@ -16,4 +16,6 @@ abstract class AdminRepository {
   Future<List<String>> getCatalogKeys();
   Future<List<CatalogItem>> getCatalog(String key);
   Future<bool> createCatalogItem(String catalogName, Map<String, dynamic> body);
+  Future<bool> updateCatalogItem(String catalogName, int id, Map<String, dynamic> body);
+  Future<bool> deleteCatalogItem(String catalogName, int id);
 }
