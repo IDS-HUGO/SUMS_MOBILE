@@ -17,10 +17,10 @@ class _AdminCatalogosPageState extends ConsumerState<AdminCatalogosPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final vm = ref.read(adminCatalogosViewModelProvider);
-      vm.fetchAllCatalogs();
-      if (vm.catalogKeys.isNotEmpty) {
+      await vm.fetchAllCatalogs();
+      if (mounted && vm.catalogKeys.isNotEmpty) {
         setState(() {
           _selectedCatalog = vm.catalogKeys.first;
         });

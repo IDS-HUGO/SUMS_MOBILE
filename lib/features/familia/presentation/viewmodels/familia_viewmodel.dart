@@ -32,11 +32,15 @@ class FamiliaViewModel extends ChangeNotifier {
       roles = items.map((e) => e.nombre).toList();
     } catch (e) {
       errorMessage = e.toString();
-      roles = ['Madre', 'Padre', 'Hijo(a)', 'Abuelo(a)'];
     } finally {
       isLoadingRoles = false;
       notifyListeners();
     }
+  }
+
+  Future<void> retryInit() async {
+    errorMessage = null;
+    await _loadRoles();
   }
 
   void setRol(String? rol) {
