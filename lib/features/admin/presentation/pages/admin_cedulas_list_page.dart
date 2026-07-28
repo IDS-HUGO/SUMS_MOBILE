@@ -306,17 +306,17 @@ class _AdminCedulasListPageState extends ConsumerState<AdminCedulasListPage> {
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'edit',
                   child: Row(
                     children: [
                       Icon(
                         Icons.edit,
                         size: 20,
-                        color: AppColors.ink,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
-                      SizedBox(width: 8),
-                      Text('Ver / Editar Cédula'),
+                      const SizedBox(width: 8),
+                      const Text('Ver / Editar Cédula'),
                     ],
                   ),
                 ),

@@ -132,11 +132,16 @@ class _StepPanel extends ConsumerWidget {
   });
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark
+        ? Color.lerp(color, Colors.white, 0.55)!
+        : (color == AppColors.green ? AppColors.greenDark : color);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -162,9 +167,7 @@ class _StepPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: color == AppColors.green
-                          ? AppColors.greenDark
-                          : color,
+                      color: titleColor,
                     ),
                   ),
                 ),
@@ -212,11 +215,17 @@ class _VaccineCard extends ConsumerWidget {
   }
 
   Widget _buildCard(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final badgeColor = isDark
+        ? Color.lerp(AppColors.burgundy, Colors.white, 0.55)!
+        : AppColors.burgundy;
+    final mutedColor = theme.textTheme.bodySmall?.color ?? AppColors.muted;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -235,10 +244,10 @@ class _VaccineCard extends ConsumerWidget {
                 ),
                 child: Text(
                   'Vacuna ${index + 1}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.burgundy,
+                    color: badgeColor,
                   ),
                 ),
               ),
@@ -247,9 +256,9 @@ class _VaccineCard extends ConsumerWidget {
                 IconButton(
                   onPressed: onRemove,
                   icon: const Icon(Icons.delete_outline, size: 18),
-                  color: AppColors.muted,
+                  color: mutedColor,
                   style: IconButton.styleFrom(
-                    backgroundColor: AppColors.surfaceAlt,
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
                     padding: const EdgeInsets.all(6),
                   ),
                 ),

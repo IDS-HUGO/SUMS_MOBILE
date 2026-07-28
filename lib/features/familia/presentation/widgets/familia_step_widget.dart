@@ -287,11 +287,16 @@ class _StepPanel extends ConsumerWidget {
   });
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark
+        ? Color.lerp(color, Colors.white, 0.55)!
+        : (color == AppColors.green ? AppColors.greenDark : color);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -317,9 +322,7 @@ class _StepPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: color == AppColors.green
-                          ? AppColors.greenDark
-                          : color,
+                      color: titleColor,
                     ),
                   ),
                 ),

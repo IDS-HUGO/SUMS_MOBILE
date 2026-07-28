@@ -377,7 +377,7 @@ class _DetailRow extends StatelessWidget {
               label,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: AppColors.ink.withOpacity(0.7),
+                color: Theme.of(context).textTheme.bodySmall?.color,
                 fontSize: 13,
               ),
             ),

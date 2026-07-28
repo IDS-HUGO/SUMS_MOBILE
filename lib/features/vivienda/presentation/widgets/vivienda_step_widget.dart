@@ -107,7 +107,7 @@ class ViviendaStepWidget extends ConsumerWidget {
                 ),
               ]),
               const SizedBox(height: 14),
-              _sectionDivider('Servicios básicos'),
+              _sectionDivider(context, 'Servicios básicos'),
               const SizedBox(height: 12),
               _toggleGrid([
                 _yesNo('Agua entubada', vm.aguaEntubada, vm.setAguaEntubada),
@@ -252,24 +252,29 @@ class ViviendaStepWidget extends ConsumerWidget {
     );
   }
 
-  Widget _sectionDivider(String label) => Row(
-    children: [
-      Expanded(child: Divider(color: AppColors.line)),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppColors.muted,
-            letterSpacing: 0.5,
+  Widget _sectionDivider(BuildContext context, String label) {
+    final theme = Theme.of(context);
+    final line = theme.dividerTheme.color ?? AppColors.line;
+    final muted = theme.textTheme.bodySmall?.color ?? AppColors.muted;
+    return Row(
+      children: [
+        Expanded(child: Divider(color: line)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: muted,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
-      ),
-      Expanded(child: Divider(color: AppColors.line)),
-    ],
-  );
+        Expanded(child: Divider(color: line)),
+      ],
+    );
+  }
   Widget _select({
     required String label,
     required IconData icon,
@@ -362,11 +367,16 @@ class _StepPanel extends ConsumerWidget {
   });
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark
+        ? Color.lerp(color, Colors.white, 0.55)!
+        : (color == AppColors.green ? AppColors.greenDark : color);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusM),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -392,9 +402,7 @@ class _StepPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: color == AppColors.green
-                          ? AppColors.greenDark
-                          : color,
+                      color: titleColor,
                     ),
                   ),
                 ),

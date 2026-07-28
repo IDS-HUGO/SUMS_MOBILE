@@ -136,11 +136,17 @@ class _MemberCard extends ConsumerWidget {
   }
 
   Widget _buildCard(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark
+        ? Color.lerp(AppColors.greenDark, Colors.white, 0.6)!
+        : AppColors.greenDark;
+    final mutedColor = theme.textTheme.bodySmall?.color ?? AppColors.muted;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: theme.dividerTheme.color ?? AppColors.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -172,10 +178,10 @@ class _MemberCard extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Text(
                   'V. Integrante ${index + 1}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 15,
-                    color: AppColors.greenDark,
+                    color: titleColor,
                   ),
                 ),
                 const Spacer(),
@@ -183,7 +189,7 @@ class _MemberCard extends ConsumerWidget {
                   IconButton(
                     onPressed: onRemove,
                     icon: const Icon(Icons.delete_outline, size: 18),
-                    color: AppColors.muted,
+                    color: mutedColor,
                   ),
               ],
             ),
