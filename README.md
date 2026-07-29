@@ -2,13 +2,64 @@
 
 Aplicación móvil desarrollada en Flutter para la captura y gestión de datos de IMSS-Bienestar.
 
-## Arquitectura y Tecnologías Principales
+## Manual de arquitectura
 
-- **Arquitectura**: Clean Architecture / Hexagonal Architecture. El código está altamente modularizado separando responsabilidades (UI, ViewModels, Dominio, Repositorios, Servicios Externos).
-- **Inyección de Dependencias (DI)**: Gestionada a través de `get_it` para inyectar servicios, repositorios y ViewModels.
-- **Gestión del Estado**: Implementado con **Riverpod** (`ConsumerWidget`, `ConsumerStatefulWidget`, `ChangeNotifierProvider.autoDispose`), garantizando correcta gestión del ciclo de vida de la memoria y disposición de los estados al cambiar de vista.
-- **Diseño (UI/UX)**: Diseño basado en Material Design 3, soporte nativo de **Modo Claro / Modo Oscuro** gestionado con `ColorScheme.fromSeed` y `AppTheme`.
-- **Capacidades Offline (Offline-First)**: Arquitectura preparada para recolectar, almacenar y sincronizar datos de forma local cuando el dispositivo no tiene red y sincronizarlos cuando la conexión es reestablecida.
+> La app usa Material 3 para el tema, Riverpod para el estado por pantalla,
+> `get_it` para inyección de dependencias y `go_router` para navegación
+> centralizada en constantes. Los providers se importan globalmente desde
+> `package:sums/core/di/providers.dart`.
+
+### Material Theme
+
+`AppTheme` centraliza los temas claro y oscuro en
+`lib/shared/theme/app_theme.dart`. Ambos usan `ColorScheme.fromSeed` y
+`useMaterial3: true`; `App` los entrega a `MaterialApp.router`. El tema activo
+se observa mediante `themeModeProvider`.
+
+### Riverpod y estado por pantalla
+
+`main.dart` envuelve la aplicación con `ProviderScope`. Cada funcionalidad
+publica su ViewModel como un `ChangeNotifierProvider`; las pantallas usan
+`ConsumerWidget` o `ConsumerStatefulWidget` para observarlo con `ref.watch`, y
+usan `ref.read` para disparar acciones. Los providers de pantallas que no deben
+conservar estado emplean `autoDispose`, liberándose al salir de la vista.
+
+Ejemplo de importación global:
+
+```dart
+import 'package:sums/core/di/providers.dart';
+
+final vm = ref.watch(adminUsersViewModelProvider);
+ref.read(adminUsersViewModelProvider).fetchUsers();
+```
+
+### Inyección de dependencias
+
+`lib/core/di/injection.dart` configura el contenedor `GetIt` (`sl`) antes de
+crear la app. Registra cliente HTTP, almacenamiento seguro, base de datos,
+repositorios y ViewModels; cada módulo agrega sus propios registros desde su
+carpeta `di/`. Los providers de Riverpod obtienen los ViewModels desde ese
+contenedor, separando la creación de dependencias de la UI.
+
+### Navegación y tipos
+
+`lib/core/routes/app_routes.dart` concentra las rutas en constantes de
+`AppRoutes` y construye `GoRouter`. Las pantallas navegan con `context.go()`,
+`context.push()` o `context.pop()`. El router protege las rutas según el rol
+autenticado. Cuando una ruta requiere datos, se leen de `state.extra` y se
+convierten al tipo esperado antes de crear la pantalla.
+
+### Organización
+
+Cada módulo sigue la separación `data`, `domain`, `presentation` y `di`:
+
+- `data`: fuentes remotas/locales e implementaciones de repositorios.
+- `domain`: entidades, contratos y casos de uso.
+- `presentation`: páginas, widgets y ViewModels de estado.
+- `di`: registros de `get_it` y providers de Riverpod del módulo.
+
+La aplicación está preparada para trabajar offline: guarda datos localmente y
+los sincroniza cuando recupera conectividad.
 
 ## Requisitos
 
@@ -72,5 +123,6 @@ flutter build apk
 
 ## Documentación
 
+- [Manual de arquitectura e implementación](MANUAL_ARQUITECTURA.md)
 - [Flutter documentation](https://docs.flutter.dev/)
 - [Riverpod Documentation](https://riverpod.dev/)

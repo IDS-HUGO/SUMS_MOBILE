@@ -1,3 +1,5 @@
+/// Importación global de providers: las pantallas importan este archivo para
+/// acceder al estado de cada módulo sin acoplarse a su implementación interna.
 library;
 
 export '../../features/auth/di/auth_providers.dart';
