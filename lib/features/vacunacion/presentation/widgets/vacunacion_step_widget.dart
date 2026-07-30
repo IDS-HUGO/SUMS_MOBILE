@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
+import '../../../../shared/utils/age_calculator.dart';
 import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
 import '../../../integrantes/presentation/viewmodels/integrantes_viewmodel.dart';
 import '../viewmodels/vacunacion_viewmodel.dart';
@@ -282,7 +283,7 @@ class _VaccineCard extends ConsumerWidget {
                           : form.paciente.text,
                       items: pacientesOpts
                           .map(
-                            (m) => DropdownMenuItem(
+                            (m) => DropdownMenuItem<String>(
                               value: m.nombre.text,
                               child: Text(
                                 m.nombre.text,
@@ -315,13 +316,10 @@ class _VaccineCard extends ConsumerWidget {
                       validator: (v) {
                         final req = requiredText(v);
                         if (req != null) return req;
-                        try {
-                          final bDate = DateTime.parse(v!);
-                          final age =
-                              DateTime.now().difference(bDate).inDays / 365.25;
-                          if (age < 2)
-                            return 'No aplicable a menores de 2 años';
-                        } catch (_) {}
+                        final years = AgeCalculator.calculateYears(v);
+                        if (years != null && years < 2) {
+                          return 'No aplicable a menores de 2 años';
+                        }
                         return null;
                       },
                       onTap: () async {
@@ -336,13 +334,8 @@ class _VaccineCard extends ConsumerWidget {
                         if (picked != null) {
                           form.fechaNacimiento.text =
                               "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                          final now = DateTime.now();
-                          int anos = now.year - picked.year;
-                          if (now.month < picked.month ||
-                              (now.month == picked.month &&
-                                  now.day < picked.day))
-                            anos--;
-                          form.edad.text = '$anos';
+                          
+                          form.edad.text = AgeCalculator.calculateAge(form.fechaNacimiento.text);
                           onChanged();
                         }
                       },
@@ -421,7 +414,7 @@ class _VaccineCard extends ConsumerWidget {
     decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
     items: options
         .map(
-          (o) => DropdownMenuItem(
+          (o) => DropdownMenuItem<String>(
             value: o,
             child: Text(o, overflow: TextOverflow.ellipsis),
           ),

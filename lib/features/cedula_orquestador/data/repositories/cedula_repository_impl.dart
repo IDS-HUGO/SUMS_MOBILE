@@ -258,60 +258,72 @@ class CedulaRepositoryImpl implements CedulaRepository {
     }
   }
 
-  /// Descarga y persiste los catálogos de sistema (`entrevistador` y
-  /// `unidad-salud`) necesarios para que el SyncEngine pueda validar las
-  /// referencias de cada cédula pendiente antes de subirla.
-  ///
-  /// Falla silenciosamente ante errores de red para no bloquear al usuario.
   @override
   Future<bool> refreshUserCatalogs() async {
     if (localDataSource == null) return false;
-    const systemCatalogs = ['entrevistador', 'unidad-salud'];
+    
+    // Lista expandida de catálogos necesarios para operación en campo (offline)
+    const catalogsToPreload = [
+      'entrevistador',
+      'unidad-salud',
+      'parentesco',
+      'estado-civil',
+      'lengua',
+      'escolaridad',
+      'ingreso-salarial',
+      'atencion-embarazo',
+      'frecuencia-servicio-salud',
+      'toxicomania',
+      'enfermedad-cronica',
+      'discapacidad',
+      'sexo',
+      'tamizaje'
+    ];
+
     try {
       final token = await tokenStorage.readToken();
-      for (final catalogKey in systemCatalogs) {
+      if (token == null || token.isEmpty) return false;
+
+      for (final catalogKey in catalogsToPreload) {
         try {
           final response = await remoteDataSource.getCatalog(
             catalogKey,
             token: token,
           );
+          
           final list = response
               .whereType<Map<String, dynamic>>()
               .map(CatalogItem.fromJson)
               .toList();
-          final jsonStr = jsonEncode(
-            list
-                .map(
-                  (e) => {
-                    'id': e.id,
-                    'nombre': e.nombre,
-                    'descripcion': e.descripcion,
-                  },
-                )
-                .toList(),
-          );
-          await (localDataSource!.db.delete(
-            localDataSource!.db.catalogosLocal,
-          )..where((tbl) => tbl.tipo.equals(catalogKey))).go();
-          await localDataSource!.db
-              .into(localDataSource!.db.catalogosLocal)
-              .insert(
-                CatalogosLocalCompanion.insert(
-                  tipo: catalogKey,
-                  jsonList: jsonStr,
-                  updatedAt: DateTime.now(),
-                ),
-                mode: InsertMode.insertOrReplace,
-              );
-          AppLogger.info(
-            'CedulaRepository: catálogo "$catalogKey" refrescado '
-            '(${list.length} entradas).',
-          );
+
+          if (list.isNotEmpty) {
+            final jsonStr = jsonEncode(
+              list.map((e) => {
+                'id': e.id,
+                'nombre': e.nombre,
+                'descripcion': e.descripcion,
+              }).toList(),
+            );
+
+            await (localDataSource!.db.delete(localDataSource!.db.catalogosLocal)
+                  ..where((tbl) => tbl.tipo.equals(catalogKey)))
+                .go();
+
+            await localDataSource!.db
+                .into(localDataSource!.db.catalogosLocal)
+                .insert(
+                  CatalogosLocalCompanion.insert(
+                    tipo: catalogKey,
+                    jsonList: jsonStr,
+                    updatedAt: DateTime.now(),
+                  ),
+                  mode: InsertMode.insertOrReplace,
+                );
+            
+            AppLogger.info('CedulaRepository: Catálogo "$catalogKey" precargado con éxito.');
+          }
         } catch (e) {
-          // Fallo en un catálogo individual: se registra pero no detiene los demás.
-          AppLogger.warn(
-            'CedulaRepository: no se pudo refrescar catálogo "$catalogKey": $e',
-          );
+          AppLogger.warn('CedulaRepository: No se pudo precargar "$catalogKey": $e');
         }
       }
       return true;

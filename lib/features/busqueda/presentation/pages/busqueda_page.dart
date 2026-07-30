@@ -133,33 +133,18 @@ class _BusquedaPageState extends ConsumerState<BusquedaPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (vm.modo == ModoBusqueda.notas)
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: vm.motorSeleccionado,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Motor de búsqueda',
-                      isDense: true,
-                    ),
-                    items: BusquedaViewModel.motoresDisponibles
-                        .map(
-                          (m) => DropdownMenuItem(
-                            value: m,
-                            child: Text(_motorLabel(m)),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (m) {
-                      if (m != null) vm.setMotor(m);
-                    },
+              if (vm.modo == ModoBusqueda.estructurado)
+                const Expanded(
+                  child: Text(
+                    'Filtra por vacunas, embarazo, nutrición, mascotas o '
+                    'colonia/calle -- no es búsqueda por similitud de texto.',
+                    style: TextStyle(fontSize: 11, color: AppColors.muted),
                   ),
                 )
               else
                 const Expanded(
                   child: Text(
-                    'Filtra por vacunas, embarazo, nutrición, mascotas o '
-                    'colonia/calle -- no es búsqueda por similitud de texto.',
+                    'Busca coincidencias en las notas de visita del personal de salud.',
                     style: TextStyle(fontSize: 11, color: AppColors.muted),
                   ),
                 ),
@@ -196,18 +181,6 @@ class _BusquedaPageState extends ConsumerState<BusquedaPage> {
     );
   }
 
-  String _motorLabel(String motor) {
-    switch (motor) {
-      case 'bm25':
-        return 'BM25 (léxico)';
-      case 'tfidf':
-        return 'TF-IDF (léxico)';
-      case 'semantico':
-        return 'Semántico (IA)';
-      default:
-        return motor;
-    }
-  }
 
   Widget _buildContenido(BusquedaViewModel vm) {
     if (vm.isLoading) {
@@ -221,7 +194,7 @@ class _BusquedaPageState extends ConsumerState<BusquedaPage> {
             ? 'Busca en las notas de visita'
             : 'Filtra cédulas por datos estructurados',
         mensaje: vm.modo == ModoBusqueda.notas
-            ? 'Escribe una consulta y elige un motor para comenzar.'
+            ? 'Escribe una consulta para comenzar.'
             : 'Ej. "sarampión", "sin vacunar", "mascotas", "embarazo", '
                 'o una colonia/calle conocida.',
       );
@@ -231,10 +204,10 @@ class _BusquedaPageState extends ConsumerState<BusquedaPage> {
       if (vm.motorNoDisponible) {
         return _buildEstadoVacio(
           icon: Icons.cloud_off_outlined,
-          titulo: 'Motor no disponible',
+          titulo: 'Servicio no disponible',
           mensaje: vm.errorMessage ??
-              'El motor de búsqueda seleccionado no está disponible en '
-                  'este momento. Intenta con BM25 o TF-IDF.',
+              'El servicio de búsqueda no está disponible en '
+                  'este momento. Intenta más tarde.',
           color: AppColors.muted,
         );
       }

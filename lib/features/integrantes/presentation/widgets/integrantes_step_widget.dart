@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/sums_text_field.dart';
+import '../../../../shared/utils/age_calculator.dart';
 import '../viewmodels/integrantes_viewmodel.dart';
 import '../../../cedula_orquestador/presentation/widgets/form_helpers.dart';
 import '../../../familia/presentation/viewmodels/familia_viewmodel.dart';
@@ -647,19 +648,8 @@ class _MemberCard extends ConsumerWidget {
     if (picked != null) {
       controller.text =
           "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-      final now = DateTime.now();
-      int anos = now.year - picked.year;
-      if (now.month < picked.month ||
-          (now.month == picked.month && now.day < picked.day))
-        anos--;
-      if (anos < 2) {
-        int meses = (now.year - picked.year) * 12 + now.month - picked.month;
-        if (now.day < picked.day) meses--;
-        if (meses < 0) meses = 0;
-        edadController.text = '$meses meses';
-      } else {
-        edadController.text = '$anos';
-      }
+      
+      edadController.text = AgeCalculator.calculateAge(controller.text);
       onChanged();
     }
   }
@@ -708,7 +698,7 @@ class _MemberCard extends ConsumerWidget {
     ),
     items: options
         .map(
-          (o) => DropdownMenuItem(
+          (o) => DropdownMenuItem<String>(
             value: o,
             child: Text(o, overflow: TextOverflow.ellipsis),
           ),

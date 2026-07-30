@@ -143,15 +143,15 @@ class _AdminCedulaFormPageState extends ConsumerState<AdminCedulaFormPage> {
                             border: OutlineInputBorder(),
                           ),
                           items: const [
-                            DropdownMenuItem(
+                            DropdownMenuItem<String>(
                               value: 'abierta',
                               child: Text('Abierta'),
                             ),
-                            DropdownMenuItem(
+                            DropdownMenuItem<String>(
                               value: 'borrador',
                               child: Text('Borrador'),
                             ),
-                            DropdownMenuItem(
+                            DropdownMenuItem<String>(
                               value: 'cerrada',
                               child: Text('Cerrada'),
                             ),

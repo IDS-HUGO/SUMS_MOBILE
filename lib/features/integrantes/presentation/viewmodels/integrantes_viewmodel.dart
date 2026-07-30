@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sums/core/network/app_logger.dart';
 import '../../domain/repositories/integrantes_repository.dart';
 
 class MemberForm extends ChangeNotifier {
@@ -76,21 +77,32 @@ class IntegrantesViewModel extends ChangeNotifier {
   Future<void> _init() async {
     try {
       _isLoading = true;
+      _errorMessage = null;
       notifyListeners();
-      final results = await Future.wait([
-        repository.getCatalogOpts('parentesco'),
-        repository.getCatalogOpts('estado-civil'),
-        repository.getCatalogOpts('lengua'),
-        repository.getCatalogOpts('escolaridad'),
-        repository.getCatalogOpts('ingreso-salarial'),
-        repository.getCatalogOpts('atencion-embarazo'),
-        repository.getCatalogOpts('frecuencia-servicio-salud'),
-        repository.getCatalogOpts('toxicomania'),
-        repository.getCatalogOpts('enfermedad-cronica'),
-        repository.getCatalogOpts('discapacidad'),
-        repository.getCatalogOpts('sexo'),
-        repository.getCatalogOpts('tamizaje'),
-      ]);
+
+      final catalogKeys = [
+        'parentesco',
+        'estado-civil',
+        'lengua',
+        'escolaridad',
+        'ingreso-salarial',
+        'atencion-embarazo',
+        'frecuencia-servicio-salud',
+        'toxicomania',
+        'enfermedad-cronica',
+        'discapacidad',
+        'sexo',
+        'tamizaje',
+      ];
+
+      // Cargamos catálogos uno por uno para que un error en uno no detenga a los demás
+      final results = await Future.wait(
+        catalogKeys.map((key) => repository.getCatalogOpts(key).catchError((e) {
+          AppLogger.warn('IntegrantesViewModel: Error cargando catálogo $key: $e');
+          return <String>[];
+        })),
+      );
+
       rolesOpts = results[0];
       edoCivilOpts = results[1];
       lenguaOpts = results[2];
@@ -101,23 +113,18 @@ class IntegrantesViewModel extends ChangeNotifier {
       toxicomaniasOpts = results[7];
       cronicasOpts = results[8];
       discapacidadOpts = results[9];
-      sexoOpts = results[10].isNotEmpty
-          ? results[10]
-          : const ['Masculino', 'Femenino', 'Otro'];
+      sexoOpts = results[10].isNotEmpty ? results[10] : const ['Masculino', 'Femenino', 'Otro'];
       tamizajeOpts = results[11];
 
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
     } catch (e) {
-      _errorMessage = e.toString();
-      if (sexoOpts.isEmpty) {
-        sexoOpts = const ['Masculino', 'Femenino', 'Otro'];
-      }
+      AppLogger.error('IntegrantesViewModel: Error crítico en inicialización', e);
+      _errorMessage = 'No se pudieron cargar todos los datos necesarios para el formulario.';
       if (_integrantes.isEmpty) {
         addMemberForm();
       }
-
     } finally {
       _isLoading = false;
       notifyListeners();

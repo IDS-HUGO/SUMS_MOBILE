@@ -46,7 +46,6 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
   @override
   void initState() {
     super.initState();
-    _initScreenProtector();
   }
 
   @override
@@ -69,22 +68,8 @@ class _CedulaFormPageState extends ConsumerState<CedulaFormPage>
     ];
   }
 
-  static const platform = MethodChannel('com.kazedev.sums/security');
-  void _initScreenProtector() async {
-    if (Platform.isAndroid) {
-      try {
-        await platform.invokeMethod('secureScreen');
-      } catch (e) {}
-    }
-  }
-
   @override
   void dispose() {
-    if (Platform.isAndroid) {
-      try {
-        platform.invokeMethod('unsecureScreen');
-      } catch (e) {}
-    }
     super.dispose();
   }
 

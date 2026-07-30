@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sums/core/di/providers.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/utils/age_calculator.dart';
 
 class AdminCedulaDetailPage extends ConsumerStatefulWidget {
   final int cedulaId;
@@ -283,9 +284,18 @@ class _CedulaDetailContent extends StatelessWidget {
                 final person = entry.value as Map<String, dynamic>?;
                 final nombre = person?['nombre'] ?? person?['nombre_completo'] ?? 'Integrante $idx';
                 final parentesco = person?['parentesco'] ?? '';
+                
+                final fechaNac = person?['fecha_nacimiento']?.toString();
+                final edadActual = AgeCalculator.calculateAge(fechaNac);
+                final edadRegistrada = person?['edad']?.toString();
+                
+                final edadDisplay = edadActual.isNotEmpty 
+                    ? '$edadActual (Censo Vivo)' 
+                    : (edadRegistrada ?? '');
+
                 return _DetailRow(
                   label: '#$idx',
-                  value: '$nombre ${parentesco.toString().isNotEmpty ? "($parentesco)" : ""}',
+                  value: '$nombre ${parentesco.toString().isNotEmpty ? "($parentesco)" : ""} - $edadDisplay',
                 );
               }).toList(),
             ),

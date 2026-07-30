@@ -60,6 +60,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
     if (!mounted) return;
     if (success) {
+      if (Platform.isAndroid) {
+        try {
+          platform.invokeMethod('unsecureScreen');
+        } catch (_) {}
+      }
       await _showSuccessDialog();
       if (!mounted) return;
       context.go(viewModel.homeRoute);
