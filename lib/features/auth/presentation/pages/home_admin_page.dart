@@ -9,16 +9,6 @@ import '../../../../shared/widgets/theme_mode_menu_button.dart';
 
 class HomeAdminPage extends ConsumerWidget {
   const HomeAdminPage({super.key});
-  void _showPendingFeatureMessage(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'La función de $feature estará disponible en la próxima actualización.',
-        ),
-        backgroundColor: AppColors.muted,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -119,16 +109,6 @@ class HomeAdminPage extends ConsumerWidget {
                       label: 'Cédulas',
                       color: AppColors.green,
                       onTap: () => context.push(AppRoutes.adminCedulas),
-                    ),
-                    const SizedBox(height: 8),
-                    _QuickLinkRow(
-                      icon: Icons.tune_outlined,
-                      label: 'Configuración del sistema',
-                      color: AppColors.muted,
-                      onTap: () => _showPendingFeatureMessage(
-                        context,
-                        'Configuración del sistema',
-                      ),
                     ),
                   ],
                 ),
